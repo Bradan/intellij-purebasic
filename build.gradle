@@ -1,0 +1,60 @@
+import org.jetbrains.grammarkit.tasks.*
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.17'
+    id "org.jetbrains.grammarkit" version "2020.1.2"
+}
+
+apply plugin: "org.jetbrains.grammarkit"
+
+group "eu.bradan.purebasic"
+version "1.0-SNAPSHOT"
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":PureBasic-jps-plugin")
+    testCompile group: "junit", name: "junit", version: "4.12"
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version '2019.3.4'
+    plugins += ["java"]
+}
+patchPluginXml {
+    changeNotes '''
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>'''
+}
+
+sourceSets {
+    main {
+        java.srcDirs += "src/main/gen"
+    }
+}
+
+task generatePureBasicLexer(type: GenerateLexer) {
+    source = "src/main/java/eu/bradan/purebasic/PureBasic.flex"
+    targetDir = "src/main/gen/eu/bradan/purebasic"
+    targetClass = "PureBasicLexer"
+    purgeOldFiles = true
+}
+task generatePureBasicParser(type: GenerateParser) {
+    source = "src/main/java/eu/bradan/purebasic/PureBasic.bnf"
+    targetRoot = "src/main/gen"
+    pathToParser = 'eu/bradan/purebasic/PureBasicParser.java'
+    pathToPsiRoot = 'eu/bradan/purebasic/psi'
+    purgeOldFiles = true
+}
+
+// TODO: Wait for a fix for issue https://github.com/JetBrains/gradle-grammar-kit-plugin/issues/3
+//       Cannot automatically generate lexer/parser without invoking the java compiler twice
+//       Invoking gradle tasks multiple times is not supported, so invoke it manually!
+//compileJava.dependsOn(generatePureBasicLexer)
+//compileJava.dependsOn(generatePureBasicParser)

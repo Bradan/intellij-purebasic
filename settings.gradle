@@ -1,0 +1,3 @@
+rootProject.name = 'PureBasic'
+include 'jps-plugin'
+findProject(':jps-plugin')?.name = 'PureBasic-jps-plugin'

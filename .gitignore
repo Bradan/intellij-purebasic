@@ -1,0 +1,5 @@
+/build/
+/jps-plugin/build/
+/src/main/gen/
+/.gradle/
+/.idea/

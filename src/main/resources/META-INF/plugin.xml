@@ -1,0 +1,53 @@
+<idea-plugin>
+    <id>eu.bradan.purebasic.PureBasic</id>
+    <name>PureBasic Language</name>
+    <vendor email="purebasic@bradan.eu" url="http://www.bradan.eu/">Daniel Brall</vendor>
+
+    <description><![CDATA[
+    PureBasic/SpiderBasic language support for IntelliJ IDEA.
+    ]]></description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <!--    <depends>com.intellij.java</depends>-->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="PureBasic file" implementationClass="eu.bradan.purebasic.PureBasicFileType"
+                  fieldName="INSTANCE" language="PureBasic" extensions="pb;pbi;pbh;pbf;sb;sbi;sbh;sbf"/>
+
+        <!--<sdkType implementation="eu.bradan.purebasic.module.PureBasicSdkType"/>-->
+
+        <moduleType id="PUREBASIC_MODULE" implementationClass="eu.bradan.purebasic.module.PureBasicModuleType"/>
+        <moduleBuilder id="PUREBASIC_MODULE_BUILDER" order="first"
+                       builderClass="eu.bradan.purebasic.module.PureBasicModuleBuilder"/>
+
+        <lang.parserDefinition language="PureBasic"
+                               implementationClass="eu.bradan.purebasic.PureBasicParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="PureBasic"
+                                       implementationClass="eu.bradan.purebasic.PureBasicHighlighterFactory"/>
+
+        <completion.contributor language="PureBasic"
+                                implementationClass="eu.bradan.purebasic.PureBasicCompletionContributor"/>
+
+        <colorSettingsPage implementation="eu.bradan.purebasic.settings.PureBasicColorSettingsPage"/>
+
+        <compileServer.plugin classpath="PureBasic-jps-plugin-1.0-SNAPSHOT.jar"/>
+        <compiler.buildTargetScopeProvider
+                implementation="eu.bradan.purebasic.builder.PureBasicBuildTargetScopeProvider"/>
+
+        <projectConfigurable instance="eu.bradan.purebasic.settings.PureBasicCompilerSettingsConfigurable"
+                             groupId="build.tools"/>
+
+        <applicationService
+                serviceImplementation="eu.bradan.purebasic.settings.PureBasicCompilerSettings"/>
+
+        <moduleService serviceImplementation="eu.bradan.purebasic.module.PureBasicModuleSettings"/>
+        <moduleConfigurationEditorProvider
+                implementation="eu.bradan.purebasic.module.PureBasicModuleConfigurationEditorProvider"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
