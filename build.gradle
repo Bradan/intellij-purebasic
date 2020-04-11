@@ -32,6 +32,9 @@ patchPluginXml {
       Add change notes here.<br>
       <em>most HTML tags may be used</em>'''
 }
+runIde {
+    jvmArgs += ['-Dcompiler.process.debug.port=5005']
+}
 
 sourceSets {
     main {
