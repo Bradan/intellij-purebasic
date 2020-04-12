@@ -59,8 +59,6 @@ type_suffix ::= '.' (pseudo_types|IDENTIFIER)
 
 label ::= LABEL_IDENTIFIER ':'
 
-identifier_list ::= IDENTIFIER (',' IDENTIFIER)*
-
 
 // Assignment
 unary_operators ::= '-'|'!'|'~'|'Not'
@@ -83,9 +81,11 @@ atom ::= NUMBER|any_identifier|CHARACTER|STRING
 declaration ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
 declaration_scope ::= 'Global'|'Shared'|'Protected'|'Static'|'Threaded'|'Define'
 
-private variable_decl_pattern ::= any_identifier [type_suffix]
-variable_decl_list ::= variable_decl_pattern ['=' expression] [',' variable_decl_list]
-variable_declaration ::= declaration_scope type_suffix identifier_list|declaration_scope variable_decl_list|variable_decl_pattern
+variable_decl_identifier ::= (IDENTIFIER|POINTER_IDENTIFIER) [type_suffix]
+variable_decl_identifier_notype ::= (IDENTIFIER|POINTER_IDENTIFIER)
+variable_decl_list ::= variable_decl_identifier ['=' expression] (',' variable_decl_identifier ['=' expression])*
+variable_decl_list_notype ::= variable_decl_identifier_notype (',' variable_decl_identifier_notype)*
+variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype|declaration_scope variable_decl_list|variable_decl_identifier
 
 array_declaration ::= [declaration_scope] ('Dim'|'ReDim') IDENTIFIER [type_suffix] '(' parameters_call ')'
 list_declaration ::= [declaration_scope] 'NewList' IDENTIFIER [type_suffix] '(' ')'
@@ -115,7 +115,9 @@ procedurereturn ::= 'ProcedureReturn' [expression]
 procedure_foot ::= 'EndProcedure'
 
 // Macro
-private macro_decl_pattern ::= [type_suffix] IDENTIFIER ['(' identifier_list ')']
+macro_parameter_decl ::= IDENTIFIER
+macro_parameter_decl_list ::= macro_parameter_decl (',' macro_parameter_decl)*
+private macro_decl_pattern ::= [type_suffix] IDENTIFIER ['(' macro_parameter_decl_list ')']
 
 macro ::= macro_head [sep statements] sep macro_foot
 
@@ -184,7 +186,7 @@ enumeration_foot ::= 'EndEnumeration'
 
 // Loops
 private while ::= 'While' expression [sep statements] sep 'Wend'
-private for ::= 'For' variable_decl_pattern '=' expression 'To' expression ['Step' NUMBER] [sep statements] sep 'Next' [IDENTIFIER]
+private for ::= 'For' variable_decl_identifier '=' expression 'To' expression ['Step' NUMBER] [sep statements] sep 'Next' [IDENTIFIER]
 private foreach ::= 'ForEach' identifier_or_call_chained [sep statements] sep 'Next'
 private repeat ::= 'Repeat' [sep statements] sep ('Until' expression | 'ForEver')
 
