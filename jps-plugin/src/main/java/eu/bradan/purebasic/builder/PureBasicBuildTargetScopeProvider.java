@@ -55,7 +55,7 @@ public class PureBasicBuildTargetScopeProvider extends BuildTargetScopeProvider 
         result.add(CmdlineProtoUtil.createTargetsScope(
                 PureBasicBuildTargetType.getInstance().getTypeId(),
                 moduleNames,
-                true));
+                forceBuild));
         return result;
     }
 }
