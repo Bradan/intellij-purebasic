@@ -24,8 +24,9 @@
 package eu.bradan.purebasic.module;
 
 import com.intellij.openapi.components.ServiceManager;
-import eu.bradan.purebasic.PureBasicCompiler;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
 import eu.bradan.purebasic.settings.PureBasicCompilerSettings;
+import eu.bradan.purebasic.settings.PureBasicCompilerSettingsState;
 import eu.bradan.purebasic.ui.FileTextField;
 
 import javax.swing.*;
@@ -43,7 +44,7 @@ public class PureBasicTargetSettingsPanel extends JPanel {
         targetSettings = null;
 
         final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
-        final PureBasicCompilerSettings.State state = settings.getState();
+        final PureBasicCompilerSettingsState state = settings.getState();
         if (state != null) {
             for (String sdk : state.sdks) {
                 final PureBasicCompiler compiler = PureBasicCompiler.getPureBasicCompiler(sdk);

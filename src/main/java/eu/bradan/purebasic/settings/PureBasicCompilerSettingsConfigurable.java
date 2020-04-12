@@ -71,7 +71,7 @@ public class PureBasicCompilerSettingsConfigurable extends ConfigurableProvider 
             return;
         }
         final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
-        final PureBasicCompilerSettings.State modifiedState = settingsPanel.getState();
+        final PureBasicCompilerSettingsState modifiedState = settingsPanel.getState();
         settings.loadState(modifiedState);
     }
 

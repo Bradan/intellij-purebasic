@@ -23,19 +23,25 @@
 
 package eu.bradan.purebasic.builder;
 
+import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
+import org.jetbrains.jps.cmdline.BuildRunner;
 import org.jetbrains.jps.incremental.CompileContext;
 import org.jetbrains.jps.incremental.ProjectBuildException;
 import org.jetbrains.jps.incremental.TargetBuilder;
+import org.jetbrains.jps.model.module.JpsModule;
+import org.jetbrains.jps.model.module.JpsModuleSourceRoot;
 
 import java.io.IOException;
 import java.util.Collections;
 
 public class PureBasicBuilder extends TargetBuilder<PureBasicBuildRootDescriptor, PureBasicBuildTarget> {
+    private static final Logger LOG = Logger.getInstance(PureBasicBuilder.class);
+
     protected PureBasicBuilder() {
-        super(Collections.singletonList(new PureBasicBuildTargetType()));
+        super(Collections.singletonList(PureBasicBuildTargetType.getInstance()));
     }
 
     @NotNull
@@ -49,6 +55,14 @@ public class PureBasicBuilder extends TargetBuilder<PureBasicBuildRootDescriptor
                       @NotNull DirtyFilesHolder<PureBasicBuildRootDescriptor, PureBasicBuildTarget> holder,
                       @NotNull BuildOutputConsumer outputConsumer,
                       @NotNull CompileContext context) throws ProjectBuildException, IOException {
-
+        JpsModule module = target.getModule();
+        LOG.info("Listing content roots");
+        for (String contentRoot : module.getContentRootsList().getUrls()) {
+            LOG.info("Content Root: " + contentRoot);
+        }
+        LOG.info("Listing source roots");
+        for (JpsModuleSourceRoot sr : module.getSourceRoots()) {
+            LOG.info("Source Root: " + sr.getFile().getAbsolutePath());
+        }
     }
 }

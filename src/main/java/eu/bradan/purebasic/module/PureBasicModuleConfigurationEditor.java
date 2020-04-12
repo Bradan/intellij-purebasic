@@ -63,7 +63,7 @@ public class PureBasicModuleConfigurationEditor implements ModuleConfigurationEd
             return false;
         }
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
-        final PureBasicModuleSettings.State modifiedState = settingsPanel.getState();
+        final PureBasicModuleSettingsState modifiedState = settingsPanel.getState();
         return !modifiedState.equals(settings.getState());
     }
 
@@ -73,7 +73,7 @@ public class PureBasicModuleConfigurationEditor implements ModuleConfigurationEd
             return;
         }
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
-        final PureBasicModuleSettings.State modifiedState = settingsPanel.getState();
+        final PureBasicModuleSettingsState modifiedState = settingsPanel.getState();
         settings.loadState(modifiedState);
     }
 

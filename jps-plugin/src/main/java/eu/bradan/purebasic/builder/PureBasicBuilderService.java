@@ -37,27 +37,23 @@ public class PureBasicBuilderService extends BuilderService {
 
     public PureBasicBuilderService() {
         super();
-        LOG.info("PureBasicBuilderService");
     }
 
     @NotNull
     @Override
     public List<PureBasicBuildTargetType> getTargetTypes() {
-        LOG.info("getTargetTypes");
         return Collections.singletonList(PureBasicBuildTargetType.getInstance());
     }
 
     @NotNull
     @Override
     public List<? extends ModuleLevelBuilder> createModuleLevelBuilders() {
-        LOG.info("createModuleLevelBuilders");
         return super.createModuleLevelBuilders();
     }
 
     @NotNull
     @Override
     public List<? extends TargetBuilder<?, ?>> createBuilders() {
-        LOG.info("createBuilders");
         return Collections.singletonList(new PureBasicBuilder());
     }
 }

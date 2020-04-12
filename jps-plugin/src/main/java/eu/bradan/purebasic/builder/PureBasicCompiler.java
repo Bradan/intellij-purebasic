@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic;
+package eu.bradan.purebasic.builder;
 
 import org.jetbrains.annotations.Nullable;
 

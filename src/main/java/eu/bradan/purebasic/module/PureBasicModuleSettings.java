@@ -30,58 +30,19 @@ import com.intellij.openapi.components.StoragePathMacros;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedList;
-import java.util.Objects;
-
 @State(name = "PureBasicModule", storages = {@Storage(StoragePathMacros.MODULE_FILE)})
-public class PureBasicModuleSettings implements PersistentStateComponent<PureBasicModuleSettings.State> {
-    public State state = new State();
+public class PureBasicModuleSettings implements PersistentStateComponent<PureBasicModuleSettingsState> {
+    public PureBasicModuleSettingsState state = new PureBasicModuleSettingsState();
 
     @Nullable
     @Override
-    public State getState() {
+    public PureBasicModuleSettingsState getState() {
         return state;
     }
 
     @Override
-    public void loadState(@NotNull State state) {
+    public void loadState(@NotNull PureBasicModuleSettingsState state) {
         this.state = state;
     }
 
-    public static class State {
-        public LinkedList<PureBasicTargetSettings> targetOptions;
-
-        public State() {
-            targetOptions = new LinkedList<>();
-        }
-
-        @Override
-        protected Object clone() throws CloneNotSupportedException {
-            State state;
-            try {
-                state = (State) super.clone();
-            } catch (CloneNotSupportedException e) {
-                state = new State();
-            }
-            for (PureBasicTargetSettings to : targetOptions) {
-                state.targetOptions.add((PureBasicTargetSettings) to.clone());
-            }
-            return state;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof State)) return false;
-
-            State state = (State) o;
-
-            return Objects.equals(targetOptions, state.targetOptions);
-        }
-
-        @Override
-        public int hashCode() {
-            return targetOptions != null ? targetOptions.hashCode() : 0;
-        }
-    }
 }

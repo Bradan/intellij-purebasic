@@ -23,11 +23,11 @@
 
 package eu.bradan.purebasic.model;
 
-import org.jetbrains.jps.model.JpsDummyElement;
-import org.jetbrains.jps.model.ex.JpsElementTypeWithDummyProperties;
+import org.jetbrains.jps.model.ex.JpsElementTypeBase;
 import org.jetbrains.jps.model.module.JpsModuleType;
 
-public class JpsPureBasicModuleType extends JpsElementTypeWithDummyProperties implements JpsModuleType<JpsDummyElement> {
+public class JpsPureBasicModuleType extends JpsElementTypeBase<JpsPureBasicModuleElement>
+        implements JpsModuleType<JpsPureBasicModuleElement> {
     public static final JpsPureBasicModuleType INSTANCE = new JpsPureBasicModuleType();
 
     private JpsPureBasicModuleType() {

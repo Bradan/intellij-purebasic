@@ -29,18 +29,26 @@ import org.jetbrains.jps.builders.BuildTarget;
 import java.io.File;
 
 public class PureBasicBuildRootDescriptor extends BuildRootDescriptor {
+    private PureBasicBuildTarget target;
+    private File rootFile;
+
+    public PureBasicBuildRootDescriptor(PureBasicBuildTarget target, File rootFile) {
+        this.target = target;
+        this.rootFile = rootFile;
+    }
+
     @Override
     public String getRootId() {
-        return "PureBasic";
+        return this.rootFile.getAbsolutePath();
     }
 
     @Override
     public File getRootFile() {
-        return null;
+        return this.rootFile;
     }
 
     @Override
     public BuildTarget<?> getTarget() {
-        return null;
+        return target;
     }
 }

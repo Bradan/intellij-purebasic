@@ -25,6 +25,7 @@ package eu.bradan.purebasic.builder;
 
 import com.intellij.compiler.impl.BuildTargetScopeProvider;
 import com.intellij.openapi.compiler.CompileScope;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
@@ -35,18 +36,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class PureBasicBuildTargetScopeProvider extends BuildTargetScopeProvider {
+    private static final Logger LOG = Logger.getInstance(PureBasicBuildTargetScopeProvider.class);
+
     private static final String MODULE_TYPE_ID = "PUREBASIC_MODULE";
 
     @NotNull
     @Override
     public List<TargetTypeBuildScope> getBuildTargetScopes(@NotNull CompileScope baseScope, @NotNull Project project, boolean forceBuild) {
-        System.out.println("getBuildTargetScopes");
         LinkedList<TargetTypeBuildScope> result = new LinkedList<>(super.getBuildTargetScopes(baseScope, project, forceBuild));
 
         LinkedList<String> moduleNames = new LinkedList<>();
         for (Module m : baseScope.getAffectedModules()) {
             if (MODULE_TYPE_ID.equals(m.getModuleTypeName())) {
-                System.out.println(m.getName());
                 moduleNames.add(m.getName());
             }
         }
@@ -54,7 +55,7 @@ public class PureBasicBuildTargetScopeProvider extends BuildTargetScopeProvider 
         result.add(CmdlineProtoUtil.createTargetsScope(
                 PureBasicBuildTargetType.getInstance().getTypeId(),
                 moduleNames,
-                forceBuild));
+                true));
         return result;
     }
 }

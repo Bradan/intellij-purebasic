@@ -24,7 +24,7 @@
 package eu.bradan.purebasic.settings;
 
 import com.intellij.ui.JBColor;
-import eu.bradan.purebasic.PureBasicCompiler;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
 import eu.bradan.purebasic.ui.DirectoryTextField;
 import org.jetbrains.annotations.NotNull;
 
@@ -46,7 +46,7 @@ public class PureBasicCompilerSettingsPanel {
 
     private ResourceBundle resources = ResourceBundle.getBundle("texts/texts");
 
-    public PureBasicCompilerSettingsPanel(PureBasicCompilerSettings.State state) {
+    public PureBasicCompilerSettingsPanel(PureBasicCompilerSettingsState state) {
         this.sdkFields = new LinkedList<>();
 
         panelSdks.setLayout(new BoxLayout(panelSdks, BoxLayout.Y_AXIS));
@@ -123,8 +123,8 @@ public class PureBasicCompilerSettingsPanel {
     }
 
     @NotNull
-    public PureBasicCompilerSettings.State getState() {
-        PureBasicCompilerSettings.State results = new PureBasicCompilerSettings.State();
+    public PureBasicCompilerSettingsState getState() {
+        PureBasicCompilerSettingsState results = new PureBasicCompilerSettingsState();
 
         for (DirectoryTextField tf : sdkFields) {
             results.sdks.add(tf.getText());

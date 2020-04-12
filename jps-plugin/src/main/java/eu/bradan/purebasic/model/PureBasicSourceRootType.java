@@ -21,9 +21,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.psi.impl;
+package eu.bradan.purebasic.model;
 
-import eu.bradan.purebasic.psi.PureBasicVariableDeclaration;
+import org.jetbrains.jps.model.JpsDummyElement;
+import org.jetbrains.jps.model.ex.JpsElementTypeWithDummyProperties;
+import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
 
-public class PureBasicPsiImplUtil {
+public class PureBasicSourceRootType extends JpsElementTypeWithDummyProperties implements JpsModuleSourceRootType<JpsDummyElement> {
+    public static final PureBasicSourceRootType INSTANCE = new PureBasicSourceRootType();
+
+    private PureBasicSourceRootType() {
+    }
 }

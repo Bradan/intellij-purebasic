@@ -24,7 +24,7 @@
 package eu.bradan.purebasic.module;
 
 import com.intellij.openapi.projectRoots.*;
-import eu.bradan.purebasic.PureBasicCompiler;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
 import eu.bradan.purebasic.PureBasicIcons;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;

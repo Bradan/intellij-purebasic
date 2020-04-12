@@ -68,4 +68,9 @@ public class PureBasicModuleType extends ModuleType<PureBasicModuleBuilder> {
         return PureBasicIcons.PUREBASIC;
     }
 
+    @NotNull
+    @Override
+    public Icon getIcon() {
+        return PureBasicIcons.PUREBASIC;
+    }
 }

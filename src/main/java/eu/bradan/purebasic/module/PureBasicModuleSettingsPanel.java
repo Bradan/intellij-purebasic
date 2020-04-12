@@ -33,21 +33,21 @@ public class PureBasicModuleSettingsPanel {
     private JTable listTargets;
     private PureBasicTargetSettingsPanel panelTargetOptions;
 
-    private PureBasicModuleSettings.State state;
+    private PureBasicModuleSettingsState state;
 
     private int editingTarget;
 
-    public PureBasicModuleSettingsPanel(PureBasicModuleSettings.State state) {
+    public PureBasicModuleSettingsPanel(PureBasicModuleSettingsState state) {
         this.editingTarget = -1;
 
         if (state != null) {
             try {
-                this.state = (PureBasicModuleSettings.State) state.clone();
+                this.state = (PureBasicModuleSettingsState) state.clone();
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
             }
         } else {
-            this.state = new PureBasicModuleSettings.State();
+            this.state = new PureBasicModuleSettingsState();
         }
 
         final DefaultTableModel dm = new DefaultTableModel();
@@ -107,7 +107,7 @@ public class PureBasicModuleSettingsPanel {
         return root;
     }
 
-    public PureBasicModuleSettings.State getState() {
+    public PureBasicModuleSettingsState getState() {
         return this.state;
     }
 }

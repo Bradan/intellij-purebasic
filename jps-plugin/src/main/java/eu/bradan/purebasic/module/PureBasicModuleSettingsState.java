@@ -21,29 +21,44 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.settings;
+package eu.bradan.purebasic.module;
 
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.components.StoragePathMacros;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import java.util.LinkedList;
+import java.util.Objects;
 
-@State(name = "PureBasicCompiler", storages = {@Storage(StoragePathMacros.NON_ROAMABLE_FILE)})
-public class PureBasicCompilerSettings implements PersistentStateComponent<PureBasicCompilerSettingsState> {
+public class PureBasicModuleSettingsState {
+    public LinkedList<PureBasicTargetSettings> targetOptions;
 
-    public PureBasicCompilerSettingsState state = new PureBasicCompilerSettingsState();
+    public PureBasicModuleSettingsState() {
+        targetOptions = new LinkedList<>();
+    }
 
-    @Nullable
     @Override
-    public PureBasicCompilerSettingsState getState() {
+    protected Object clone() throws CloneNotSupportedException {
+        PureBasicModuleSettingsState state;
+        try {
+            state = (PureBasicModuleSettingsState) super.clone();
+        } catch (CloneNotSupportedException e) {
+            state = new PureBasicModuleSettingsState();
+        }
+        for (PureBasicTargetSettings to : targetOptions) {
+            state.targetOptions.add((PureBasicTargetSettings) to.clone());
+        }
         return state;
     }
 
     @Override
-    public void loadState(@NotNull PureBasicCompilerSettingsState state) {
-        this.state = state;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PureBasicModuleSettingsState)) return false;
+
+        PureBasicModuleSettingsState state = (PureBasicModuleSettingsState) o;
+
+        return Objects.equals(targetOptions, state.targetOptions);
     }
 
+    @Override
+    public int hashCode() {
+        return targetOptions != null ? targetOptions.hashCode() : 0;
+    }
 }

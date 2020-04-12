@@ -24,6 +24,9 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.openapi.diagnostic.Logger;
+import eu.bradan.purebasic.model.JpsPureBasicModuleElement;
+import eu.bradan.purebasic.model.PureBasicSourceRootType;
+import eu.bradan.purebasic.module.PureBasicTargetSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildRootIndex;
 import org.jetbrains.jps.builders.BuildTarget;
@@ -35,19 +38,20 @@ import org.jetbrains.jps.indices.IgnoredFileIndex;
 import org.jetbrains.jps.indices.ModuleExcludeIndex;
 import org.jetbrains.jps.model.JpsModel;
 import org.jetbrains.jps.model.module.JpsModule;
+import org.jetbrains.jps.model.module.JpsModuleSourceRoot;
+import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescriptor> {
     private static final Logger LOG = Logger.getInstance(PureBasicBuildTarget.class);
 
-    protected PureBasicBuildTarget() {
+    private JpsModule module;
+
+    protected PureBasicBuildTarget(JpsModule module) {
         super(PureBasicBuildTargetType.getInstance());
-        LOG.info("PureBasicBuildTarget");
+        this.module = module;
     }
 
     @Override
@@ -55,30 +59,40 @@ public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescript
         return "PureBasic";
     }
 
+    @NotNull
     @Override
     public Collection<BuildTarget<?>> computeDependencies(BuildTargetRegistry buildTargetRegistry,
                                                           TargetOutputIndex targetOutputIndex) {
-        return null;
+        return Collections.emptyList();
     }
 
     @NotNull
     @Override
-    public List<PureBasicBuildRootDescriptor> computeRootDescriptors(JpsModel jpsModel,
+    public List<PureBasicBuildRootDescriptor> computeRootDescriptors(@NotNull JpsModel jpsModel,
                                                                      ModuleExcludeIndex moduleExcludeIndex,
                                                                      IgnoredFileIndex ignoredFileIndex,
                                                                      BuildDataPaths buildDataPaths) {
-        LinkedList<PureBasicBuildRootDescriptor> results = new LinkedList<>();
+        LinkedList<PureBasicBuildRootDescriptor> rootDescriptors = new LinkedList<>();
 
-        for (JpsModule module : jpsModel.getProject().getModules()) {
-            LOG.info("Module: " + module.getModuleType().toString() + " Properties: " + module.getProperties().toString());
+        for (String contentRoot : module.getContentRootsList().getUrls()) {
+            rootDescriptors.add(new PureBasicBuildRootDescriptor(this, new File(contentRoot)));
         }
 
-        return Collections.emptyList();
+//        JpsPureBasicModuleElement properties = (JpsPureBasicModuleElement) module.getProperties();
+//        HashSet<String> inputFiles = new HashSet<>();
+//        for (PureBasicTargetSettings settings : properties.getSettings().targetOptions) {
+//            inputFiles.add(settings.inputFile);
+//        }
+//        for (String filename : inputFiles) {
+//            rootDescriptors.add(new PureBasicBuildRootDescriptor(this, new File(filename)));
+//        }
+//        LOG.info("computeRootDescriptors " + String.join(", ", inputFiles));
+        return rootDescriptors;
     }
 
     @Override
-    public PureBasicBuildRootDescriptor findRootDescriptor(String s, BuildRootIndex buildRootIndex) {
-        LOG.info("Module: findRootDescriptor: " + s);
+    public PureBasicBuildRootDescriptor findRootDescriptor(String rootId, BuildRootIndex buildRootIndex) {
+        LOG.info("findRootDescriptor for " + rootId);
         return null;
     }
 
@@ -92,5 +106,9 @@ public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescript
     @Override
     public Collection<File> getOutputRoots(CompileContext compileContext) {
         return Collections.emptyList();
+    }
+
+    public JpsModule getModule() {
+        return this.module;
     }
 }

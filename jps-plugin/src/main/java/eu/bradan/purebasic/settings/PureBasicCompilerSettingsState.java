@@ -21,9 +21,28 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.psi.impl;
+package eu.bradan.purebasic.settings;
 
-import eu.bradan.purebasic.psi.PureBasicVariableDeclaration;
+import java.util.LinkedList;
+import java.util.Objects;
 
-public class PureBasicPsiImplUtil {
+public class PureBasicCompilerSettingsState {
+    public LinkedList<String> sdks;
+
+    public PureBasicCompilerSettingsState() {
+        sdks = new LinkedList<>();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PureBasicCompilerSettingsState state = (PureBasicCompilerSettingsState) o;
+        return Objects.equals(sdks, state.sdks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sdks);
+    }
 }

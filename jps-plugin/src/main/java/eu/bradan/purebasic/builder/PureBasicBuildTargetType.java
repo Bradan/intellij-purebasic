@@ -23,18 +23,21 @@
 
 package eu.bradan.purebasic.builder;
 
+import eu.bradan.purebasic.model.JpsPureBasicModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildTargetLoader;
 import org.jetbrains.jps.builders.BuildTargetType;
 import org.jetbrains.jps.model.JpsModel;
+import org.jetbrains.jps.model.module.JpsModule;
 
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class PureBasicBuildTargetType extends BuildTargetType<PureBasicBuildTarget> {
     private static PureBasicBuildTargetType instance = null;
 
-    protected PureBasicBuildTargetType() {
+    private PureBasicBuildTargetType() {
         super("PureBasic");
     }
 
@@ -48,18 +51,24 @@ public class PureBasicBuildTargetType extends BuildTargetType<PureBasicBuildTarg
     @NotNull
     @Override
     public List<PureBasicBuildTarget> computeAllTargets(@NotNull JpsModel jpsModel) {
-        System.out.println("computeAllTargets");
-        return Collections.singletonList(new PureBasicBuildTarget());
+        LinkedList<PureBasicBuildTarget> targets = new LinkedList<>();
+        for (JpsModule module : jpsModel.getProject().getModules(JpsPureBasicModuleType.INSTANCE)) {
+            targets.add(new PureBasicBuildTarget(module));
+        }
+        return targets;
     }
 
     @NotNull
     @Override
     public BuildTargetLoader<PureBasicBuildTarget> createLoader(@NotNull JpsModel jpsModel) {
-        System.out.println("createLoader");
         return new BuildTargetLoader<PureBasicBuildTarget>() {
             @Override
-            public PureBasicBuildTarget createTarget(@NotNull String s) {
-                System.out.println("createTarget " + s);
+            public PureBasicBuildTarget createTarget(@NotNull String targetId) {
+                for (JpsModule module : jpsModel.getProject().getModules(JpsPureBasicModuleType.INSTANCE)) {
+                    if (Objects.equals(module.getName(), targetId)) {
+                        return new PureBasicBuildTarget(module);
+                    }
+                }
                 return null;
             }
         };

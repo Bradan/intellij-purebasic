@@ -21,9 +21,37 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.psi.impl;
+package eu.bradan.purebasic.model;
 
-import eu.bradan.purebasic.psi.PureBasicVariableDeclaration;
+import eu.bradan.purebasic.module.PureBasicModuleSettingsState;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jps.model.ex.JpsCompositeElementBase;
 
-public class PureBasicPsiImplUtil {
+public class JpsPureBasicModuleElement extends JpsCompositeElementBase<JpsPureBasicModuleElement> {
+    private PureBasicModuleSettingsState settings;
+
+    protected JpsPureBasicModuleElement(PureBasicModuleSettingsState settings) {
+        super();
+        this.settings = settings;
+    }
+
+    protected JpsPureBasicModuleElement() {
+        super();
+        this.settings = new PureBasicModuleSettingsState();
+    }
+
+    protected JpsPureBasicModuleElement(JpsCompositeElementBase<JpsPureBasicModuleElement> original) {
+        super(original);
+        this.settings = ((JpsPureBasicModuleElement) original).getSettings();
+    }
+
+    @NotNull
+    @Override
+    public JpsPureBasicModuleElement createCopy() {
+        return new JpsPureBasicModuleElement(this);
+    }
+
+    public PureBasicModuleSettingsState getSettings() {
+        return settings;
+    }
 }

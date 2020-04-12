@@ -24,15 +24,32 @@
 package eu.bradan.purebasic.module;
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
+import com.intellij.ide.util.projectWizard.ModuleBuilderListener;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class PureBasicModuleBuilder extends ModuleBuilder {
+public class PureBasicModuleBuilder extends ModuleBuilder implements ModuleBuilderListener {
+    public PureBasicModuleBuilder() {
+        super();
+        addListener(this);
+    }
+
+    @Override
+    public void setupRootModel(@NotNull ModifiableRootModel modifiableRootModel) throws ConfigurationException {
+        super.setupRootModel(modifiableRootModel);
+
+        doAddContentEntry(modifiableRootModel);
+    }
+
     @Override
     public ModuleType<PureBasicModuleBuilder> getModuleType() {
         return PureBasicModuleType.getInstance();
@@ -52,5 +69,9 @@ public class PureBasicModuleBuilder extends ModuleBuilder {
             public void updateDataModel() {
             }
         }};
+    }
+
+    @Override
+    public void moduleCreated(@NotNull Module module) {
     }
 }
