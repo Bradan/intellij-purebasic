@@ -46,9 +46,9 @@ import java.util.List;
 public class JpsPureBasicModelSerializerExtension extends JpsModelSerializerExtension {
     private static final Logger LOG = Logger.getInstance(JpsPureBasicModelSerializerExtension.class);
 
-    private static final String MODULE_TYPE = "PUREBASIC_MODULE";
-    private static final String MODULE_COMPONENT_NAME = "PureBasicModule";
-    private static final String SOURCE_ROOT = "PUREBASIC_SOURCE";
+    public static final String MODULE_TYPE = "PUREBASIC_MODULE";
+    public static final String MODULE_COMPONENT_NAME = "PureBasicModule";
+    public static final String SOURCE_ROOT = "PUREBASIC_SOURCE";
 
     public JpsPureBasicModelSerializerExtension() {
         super();

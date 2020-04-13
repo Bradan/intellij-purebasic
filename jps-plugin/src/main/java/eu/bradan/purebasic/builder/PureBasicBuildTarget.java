@@ -24,9 +24,6 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.openapi.diagnostic.Logger;
-import eu.bradan.purebasic.model.JpsPureBasicModuleElement;
-import eu.bradan.purebasic.model.PureBasicSourceRootType;
-import eu.bradan.purebasic.module.PureBasicTargetSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildRootIndex;
 import org.jetbrains.jps.builders.BuildTarget;
@@ -38,11 +35,11 @@ import org.jetbrains.jps.indices.IgnoredFileIndex;
 import org.jetbrains.jps.indices.ModuleExcludeIndex;
 import org.jetbrains.jps.model.JpsModel;
 import org.jetbrains.jps.model.module.JpsModule;
-import org.jetbrains.jps.model.module.JpsModuleSourceRoot;
-import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescriptor> {
     private static final Logger LOG = Logger.getInstance(PureBasicBuildTarget.class);
@@ -56,7 +53,7 @@ public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescript
 
     @Override
     public String getId() {
-        return "PureBasic";
+        return this.module.getName();
     }
 
     @NotNull
@@ -72,34 +69,18 @@ public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescript
                                                                      ModuleExcludeIndex moduleExcludeIndex,
                                                                      IgnoredFileIndex ignoredFileIndex,
                                                                      BuildDataPaths buildDataPaths) {
-        LinkedList<PureBasicBuildRootDescriptor> rootDescriptors = new LinkedList<>();
-
-        for (String contentRoot : module.getContentRootsList().getUrls()) {
-            rootDescriptors.add(new PureBasicBuildRootDescriptor(this, new File(contentRoot)));
-        }
-
-//        JpsPureBasicModuleElement properties = (JpsPureBasicModuleElement) module.getProperties();
-//        HashSet<String> inputFiles = new HashSet<>();
-//        for (PureBasicTargetSettings settings : properties.getSettings().targetOptions) {
-//            inputFiles.add(settings.inputFile);
-//        }
-//        for (String filename : inputFiles) {
-//            rootDescriptors.add(new PureBasicBuildRootDescriptor(this, new File(filename)));
-//        }
-//        LOG.info("computeRootDescriptors " + String.join(", ", inputFiles));
-        return rootDescriptors;
+        return Collections.emptyList();
     }
 
     @Override
     public PureBasicBuildRootDescriptor findRootDescriptor(String rootId, BuildRootIndex buildRootIndex) {
-        LOG.info("findRootDescriptor for " + rootId);
         return null;
     }
 
     @NotNull
     @Override
     public String getPresentableName() {
-        return "PureBasic Build Target";
+        return "PureBasic '" + getId() + "' Target";
     }
 
     @NotNull
@@ -110,5 +91,20 @@ public class PureBasicBuildTarget extends BuildTarget<PureBasicBuildRootDescript
 
     public JpsModule getModule() {
         return this.module;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PureBasicBuildTarget)) return false;
+
+        PureBasicBuildTarget that = (PureBasicBuildTarget) o;
+
+        return module != null ? module.equals(that.module) : that.module == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return module != null ? module.hashCode() : 0;
     }
 }

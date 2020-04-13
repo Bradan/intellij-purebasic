@@ -23,6 +23,9 @@
 
 package eu.bradan.purebasic.builder;
 
+import com.intellij.openapi.diagnostic.Logger;
+import eu.bradan.purebasic.module.PureBasicTargetSettings;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
@@ -32,21 +35,14 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 
 public class PureBasicCompiler {
+    private static final Logger LOG = Logger.getInstance(PureBasicBuilder.class);
+
     private String sdkHome;
     private File compiler;
 
     private PureBasicCompiler(String sdkHome, File compiler) {
         this.sdkHome = sdkHome;
         this.compiler = compiler;
-    }
-
-    public String getSdkHome() {
-        return sdkHome;
-    }
-
-    public void setSdkHome(String sdkHome) {
-        this.sdkHome = sdkHome;
-        this.compiler = getCompilerExecutable(sdkHome);
     }
 
     @Nullable
@@ -66,6 +62,25 @@ public class PureBasicCompiler {
         }
 
         return null;
+    }
+
+    @Nullable
+    public static PureBasicCompiler getPureBasicCompiler(String sdkHome) {
+        File compiler = getCompilerExecutable(sdkHome);
+        if (compiler != null) {
+            return new PureBasicCompiler(sdkHome, compiler);
+        }
+
+        return null;
+    }
+
+    public String getSdkHome() {
+        return sdkHome;
+    }
+
+    public void setSdkHome(String sdkHome) {
+        this.sdkHome = sdkHome;
+        this.compiler = getCompilerExecutable(sdkHome);
     }
 
     @Nullable
@@ -91,13 +106,22 @@ public class PureBasicCompiler {
         return null;
     }
 
-    @Nullable
-    public static PureBasicCompiler getPureBasicCompiler(String sdkHome) {
-        File compiler = getCompilerExecutable(sdkHome);
-        if (compiler != null) {
-            return new PureBasicCompiler(sdkHome, compiler);
+    @NotNull
+    public BufferedReader compile(PureBasicTargetSettings targetSettings, @NotNull String contentRoot) throws IOException {
+        if (contentRoot.startsWith("file://")) {
+            contentRoot = contentRoot.substring("file://".length());
         }
 
-        return null;
+        final File inputFile = Paths.get(contentRoot, targetSettings.inputFile).toAbsolutePath().toFile();
+        final File outputFile = Paths.get(contentRoot, targetSettings.outputFile).toAbsolutePath().toFile();
+
+        LOG.info("Calling compiler for " + inputFile.toString() + " => " + outputFile.toString());
+
+        Runtime rt = Runtime.getRuntime();
+        Process proc = rt.exec(new String[]{compiler.getAbsolutePath(),
+                "-e", outputFile.toString(),
+                inputFile.toString()});
+
+        return new BufferedReader(new InputStreamReader(proc.getInputStream()));
     }
 }

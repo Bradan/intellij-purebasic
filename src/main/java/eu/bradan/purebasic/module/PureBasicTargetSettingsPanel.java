@@ -30,6 +30,8 @@ import eu.bradan.purebasic.settings.PureBasicCompilerSettingsState;
 import eu.bradan.purebasic.ui.FileTextField;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 
 public class PureBasicTargetSettingsPanel extends JPanel {
@@ -72,6 +74,22 @@ public class PureBasicTargetSettingsPanel extends JPanel {
         textFieldOutput.addActionListener(e -> {
             if (targetSettings != null) {
                 targetSettings.outputFile = textFieldOutput.getText();
+            }
+        });
+        textFieldOutput.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (targetSettings != null) targetSettings.outputFile = textFieldOutput.getText();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                if (targetSettings != null) targetSettings.outputFile = textFieldOutput.getText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (targetSettings != null) targetSettings.outputFile = textFieldOutput.getText();
             }
         });
     }

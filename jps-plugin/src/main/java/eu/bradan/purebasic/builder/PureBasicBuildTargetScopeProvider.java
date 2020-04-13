@@ -28,6 +28,7 @@ import com.intellij.openapi.compiler.CompileScope;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import eu.bradan.purebasic.model.JpsPureBasicModelSerializerExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.api.CmdlineProtoUtil;
 import org.jetbrains.jps.api.CmdlineRemoteProto.Message.ControllerMessage.ParametersMessage.TargetTypeBuildScope;
@@ -38,24 +39,25 @@ import java.util.List;
 public class PureBasicBuildTargetScopeProvider extends BuildTargetScopeProvider {
     private static final Logger LOG = Logger.getInstance(PureBasicBuildTargetScopeProvider.class);
 
-    private static final String MODULE_TYPE_ID = "PUREBASIC_MODULE";
-
     @NotNull
     @Override
     public List<TargetTypeBuildScope> getBuildTargetScopes(@NotNull CompileScope baseScope, @NotNull Project project, boolean forceBuild) {
-        LinkedList<TargetTypeBuildScope> result = new LinkedList<>(super.getBuildTargetScopes(baseScope, project, forceBuild));
+        LinkedList<TargetTypeBuildScope> result = new LinkedList<>();
 
         LinkedList<String> moduleNames = new LinkedList<>();
         for (Module m : baseScope.getAffectedModules()) {
-            if (MODULE_TYPE_ID.equals(m.getModuleTypeName())) {
+            if (JpsPureBasicModelSerializerExtension.MODULE_TYPE.equals(m.getModuleTypeName())) {
                 moduleNames.add(m.getName());
             }
         }
 
+        LOG.info("Modules: " + String.join(", ", moduleNames));
+        LOG.info("TargetType Id: " + PureBasicBuildTargetType.getInstance().getTypeId());
+
         result.add(CmdlineProtoUtil.createTargetsScope(
                 PureBasicBuildTargetType.getInstance().getTypeId(),
                 moduleNames,
-                forceBuild));
+                true));
         return result;
     }
 }
