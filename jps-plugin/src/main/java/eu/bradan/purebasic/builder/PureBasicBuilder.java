@@ -32,13 +32,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.builders.BuildOutputConsumer;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
 import org.jetbrains.jps.incremental.CompileContext;
-import org.jetbrains.jps.incremental.ProjectBuildException;
 import org.jetbrains.jps.incremental.TargetBuilder;
 import org.jetbrains.jps.incremental.messages.BuildMessage;
 import org.jetbrains.jps.incremental.messages.CompilerMessage;
 import org.jetbrains.jps.model.module.JpsModule;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -59,24 +57,57 @@ public class PureBasicBuilder extends TargetBuilder<PureBasicBuildRootDescriptor
     public void build(@NotNull PureBasicBuildTarget target,
                       @NotNull DirtyFilesHolder<PureBasicBuildRootDescriptor, PureBasicBuildTarget> holder,
                       @NotNull BuildOutputConsumer outputConsumer,
-                      @NotNull CompileContext context) throws ProjectBuildException, IOException {
+                      @NotNull CompileContext context) {
         JpsModule module = target.getModule();
         JpsPureBasicModuleElement element = (JpsPureBasicModuleElement) module.getProperties();
         PureBasicModuleSettingsState settings = element.getSettings();
 
+        PureBasicCompiler.CompileMessageLogger logger = new PureBasicCompiler.CompileMessageLogger() {
+            @Override
+            public void logInfo(String message, String file, int line) {
+                if (file != null) {
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.PROGRESS, message, file, line,
+                            -1L, -1L, line, -1L));
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.INFO, message, file, line,
+                            -1L, -1L, line, -1L));
+                } else {
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.PROGRESS, message));
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.INFO, message));
+                }
+            }
+
+            @Override
+            public void logError(String message, String file, int line) {
+                if (file != null) {
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.PROGRESS, message, file, line,
+                            -1L, -1L, line, -1L));
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.ERROR, message, file, line,
+                            -1L, -1L, line, -1L));
+                } else {
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.PROGRESS, message));
+                    context.processMessage(new CompilerMessage("PureBasic",
+                            BuildMessage.Kind.ERROR, message));
+                }
+            }
+        };
+
         final String contentRoot = module.getContentRootsList().getUrls().get(0);
-        LOG.info("Content root: " + contentRoot);
         for (PureBasicTargetSettings targetSettings : settings.targetOptions) {
             PureBasicCompiler compiler = JpsPureBasicCompilers.INSTANCE.getCompilerByVersion(targetSettings.sdk);
             if (compiler != null) {
                 try {
-                    BufferedReader reader = compiler.compile(targetSettings, contentRoot);
-                    String line;
-                    while ((line = reader.readLine()) != null) {
+                    int exitCode = compiler.compile(targetSettings, contentRoot, logger);
+
+                    if (exitCode != 0) {
                         context.processMessage(new CompilerMessage("PureBasic",
-                                BuildMessage.Kind.PROGRESS, line));
-                        context.processMessage(new CompilerMessage("PureBasic",
-                                BuildMessage.Kind.INFO, line));
+                                BuildMessage.Kind.ERROR, "Exit code: " + exitCode));
                     }
                 } catch (IOException ignored) {
                 }

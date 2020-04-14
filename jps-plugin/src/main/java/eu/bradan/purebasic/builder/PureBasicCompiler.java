@@ -33,6 +33,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PureBasicCompiler {
     private static final Logger LOG = Logger.getInstance(PureBasicBuilder.class);
@@ -106,8 +109,8 @@ public class PureBasicCompiler {
         return null;
     }
 
-    @NotNull
-    public BufferedReader compile(PureBasicTargetSettings targetSettings, @NotNull String contentRoot) throws IOException {
+    public int compile(PureBasicTargetSettings targetSettings, @NotNull String contentRoot,
+                       CompileMessageLogger logger) throws IOException {
         if (contentRoot.startsWith("file://")) {
             contentRoot = contentRoot.substring("file://".length());
         }
@@ -115,13 +118,64 @@ public class PureBasicCompiler {
         final File inputFile = Paths.get(contentRoot, targetSettings.inputFile).toAbsolutePath().toFile();
         final File outputFile = Paths.get(contentRoot, targetSettings.outputFile).toAbsolutePath().toFile();
 
-        LOG.info("Calling compiler for " + inputFile.toString() + " => " + outputFile.toString());
+        HashMap<String, String> envVars = new HashMap<>(System.getenv());
+        envVars.put("PUREBASIC_HOME", sdkHome);
+        envVars.put("SPIDERBASIC_HOME", sdkHome);
+
+        String[] env = envVars.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .toArray(String[]::new);
 
         Runtime rt = Runtime.getRuntime();
-        Process proc = rt.exec(new String[]{compiler.getAbsolutePath(),
-                "-e", outputFile.toString(),
-                inputFile.toString()});
 
-        return new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        final String[] command = new String[]{
+                compiler.getAbsolutePath(),
+                "-e", outputFile.toString(),
+                inputFile.toString()
+        };
+
+        Process proc = rt.exec(command, env);
+        BufferedReader outputReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+
+        String line;
+        String errorFile = inputFile.toString();
+
+        Pattern patternErrorInclude = Pattern.compile("Error: in included file '(.*)'");
+        Pattern patternErrorLine = Pattern.compile("(Error: )?Line ([0-9]+) - (.*)");
+
+        while ((line = outputReader.readLine()) != null) {
+            Matcher matchErrorInclude = patternErrorInclude.matcher(line);
+            Matcher matchErrorLine = patternErrorLine.matcher(line);
+
+            if (matchErrorInclude.matches()) {
+                errorFile = matchErrorInclude.group(1);
+            }
+            if (matchErrorLine.matches()) {
+                logger.logError(line, errorFile, Integer.parseInt(matchErrorLine.group(2)));
+            } else {
+                logger.logInfo(line, null, -1);
+            }
+        }
+        while ((line = errorReader.readLine()) != null) {
+            Matcher matchErrorInclude = patternErrorInclude.matcher(line);
+            Matcher matchErrorLine = patternErrorLine.matcher(line);
+
+            if (matchErrorInclude.matches()) {
+                errorFile = matchErrorInclude.group(1);
+            }
+            if (matchErrorLine.matches()) {
+                logger.logError(line, errorFile, Integer.parseInt(matchErrorLine.group(2)));
+            } else {
+                logger.logError(line, null, -1);
+            }
+        }
+        return proc.exitValue();
+    }
+
+    public interface CompileMessageLogger {
+        void logInfo(String message, String file, int line);
+
+        void logError(String message, String file, int line);
     }
 }
