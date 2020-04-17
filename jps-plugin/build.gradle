@@ -20,7 +20,7 @@ intellij {
     // TODO: wait for an explanation why type = 'JPS' does not work
     //       and why it needs the java plugin.
     //       https://intellij-support.jetbrains.com/hc/en-us/community/posts/360000618804-How-to-configure-a-compileServer-plugin-BuilderService-using-the-Gradle-IntelliJ-plugin-?page=1#community_comment_360001536480
-    version '2019.3.4'
+    version '2020.1'
     //type = 'JPS'
     plugins += ['java']
 }

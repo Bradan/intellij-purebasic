@@ -23,7 +23,5 @@
 
 package eu.bradan.purebasic.psi.impl;
 
-import eu.bradan.purebasic.psi.PureBasicVariableDeclaration;
-
 public class PureBasicPsiImplUtil {
 }
