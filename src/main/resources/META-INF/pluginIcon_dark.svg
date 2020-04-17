@@ -3,7 +3,6 @@
         xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:cc="http://creativecommons.org/ns#"
         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-        xmlns:svg="http://www.w3.org/2000/svg"
         xmlns="http://www.w3.org/2000/svg"
         id="svg8"
         version="1.1"
@@ -29,31 +28,27 @@
           id="layer1">
     <g
             id="flowRoot4520-2"
-            style="font-style:normal;font-weight:normal;font-size:40px;line-height:25px;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#c0c0c0;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-            transform="matrix(0.15510456,0,0,0.13463373,-0.24675841,288.91343)"
-            aria-label="Z">
+            style="fill:#c0c0c0;fill-opacity:1;"
+            transform="matrix(0.15510456,0,0,0.13463373,-0.24675841,288.91343)">
       <path
               id="path4528-7"
-              style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:74.66666412px;line-height:68.03149414px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Oblique';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#c0c0c0;fill-opacity:1"
               d="M 20.64323,-1.0207109 H 55.971353 L 54.914062,4.5938722 19.221355,47.213662 H 47.440104 L 46.20052,53.411579 H 9.3046883 L 10.36198,47.796996 45.945312,5.1772055 H 19.440105 Z"/>
     </g>
     <path
             id="rect4531-2"
             d="m 2.2270368,291.76762 h 5.5802718 l -0.3073222,1.07404 H 1.916223 Z"
-            style="fill:#c0c0c0;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/>
+            style="fill:#c0c0c0;fill-opacity:1"/>
     <g
             id="flowRoot4520"
-            style="font-style:normal;font-weight:normal;font-size:40px;line-height:25px;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#ff0101;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-            transform="matrix(0.15510456,0,0,0.13463373,-0.60517506,288.53686)"
-            aria-label="Z">
+            style="fill:#ff0000;fill-opacity:1;"
+            transform="matrix(0.15510456,0,0,0.13463373,-0.60517506,288.53686)">
       <path
               id="path4528"
-              style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:74.66666412px;line-height:68.03149414px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Oblique';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ff0101;fill-opacity:1"
               d="M 20.64323,-1.0207109 H 55.971353 L 54.914062,4.5938722 19.221355,47.213662 H 47.440104 L 46.20052,53.411579 H 9.3046883 L 10.36198,47.796996 45.945312,5.1772055 H 19.440105 Z"/>
     </g>
     <path
             id="rect4531"
             d="m 1.8686201,291.39106 h 5.5802724 l -0.3073222,1.07403 H 1.5578065 Z"
-            style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"/>
+            style="fill:#ff0000;fill-opacity:1"/>
   </g>
 </svg>
