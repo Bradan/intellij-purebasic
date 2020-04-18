@@ -61,10 +61,10 @@ label ::= LABEL_IDENTIFIER ':'
 
 
 // Assignment
-unary_operators ::= '-'|'!'|'~'|'Not'
+unary_operators ::= '-'|'!'|'~'|'Not'|'@'
 binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'|'-'|'*'|'/'|'&'|'|'|'!'|'~'|'<'|'>'|'%'|'And'|'Or'|'XOr'
 
-assignment ::= (identifier_or_call_chained [type_suffix]|CONSTANT) ('='|'+'|'-'|'*'|'/') expression
+assignment ::= ((identifier_or_call_chained|POINTER_IDENTIFIER) [type_suffix]|CONSTANT) ('='|'+'|'-'|'*'|'/') expression
 
 expression ::= '(' expression ')' |
                 (identifier_or_call_chained|atom) binary_operators expression |

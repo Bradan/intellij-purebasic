@@ -32,7 +32,7 @@ NEWLINE=\R
 WHITE_SPACE=[\ \t\f]
 END_OF_LINE_COMMENT=(";")[^\r\n]*
 KEYWORDS="XOr"|"XIncludeFile"|"With"|"While"|"Wend"|"UseModule"|"UnuseModule"|"Until"|"UndefineMacro"|"To"|"Threaded"|"Swap"|"StructureUnion"|"Structure"|"Step"|"Static"|"Shared"|"Select"|"Runtime"|"Return"|"Restore"|"Repeat"|"ReDim"|"Read"|"PrototypeC"|"Prototype"|"Protected"|"ProcedureReturn"|"ProcedureDLL"|"ProcedureCDLL"|"ProcedureC"|"Procedure"|"Or"|"Not"|"Next"|"NewMap"|"NewList"|"Module"|"Map"|"MacroExpandedCount"|"Macro"|"List"|"Interface"|"IncludePath"|"IncludeFile"|"IncludeBinary"|"ImportC"|"Import"|"If"|"Goto"|"Gosub"|"Global"|"ForEver"|"ForEach"|"For"|"FakeReturn"|"Extends"|"EnumerationBinary"|"Enumeration"|"EndWith"|"EndStructureUnion"|"EndStructure"|"EndSelect"|"EndProcedure"|"EndModule"|"EndMacro"|"EndInterface"|"EndImport"|"EndIf"|"EndEnumeration"|"EndDeclareModule"|"EndDataSection"|"End"|"EnableJS"|"EnableExplicit"|"EnableDebugger"|"EnableASM"|"ElseIf"|"Else"|"DisableJS"|"DisableExplicit"|"DisableDebugger"|"DisableASM"|"Dim"|"Define"|"Default"|"DeclareModule"|"DeclareDLL"|"DeclareCDLL"|"DeclareC"|"Declare"|"DebugLevel"|"Debug"|"DataSection"|"Data"|"Continue"|"CompilerWarning"|"CompilerSelect"|"CompilerIf"|"CompilerError"|"CompilerEndSelect"|"CompilerEndIf"|"CompilerElseIf"|"CompilerElse"|"CompilerDefault"|"CompilerCase"|"Case"|"CallDebugger"|"Break"|"As"|"Array"|"And"|"Align"
-OPERATORS="("|")"|"<="|"=<"|">="|"=>"|"<>"|"<<"|">>"|"="|"+"|"-"|"*"|"/"|"&"|"|"|"!"|"~"|"<"|">"|"%"|"."|","|"\\"|"#"|"::"
+OPERATORS="("|")"|"<="|"=<"|">="|"=>"|"<>"|"<<"|">>"|"="|"+"|"-"|"*"|"/"|"&"|"|"|"!"|"~"|"<"|">"|"%"|"."|","|"\\"|"#"|"::"|"@"
 STRING_DELIM="\""
 CHAR_DELIM="'"
 NUMBER=("$"|"")[0-9]+(\.[0-9]+|"")
