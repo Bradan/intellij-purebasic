@@ -48,7 +48,7 @@ block_statement ::= macro|comp_condition|procedure|with|structure|interface|impo
 simple_statement ::= include|includebinary|includepath|usemodule|unusemodule|undefinemacro|swap|runtime|return|restore|
                      read|prototype|macroexpandedcount|goto|gosub|fakereturn|end|enablejs|enableexplicit|enabledebugger|
                      enableasm|disablejs|disableexplicit|disabledebugger|disableasm|debuglevel|debug|continue|break|
-                     compilerwarning|compilererror|calldebugger|dataentry|procedurereturn|assignment|call|declaration|
+                     compilerwarning|compilererror|calldebugger|data_list|procedurereturn|assignment|call|declaration|
                      label
 
 statements ::= statement (sep statement)*
@@ -159,8 +159,8 @@ import_foot ::= 'EndImport'
 // DataSection
 datasection ::= datasection_head [sep statements] sep datasection_foot
 
-data_list ::= CONSTANT|NUMBER|STRING [','data_list]
-dataentry ::= 'Data' [type_suffix] data_list
+data_entry ::= CONSTANT|NUMBER|STRING
+data_list ::= 'Data' [type_suffix] data_entry (',' data_entry)*
 
 datasection_head ::= 'DataSection'
 datasection_foot ::= 'EndDataSection'
