@@ -3,7 +3,27 @@ import org.jetbrains.grammarkit.tasks.*
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.4.18'
-    id "org.jetbrains.grammarkit" version "2020.1.2"
+    id 'org.jetbrains.grammarkit' version '2020.1.2'
+}
+
+allprojects {
+    sourceCompatibility = 1.8
+    apply plugin: 'org.jetbrains.intellij'
+
+    // See https://github.com/JetBrains/gradle-intellij-plugin/
+    intellij {
+        version '2020.1'
+        downloadSources true
+        pluginName 'PureBasic'
+    }
+
+    dependencies {
+        testCompile group: "junit", name: "junit", version: "4.12"
+    }
+
+    repositories {
+        mavenCentral()
+    }
 }
 
 apply plugin: "org.jetbrains.grammarkit"
@@ -11,21 +31,10 @@ apply plugin: "org.jetbrains.grammarkit"
 group "eu.bradan.purebasic"
 version "1.0-SNAPSHOT"
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    implementation project(":PureBasic-jps-plugin")
-    testCompile group: "junit", name: "junit", version: "4.12"
+    compile project('jps-plugin')
 }
-
-// See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2020.1'
-    plugins += ["java"]
 }
 patchPluginXml {
     changeNotes '''
@@ -35,11 +44,16 @@ patchPluginXml {
 runIde {
     jvmArgs += ['-Dcompiler.process.debug.port=5005']
 }
-
 sourceSets {
     main {
         java.srcDirs += "src/main/gen"
     }
+}
+
+task createFatJar(type: Jar) {
+    baseName = 'IntelliJ-PureBasic'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 task generatePureBasicLexer(type: GenerateLexer) {

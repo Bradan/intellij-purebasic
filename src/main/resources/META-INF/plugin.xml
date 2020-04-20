@@ -10,6 +10,10 @@
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
+
+    <!-- TODO: check how to get rid of this, such that we can build in any IntelliJ platform.
+               Without this we won't have jps-builders.jar, which contains the BuilderService
+               classes etc. -->
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -34,7 +38,7 @@
 
         <colorSettingsPage implementation="eu.bradan.purebasic.settings.PureBasicColorSettingsPage"/>
 
-        <compileServer.plugin classpath="PureBasic-jps-plugin-1.0-SNAPSHOT.jar"/>
+        <compileServer.plugin classpath="jps-plugin.jar"/>
         <compiler.buildTargetScopeProvider
                 implementation="eu.bradan.purebasic.builder.PureBasicBuildTargetScopeProvider"/>
 
