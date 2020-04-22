@@ -47,7 +47,7 @@ public class PureBasicHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey CONSTANT =
             createTextAttributesKey("PUREBASIC_CONSTANT", DefaultLanguageHighlighterColors.CONSTANT);
     public static final TextAttributesKey IDENTIFIER =
-            createTextAttributesKey("PUREBASIC_IDENTIFIER", DefaultLanguageHighlighterColors.GLOBAL_VARIABLE);
+            createTextAttributesKey("PUREBASIC_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER);
     public static final TextAttributesKey INLINE_ASM =
             createTextAttributesKey("PUREBASIC_ASM", DefaultLanguageHighlighterColors.CONSTANT);
     public static final TextAttributesKey NUMBER =
