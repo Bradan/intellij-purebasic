@@ -53,7 +53,6 @@ simple_statement ::= include|includebinary|includepath|usemodule|unusemodule|und
 
 statements ::= statement (sep statement)*
 
-private any_identifier ::= CONSTANT|IDENTIFIER|POINTER_IDENTIFIER
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
 type_suffix ::= '.' (pseudo_types|IDENTIFIER)
 
@@ -71,11 +70,15 @@ expression ::= '(' expression ')' |
                  unary_operators expression |
                 (identifier_or_call_chained|atom)
 
-module ::= (IDENTIFIER '::')+
-private any_identifier_or_call ::= call|IDENTIFIER|POINTER_IDENTIFIER
-private identifier_or_call ::= call|IDENTIFIER
-private identifier_or_call_chained ::= ['\'|module|any_identifier_or_call'\'] (identifier_or_call '\')* identifier_or_call
-atom ::= NUMBER|any_identifier|CHARACTER|STRING
+module_path_element ::= IDENTIFIER
+module_path ::= ['::'] (module_path_element '::')*
+structure_path_element ::= (IDENTIFIER|POINTER_IDENTIFIER|call)
+structure_path ::= ['\'] (structure_path_element '\')*
+identifier_chained ::= [module_path] [structure_path] IDENTIFIER
+call_chained ::= [module_path] [structure_path] call
+private identifier_or_call_chained ::= identifier_chained | call_chained
+
+atom ::= NUMBER|CONSTANT|IDENTIFIER|POINTER_IDENTIFIER|CHARACTER|STRING
 
 // Declarations
 declaration ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
@@ -103,7 +106,7 @@ procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern
 
 procedure ::= procedure_head [sep statements] sep procedure_foot
 
-private parameters_decl_var ::= any_identifier [type_suffix]
+private parameters_decl_var ::= (IDENTIFIER|POINTER_IDENTIFIER) [type_suffix]
 private parameters_decl_array ::= 'Array' IDENTIFIER [type_suffix] '(' NUMBER ')'
 private parameters_decl_list ::= 'List' IDENTIFIER [type_suffix] '(' ')'
 private parameters_decl_map ::= 'Map' IDENTIFIER [type_suffix] '(' ')'
@@ -226,7 +229,7 @@ usemodule ::= 'UseModule' IDENTIFIER
 unusemodule ::= 'UnuseModule' IDENTIFIER
 undefinemacro ::= 'UndefineMacro' IDENTIFIER
 swap ::= 'Swap' identifier_or_call_chained ',' identifier_or_call_chained
-runtime ::= 'Runtime' (CONSTANT|any_identifier|procedure|enumeration)
+runtime ::= 'Runtime' (CONSTANT|CONSTANT|IDENTIFIER|POINTER_IDENTIFIER|procedure|enumeration)
 return ::= 'Return'
 restore ::= 'Restore' IDENTIFIER
 read ::= 'Read' [type_suffix] IDENTIFIER
