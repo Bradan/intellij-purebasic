@@ -80,10 +80,11 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
             classes.addAll(Arrays.asList(leafElements));
             classes.addAll(Arrays.asList(blockElements));
             // TODO: create findChildrenOfAnyType which doesn't descent found elements
-            return PsiTreeUtil.findChildrenOfAnyType(element, classes.toArray(new Class[0]))
+            //noinspection RedundantCast
+            return (TreeElement[]) PsiTreeUtil.findChildrenOfAnyType(element, classes.toArray(new Class[0]))
                     .stream()
                     .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
-                    .toArray(PureBasicStructureViewElement[]::new);
+                    .toArray(TreeElement[]::new);
         }
 
         return new TreeElement[0];
