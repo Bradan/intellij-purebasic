@@ -118,7 +118,7 @@ map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] 
 ////////////////////////
 
 // Procedure
-private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' parameters_decl ')'
+private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' [parameters_decl] ')'
 procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern
 
 procedure ::= procedure_head [sep statements] sep procedure_foot
@@ -137,7 +137,7 @@ procedure_foot ::= 'EndProcedure'
 // Macro
 macro_parameter_decl ::= parse_identifier
 macro_parameter_decl_list ::= macro_parameter_decl (',' macro_parameter_decl)*
-private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' macro_parameter_decl_list ')']
+private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
 macro ::= macro_head [sep statements] sep macro_foot
 
