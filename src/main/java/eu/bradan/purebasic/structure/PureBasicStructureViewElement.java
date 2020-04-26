@@ -79,6 +79,7 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
             LinkedList<Class> classes = new LinkedList<>();
             classes.addAll(Arrays.asList(leafElements));
             classes.addAll(Arrays.asList(blockElements));
+            // TODO: create findChildrenOfAnyType which doesn't descent found elements
             return PsiTreeUtil.findChildrenOfAnyType(element, classes.toArray(new Class[0]))
                     .stream()
                     .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
