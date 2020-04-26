@@ -42,6 +42,23 @@ pureBasicFile ::= [sep] statements [sep]
 
 sep ::= SEPARATOR*
 
+parse_label_identifier ::= LABEL_IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+parse_identifier ::= IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+parse_pointer_identifier ::= POINTER_IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+parse_constant_identifier ::= CONSTANT_IDENTIFIER {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicNamedElementImpl"
+            implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
+        }
+
 statement ::= simple_statement|block_statement|INLINE_ASM|COMMENT
 block_statement ::= macro|comp_condition|procedure|with|structure|interface|import|datasection|
                     enumeration|declaremodule|definemodule|loop|condition
@@ -54,45 +71,45 @@ simple_statement ::= include|includebinary|includepath|usemodule|unusemodule|und
 statements ::= statement (sep statement)*
 
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
-type_suffix ::= '.' (pseudo_types|IDENTIFIER)
+type_suffix ::= '.' (pseudo_types|parse_identifier)
 
-label ::= LABEL_IDENTIFIER ':'
+label ::= parse_label_identifier ':'
 
 
 // Assignment
 unary_operators ::= '-'|'!'|'~'|'Not'|'@'|'?'
 binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'|'-'|'*'|'/'|'&'|'|'|'!'|'~'|'<'|'>'|'%'|'And'|'Or'|'XOr'
 
-assignment ::= ((identifier_or_call_chained|POINTER_IDENTIFIER) [type_suffix]|CONSTANT) ('='|'+'|'-'|'*'|'/') expression
+assignment ::= ((identifier_or_call_chained|parse_pointer_identifier) [type_suffix]|parse_constant_identifier) ('='|'+'|'-'|'*'|'/') expression
 
 expression ::= '(' expression ')' |
                 (identifier_or_call_chained|atom) binary_operators expression |
                  unary_operators expression |
                 (identifier_or_call_chained|atom)
 
-module_path_element ::= IDENTIFIER
+module_path_element ::= parse_identifier
 module_path ::= ['::'] (module_path_element '::')*
-structure_path_element ::= (IDENTIFIER|POINTER_IDENTIFIER|call)
+structure_path_element ::= (parse_identifier|parse_pointer_identifier|call)
 structure_path ::= ['\'] (structure_path_element '\')*
-identifier_chained ::= [module_path] [structure_path] IDENTIFIER
+identifier_chained ::= [module_path] [structure_path] parse_identifier
 call_chained ::= [module_path] [structure_path] call
 private identifier_or_call_chained ::= identifier_chained | call_chained
 
-atom ::= NUMBER|CONSTANT|IDENTIFIER|POINTER_IDENTIFIER|CHARACTER|STRING
+atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING
 
 // Declarations
 declaration ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
 declaration_scope ::= 'Global'|'Shared'|'Protected'|'Static'|'Threaded'|'Define'
 
-variable_decl_identifier ::= (IDENTIFIER|POINTER_IDENTIFIER) [type_suffix]
-variable_decl_identifier_notype ::= (IDENTIFIER|POINTER_IDENTIFIER)
+variable_decl_identifier ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
+variable_decl_identifier_notype ::= (parse_identifier|parse_pointer_identifier)
 variable_decl_list ::= variable_decl_identifier ['=' expression] (',' variable_decl_identifier ['=' expression])*
 variable_decl_list_notype ::= variable_decl_identifier_notype (',' variable_decl_identifier_notype)*
 variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype|declaration_scope variable_decl_list|variable_decl_identifier
 
-array_declaration ::= [declaration_scope] ('Dim'|'ReDim') IDENTIFIER [type_suffix] '(' parameters_call ')'
-list_declaration ::= [declaration_scope] 'NewList' IDENTIFIER [type_suffix] '(' ')'
-map_declaration ::= [declaration_scope] 'NewMap' IDENTIFIER [type_suffix] '(' ')'
+array_declaration ::= [declaration_scope] ('Dim'|'ReDim') parse_identifier [type_suffix] '(' parameters_call ')'
+list_declaration ::= [declaration_scope] 'NewList' parse_identifier [type_suffix] '(' ')'
+map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] '(' ')'
 
 
 
@@ -101,15 +118,15 @@ map_declaration ::= [declaration_scope] 'NewMap' IDENTIFIER [type_suffix] '(' ')
 ////////////////////////
 
 // Procedure
-private procedure_decl_pattern ::= [type_suffix] IDENTIFIER '(' parameters_decl ')'
+private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' parameters_decl ')'
 procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern
 
 procedure ::= procedure_head [sep statements] sep procedure_foot
 
-private parameters_decl_var ::= (IDENTIFIER|POINTER_IDENTIFIER) [type_suffix]
-private parameters_decl_array ::= 'Array' IDENTIFIER [type_suffix] '(' NUMBER ')'
-private parameters_decl_list ::= 'List' IDENTIFIER [type_suffix] '(' ')'
-private parameters_decl_map ::= 'Map' IDENTIFIER [type_suffix] '(' ')'
+private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
+private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')'
+private parameters_decl_list ::= 'List' parse_identifier [type_suffix] '(' ')'
+private parameters_decl_map ::= 'Map' parse_identifier [type_suffix] '(' ')'
 parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map) [','parameters_decl]
 parameters_call ::= expression (',' expression)*
 
@@ -118,9 +135,9 @@ procedurereturn ::= 'ProcedureReturn' [expression]
 procedure_foot ::= 'EndProcedure'
 
 // Macro
-macro_parameter_decl ::= IDENTIFIER
+macro_parameter_decl ::= parse_identifier
 macro_parameter_decl_list ::= macro_parameter_decl (',' macro_parameter_decl)*
-private macro_decl_pattern ::= [type_suffix] IDENTIFIER ['(' macro_parameter_decl_list ')']
+private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' macro_parameter_decl_list ')']
 
 macro ::= macro_head [sep statements] sep macro_foot
 
@@ -134,23 +151,23 @@ with_head ::= 'With' identifier_or_call_chained
 with_foot ::= 'EndWith'
 
 
-call ::= IDENTIFIER '(' [parameters_call] ')'
+call ::= parse_identifier '(' [parameters_call] ')'
 
 // Structure
 structure ::= structure_head [sep (statements|structure_union)] sep structure_foot
 
-structure_head ::= 'Structure' IDENTIFIER ['Extends' IDENTIFIER] ['Align' (NUMBER|CONSTANT)]
+structure_head ::= 'Structure' parse_identifier ['Extends' parse_identifier] ['Align' (NUMBER|parse_constant_identifier)]
 structure_foot ::= 'EndStructure'
 
 structure_union ::= structure_union_head [sep statements] sep structure_union_foot
 
-structure_union_head ::= 'StructureUnion' IDENTIFIER
+structure_union_head ::= 'StructureUnion' parse_identifier
 structure_union_foot ::= 'EndStructureUnion'
 
 // Interface
 interface ::= interface_head [sep statements] sep interface_foot
 
-interface_head ::= 'Interface' IDENTIFIER ['Extends' IDENTIFIER]
+interface_head ::= 'Interface' parse_identifier ['Extends' parse_identifier]
 interface_foot ::= 'EndInterface'
 
 // Import
@@ -162,7 +179,7 @@ import_foot ::= 'EndImport'
 // DataSection
 datasection ::= datasection_head [sep statements] sep datasection_foot
 
-data_entry ::= CONSTANT|NUMBER|STRING
+data_entry ::= parse_constant_identifier|NUMBER|STRING
 data_list ::= 'Data' [type_suffix] data_entry (',' data_entry)*
 
 datasection_head ::= 'DataSection'
@@ -189,7 +206,7 @@ enumeration_foot ::= 'EndEnumeration'
 
 // Loops
 private while ::= 'While' expression [sep statements] sep 'Wend'
-private for ::= 'For' variable_decl_identifier '=' expression 'To' expression ['Step' NUMBER] [sep statements] sep 'Next' [IDENTIFIER]
+private for ::= 'For' variable_decl_identifier '=' expression 'To' expression ['Step' NUMBER] [sep statements] sep 'Next' [parse_identifier]
 private foreach ::= 'ForEach' identifier_or_call_chained [sep statements] sep 'Next'
 private repeat ::= 'Repeat' [sep statements] sep ('Until' expression | 'ForEver')
 
@@ -225,18 +242,18 @@ comp_condition ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_cond
 include ::= ('XIncludeFile'|'IncludeFile') STRING
 includebinary ::= 'IncludeBinary' STRING
 includepath ::= 'IncludePath' STRING
-usemodule ::= 'UseModule' IDENTIFIER
-unusemodule ::= 'UnuseModule' IDENTIFIER
-undefinemacro ::= 'UndefineMacro' IDENTIFIER
+usemodule ::= 'UseModule' parse_identifier
+unusemodule ::= 'UnuseModule' parse_identifier
+undefinemacro ::= 'UndefineMacro' parse_identifier
 swap ::= 'Swap' identifier_or_call_chained ',' identifier_or_call_chained
-runtime ::= 'Runtime' (CONSTANT|CONSTANT|IDENTIFIER|POINTER_IDENTIFIER|procedure|enumeration)
+runtime ::= 'Runtime' (parse_constant_identifier|parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure|enumeration)
 return ::= 'Return'
-restore ::= 'Restore' IDENTIFIER
-read ::= 'Read' [type_suffix] IDENTIFIER
+restore ::= 'Restore' parse_identifier
+read ::= 'Read' [type_suffix] parse_identifier
 prototype ::= ('PrototypeC'|'Prototype') procedure_decl_pattern
 macroexpandedcount ::= 'MacroExpandedCount'
-goto ::= 'Goto' IDENTIFIER
-gosub ::= 'Gosub' IDENTIFIER
+goto ::= 'Goto' parse_identifier
+gosub ::= 'Gosub' parse_identifier
 fakereturn ::= 'FakeReturn'
 end ::= 'End' expression
 enablejs ::= 'EnableJS'
@@ -247,12 +264,12 @@ disablejs ::= 'DisableJS'
 disableexplicit ::= 'DisableExplicit'
 disabledebugger ::= 'DisableDebugger'
 disableasm ::= 'DisableASM'
-debuglevel ::= 'DebugLevel' (CONSTANT|NUMBER)
-debug ::= 'Debug' expression [',' (CONSTANT|NUMBER)]
+debuglevel ::= 'DebugLevel' (parse_constant_identifier|NUMBER)
+debug ::= 'Debug' expression [',' (parse_constant_identifier|NUMBER)]
 continue ::= 'Continue'
 break ::= 'Break'
-compilerwarning ::= 'CompilerWarning' (CONSTANT|STRING)
-compilererror ::= 'CompilerError' (CONSTANT|STRING)
+compilerwarning ::= 'CompilerWarning' (parse_constant_identifier|STRING)
+compilererror ::= 'CompilerError' (parse_constant_identifier|STRING)
 calldebugger ::= 'CallDebugger'
 
 ////////////////////////
@@ -260,4 +277,4 @@ calldebugger ::= 'CallDebugger'
 ////////////////////////
 
 private leftTokens ::= KEYWORD|OPERATOR
-// private tokenTypes_ ::= COMMENT|KEYWORD|OPERATOR|STRING|CHARACTER|CONSTANT|NUMBER|IDENTIFIER|POINTER_IDENTIFIER
+// private tokenTypes_ ::= COMMENT|KEYWORD|OPERATOR|STRING|CHARACTER|CONSTANT_IDENTIFIER|NUMBER|IDENTIFIER|POINTER_IDENTIFIER

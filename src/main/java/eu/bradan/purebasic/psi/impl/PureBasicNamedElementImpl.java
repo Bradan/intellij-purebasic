@@ -25,11 +25,58 @@ package eu.bradan.purebasic.psi.impl;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.TokenSet;
+import com.intellij.util.IncorrectOperationException;
+import eu.bradan.purebasic.psi.PureBasicElementFactory;
 import eu.bradan.purebasic.psi.PureBasicNamedElement;
+import eu.bradan.purebasic.psi.PureBasicTypes;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+/**
+ * By default, we will take the first identifier.
+ */
 public abstract class PureBasicNamedElementImpl extends ASTWrapperPsiElement implements PureBasicNamedElement {
+    private static final TokenSet identifiers = TokenSet.create(
+            PureBasicTypes.IDENTIFIER,
+            PureBasicTypes.CONSTANT_IDENTIFIER,
+            PureBasicTypes.POINTER_IDENTIFIER,
+            PureBasicTypes.LABEL_IDENTIFIER
+    );
+
     public PureBasicNamedElementImpl(@NotNull ASTNode node) {
         super(node);
+    }
+
+    @Nullable
+    @Override
+    public PsiElement getNameIdentifier() {
+        final ASTNode keyNode = getNode().findChildByType(identifiers);
+        if (keyNode != null) {
+            return keyNode.getPsi();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PsiElement setName(@NotNull String name) throws IncorrectOperationException {
+        final ASTNode node = getNode().findChildByType(identifiers);
+        if (node != null) {
+            final PsiElement element = PureBasicElementFactory.createIdentifier(getProject(), name);
+            getNode().replaceChild(node, element.getNode());
+        }
+        return this;
+    }
+
+    @Nullable
+    @Override
+    public String getName() {
+        final PsiElement nameElement = getNameIdentifier();
+        if (nameElement != null) {
+            return nameElement.getText();
+        }
+        return null;
     }
 }

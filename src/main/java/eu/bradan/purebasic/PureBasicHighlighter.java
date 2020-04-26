@@ -87,7 +87,7 @@ public class PureBasicHighlighter extends SyntaxHighlighterBase {
             return STRING_KEYS;
         } else if (tokenType.equals(PureBasicTypes.CHARACTER)) {
             return CHARACTER_KEYS;
-        } else if (tokenType.equals(PureBasicTypes.CONSTANT)) {
+        } else if (tokenType.equals(PureBasicTypes.CONSTANT_IDENTIFIER)) {
             return CONSTANT_KEYS;
         } else if (tokenType.equals(PureBasicTypes.IDENTIFIER)
                 || tokenType.equals(PureBasicTypes.LABEL_IDENTIFIER)

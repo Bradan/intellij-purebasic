@@ -30,8 +30,8 @@
                                implementationClass="eu.bradan.purebasic.PureBasicParserDefinition"/>
         <lang.syntaxHighlighterFactory language="PureBasic"
                                        implementationClass="eu.bradan.purebasic.PureBasicHighlighterFactory"/>
-        <lang.psiStructureViewFactory
-                implementationClass="eu.bradan.purebasic.structure.PureBasicStructureViewFactory"/>
+        <lang.psiStructureViewFactory language="PureBasic"
+                                      implementationClass="eu.bradan.purebasic.structure.PureBasicStructureViewFactory"/>
 
         <completion.contributor language="PureBasic"
                                 implementationClass="eu.bradan.purebasic.PureBasicCompletionContributor"/>

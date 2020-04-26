@@ -77,7 +77,7 @@ CONSTANT_IDENTIFIER="#"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
               return storeLast(PureBasicTypes.OPERATOR);
           }
       }
-{CONSTANT_IDENTIFIER}                             { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.CONSTANT); }
+{CONSTANT_IDENTIFIER}                             { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.CONSTANT_IDENTIFIER); }
 
 ({NEWLINE}|":")                                   { yybegin(YYINITIAL); return storeLast(PureBasicTypes.SEPARATOR); }
 ({WHITE_SPACE})+                                  { return TokenType.WHITE_SPACE; }

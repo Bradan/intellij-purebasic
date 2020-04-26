@@ -23,17 +23,36 @@
 
 package eu.bradan.purebasic.structure;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.NavigatablePsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import eu.bradan.purebasic.psi.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 public class PureBasicStructureViewElement implements StructureViewTreeElement {
     private final NavigatablePsiElement element;
+
+    private final Class[] leafElements = new Class[]{
+            PureBasicVariableDeclIdentifier.class,
+            PureBasicArrayDeclaration.class,
+            PureBasicListDeclaration.class,
+            PureBasicMapDeclaration.class,
+            PureBasicLabel.class
+    };
+    private final Class[] blockElements = new Class[]{
+            PureBasicStructure.class,
+            PureBasicInterface.class,
+            PureBasicProcedure.class,
+            PureBasicMacro.class,
+            PureBasicFile.class
+    };
 
     public PureBasicStructureViewElement(NavigatablePsiElement psiElement) {
         this.element = psiElement;
@@ -48,15 +67,25 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
     @Override
     public ItemPresentation getPresentation() {
         ItemPresentation presentation = element.getPresentation();
-        return presentation != null ? presentation : new PresentationData();
+        return presentation != null
+                ? presentation
+                : new PresentationData(element.getText(), "", AllIcons.Nodes.Variable, null);
     }
 
     @NotNull
     @Override
     public TreeElement[] getChildren() {
-        LinkedList<TreeElement> children = new LinkedList<>();
+        if (Arrays.asList(blockElements).contains(element.getClass())) {
+            LinkedList<Class> classes = new LinkedList<>();
+            classes.addAll(Arrays.asList(leafElements));
+            classes.addAll(Arrays.asList(blockElements));
+            return PsiTreeUtil.findChildrenOfAnyType(element, classes.toArray(new Class[0]))
+                    .stream()
+                    .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
+                    .toArray(PureBasicStructureViewElement[]::new);
+        }
 
-        return children.toArray(new TreeElement[0]);
+        return new TreeElement[0];
     }
 
     @Override
