@@ -70,7 +70,7 @@ task generatePureBasicParser(type: GenerateParser) {
     purgeOldFiles = true
 }
 
-generatePureBasicParser.dependsOn(compileJava)
+//generatePureBasicParser.dependsOn(compileJava)
 
 // TODO: Wait for a fix for issue https://github.com/JetBrains/gradle-grammar-kit-plugin/issues/3
 //       Cannot automatically generate lexer/parser without invoking the java compiler twice
