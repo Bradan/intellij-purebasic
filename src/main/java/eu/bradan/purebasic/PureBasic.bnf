@@ -72,7 +72,7 @@ simple_statement ::= include|includebinary|includepath|usemodule|unusemodule|und
 statements ::= statement (sep statement)*
 
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
-type_suffix ::= '.' (pseudo_types|parse_identifier)
+type_suffix ::= '.' (pseudo_types|[module_path] parse_identifier)
 
 label ::= parse_label_identifier ':'
 
@@ -94,7 +94,7 @@ structure_path_element ::= (parse_identifier|parse_pointer_identifier|call)
 structure_path ::= ['\'] (structure_path_element '\')*
 identifier_chained ::= [module_path] [structure_path] parse_identifier
 call_chained ::= [module_path] [structure_path] call
-private identifier_or_call_chained ::= identifier_chained | call_chained
+private identifier_or_call_chained ::= call_chained | identifier_chained
 
 atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING
 
@@ -128,7 +128,7 @@ private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [typ
 private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
 private parameters_decl_list ::= 'List' parse_identifier [type_suffix] '(' ')' {pin=1}
 private parameters_decl_map ::= 'Map' parse_identifier [type_suffix] '(' ')' {pin=1}
-parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map) [','parameters_decl]
+parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map) [',' [sep] parameters_decl]
 parameters_call ::= expression (',' expression)*
 
 procedure_head ::= ('ProcedureCDLL' | 'ProcedureDLL' | 'ProcedureC' | 'Procedure') procedure_decl_pattern {pin=1 recoverWhile=nosep}
@@ -137,10 +137,10 @@ procedure_foot ::= 'EndProcedure'
 
 // Macro
 macro_parameter_decl ::= parse_identifier
-macro_parameter_decl_list ::= macro_parameter_decl (',' macro_parameter_decl)*
+macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
 private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
-macro ::= macro_head [sep statements] sep macro_foot
+macro ::= macro_head [sep (statements | expression)] sep macro_foot
 
 macro_head ::= 'Macro' macro_decl_pattern {pin=1 recoverWhile=nosep}
 macro_foot ::= 'EndMacro'
