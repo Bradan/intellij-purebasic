@@ -73,6 +73,7 @@ statements ::= statement (sep statement)*
 
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
 type_suffix ::= '.' (pseudo_types|[module_path] parse_identifier)
+static_array_access ::= '[' expression ']'
 
 label ::= parse_label_identifier ':'
 
@@ -81,7 +82,8 @@ label ::= parse_label_identifier ':'
 unary_operators ::= '-'|'!'|'~'|'Not'|'@'|'?'
 binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'|'-'|'*'|'/'|'&'|'|'|'!'|'~'|'<'|'>'|'%'|'And'|'Or'|'XOr'
 
-assignment ::= ((identifier_or_call_chained|parse_pointer_identifier) [type_suffix]|parse_constant_identifier) ('='|'+'|'-'|'*'|'/') expression
+private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
+assignment ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}
 
 expression ::= '(' expression ')' |
                 (identifier_or_call_chained|atom) binary_operators expression |
@@ -90,9 +92,9 @@ expression ::= '(' expression ')' |
 
 module_path_element ::= parse_identifier
 module_path ::= ['::'] (module_path_element '::')*
-structure_path_element ::= (parse_identifier|parse_pointer_identifier|call)
+structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call
 structure_path ::= ['\'] (structure_path_element '\')*
-identifier_chained ::= [module_path] [structure_path] parse_identifier
+identifier_chained ::= [module_path] [structure_path] parse_identifier [static_array_access]
 call_chained ::= [module_path] [structure_path] call
 private identifier_or_call_chained ::= call_chained | identifier_chained
 
@@ -124,7 +126,7 @@ procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern {pin=1}
 
 procedure ::= procedure_head [sep statements] sep procedure_foot
 
-private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
+private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] ['=' expression]
 private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
 private parameters_decl_list ::= 'List' parse_identifier [type_suffix] '(' ')' {pin=1}
 private parameters_decl_map ::= 'Map' parse_identifier [type_suffix] '(' ')' {pin=1}
@@ -136,7 +138,7 @@ procedurereturn ::= 'ProcedureReturn' [expression]
 procedure_foot ::= 'EndProcedure'
 
 // Macro
-macro_parameter_decl ::= parse_identifier
+macro_parameter_decl ::= parse_identifier ['=' [expression]]
 macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
 private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
