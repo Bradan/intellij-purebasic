@@ -80,7 +80,7 @@ label ::= parse_label_identifier ':'
 
 // Assignment
 unary_operators ::= '-'|'!'|'~'|'Not'|'@'|'?'
-binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'|'-'|'*'|'/'|'&'|'|'|'!'|'~'|'<'|'>'|'%'|'And'|'Or'|'XOr'
+binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'|'-'|'*'|'/'|'&'|'|'|'!'|'~'|'<'|'>'|'%'|'#'|'And'|'Or'|'XOr'
 
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
 assignment ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}

@@ -77,7 +77,14 @@ CONSTANT_IDENTIFIER="#"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
               return storeLast(PureBasicTypes.OPERATOR);
           }
       }
-{CONSTANT_IDENTIFIER}                             { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.CONSTANT_IDENTIFIER); }
+{CONSTANT_IDENTIFIER}                             { yybegin(FOLLOW_UP);
+          if(lastTokenType != PureBasicTypes.IDENTIFIER) {
+              return storeLast(PureBasicTypes.CONSTANT_IDENTIFIER);
+          } else {
+              yypushback(yylength() - 1);
+              return storeLast(PureBasicTypes.OPERATOR);
+          }
+      }
 
 ({NEWLINE}|":")                                   { yybegin(YYINITIAL); return storeLast(PureBasicTypes.SEPARATOR); }
 ({WHITE_SPACE})+                                  { return TokenType.WHITE_SPACE; }
