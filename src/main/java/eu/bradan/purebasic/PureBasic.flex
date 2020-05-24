@@ -77,12 +77,16 @@ CONSTANT_IDENTIFIER="#"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
               return storeLast(PureBasicTypes.OPERATOR);
           }
       }
-{CONSTANT_IDENTIFIER}                             { yybegin(FOLLOW_UP);
-          if(lastTokenType != PureBasicTypes.IDENTIFIER) {
-              return storeLast(PureBasicTypes.CONSTANT_IDENTIFIER);
-          } else {
+{CONSTANT_IDENTIFIER}                             {
+          yybegin(FOLLOW_UP);
+          final List<IElementType> validLastTokens = Arrays.asList(new IElementType[] {
+                  PureBasicTypes.IDENTIFIER, PureBasicTypes.CONSTANT_IDENTIFIER, PureBasicTypes.POINTER_IDENTIFIER
+          });
+          if(validLastTokens.contains(lastTokenType)) {
               yypushback(yylength() - 1);
               return storeLast(PureBasicTypes.OPERATOR);
+          } else {
+              return storeLast(PureBasicTypes.CONSTANT_IDENTIFIER);
           }
       }
 
