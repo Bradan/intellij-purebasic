@@ -60,8 +60,8 @@ public class PureBasicUtil {
                 PureBasicStructureHead.class,
                 PureBasicInterfaceHead.class,
                 PureBasicImportHead.class,
-                PureBasicDeclaremoduleHead.class,
-                PureBasicDefinemoduleHead.class,
+                PureBasicDeclareModuleHead.class,
+                PureBasicDefineModuleHead.class,
                 PureBasicProcedureDeclaration.class,
                 PureBasicEnumerationHead.class)) {
             DeclarationScope scope = DeclarationScope.UNSPECIFIED;

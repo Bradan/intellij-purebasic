@@ -29,12 +29,13 @@ import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.TreeElement;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.NavigatablePsiElement;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import eu.bradan.purebasic.psi.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 public class PureBasicStructureViewElement implements StructureViewTreeElement {
     private final NavigatablePsiElement element;
@@ -47,6 +48,8 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
             PureBasicLabel.class
     };
     private final Class[] blockElements = new Class[]{
+            PureBasicDeclareModule.class,
+            PureBasicDefineModule.class,
             PureBasicStructure.class,
             PureBasicInterface.class,
             PureBasicProcedure.class,
@@ -72,19 +75,42 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
                 : new PresentationData(element.getText(), "", AllIcons.Nodes.Variable, null);
     }
 
+    private void findChildren(PsiElement parent, Class[] classes, ArrayList<PsiElement> results) {
+        if (parent == null) {
+            return;
+        }
+
+        for (PsiElement e : parent.getChildren()) {
+            if (PsiTreeUtil.instanceOf(e, classes)) {
+                results.add(e);
+            } else {
+                findChildren(e, classes, results);
+            }
+        }
+    }
+
     @NotNull
     @Override
     public TreeElement[] getChildren() {
         if (Arrays.asList(blockElements).contains(element.getClass())) {
-            LinkedList<Class> classes = new LinkedList<>();
+            ArrayList<Class> classes = new ArrayList<>();
             classes.addAll(Arrays.asList(leafElements));
             classes.addAll(Arrays.asList(blockElements));
-            // TODO: create findChildrenOfAnyType which doesn't descent found elements
-            //noinspection RedundantCast
-            return (TreeElement[]) PsiTreeUtil.findChildrenOfAnyType(element, classes.toArray(new Class[0]))
-                    .stream()
-                    .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
-                    .toArray(TreeElement[]::new);
+            Class[] classesArray = classes.toArray(new Class[0]);
+
+            ArrayList<TreeElement> results = new ArrayList<>();
+            for (PsiElement e : PsiTreeUtil.getChildrenOfTypeAsList(element, PureBasicStatement.class)) {
+                if (PsiTreeUtil.instanceOf(e, classesArray)) {
+                    results.add(new PureBasicStructureViewElement((NavigatablePsiElement) e));
+                }
+            }
+            return results.toArray(new TreeElement[0]);
+
+//            ArrayList<PsiElement> results = new ArrayList<>();
+//            findChildren(element, classes.toArray(new Class[0]), results);
+//            return results.stream()
+//                    .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
+//                    .toArray(TreeElement[]::new);
         }
 
         return new TreeElement[0];

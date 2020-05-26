@@ -40,7 +40,7 @@
 
 pureBasicFile ::= [sep] statements [sep]
 
-sep ::= SEPARATOR+
+private sep ::= SEPARATOR+
 private nosep ::= !sep
 
 parse_label_identifier ::= LABEL_IDENTIFIER {
@@ -61,15 +61,15 @@ parse_constant_identifier ::= CONSTANT_IDENTIFIER {
         }
 
 statement ::= simple_statement|block_statement|INLINE_ASM|COMMENT {recoverWhile=nosep}
-block_statement ::= macro|comp_condition|procedure|with|structure|interface|import|datasection|
-                    enumeration|declaremodule|definemodule|loop|condition
-simple_statement ::= include|includebinary|includepath|usemodule|unusemodule|undefinemacro|swap|runtime|return|restore|
-                     read|prototype|macroexpandedcount|goto|gosub|fakereturn|end|enablejs|enableexplicit|enabledebugger|
-                     enableasm|disablejs|disableexplicit|disabledebugger|disableasm|debuglevel|debug|continue|break|
-                     compilerwarning|compilererror|calldebugger|data_list|procedurereturn|assignment|call|declaration|
-                     label
+private block_statement ::= macro|comp_condition|procedure|with|structure|interface|import|data_section|
+                    enumeration|declare_module|define_module|loop|condition
+private simple_statement ::= include|include_binary|include_path|use_module|unuse_module|undefine_macro|swap|runtime|return|
+                     restore|read|prototype|macro_expanded_count|goto|gosub|fake_return|end|enable_js|enable_explicit|
+                     enable_debugger|enable_asm|disable_js|disable_explicit|disable_debugger|disable_asm|debug_level|
+                     debug|continue|break|compiler_warning|compiler_error|call_debugger|data_list|procedure_return|
+                     assignment|call|declaration|label
 
-statements ::= statement (sep statement)*
+private statements ::= statement (sep statement)*
 
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
 type_suffix ::= '.' (pseudo_types|[module_path] parse_identifier)
@@ -134,7 +134,7 @@ parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_de
 parameters_call ::= expression (',' expression)*
 
 procedure_head ::= ('ProcedureCDLL' | 'ProcedureDLL' | 'ProcedureC' | 'Procedure') procedure_decl_pattern {pin=1 recoverWhile=nosep}
-procedurereturn ::= 'ProcedureReturn' [expression]
+procedure_return ::= 'ProcedureReturn' [expression]
 procedure_foot ::= 'EndProcedure'
 
 // Macro
@@ -180,25 +180,25 @@ import_head ::= ('Import'|'ImportC') STRING {pin=1 recoverWhile=nosep}
 import_foot ::= 'EndImport'
 
 // DataSection
-datasection ::= datasection_head [sep statements] sep datasection_foot
+data_section ::= data_section_head [sep statements] sep data_section_foot
 
 data_entry ::= parse_constant_identifier|NUMBER|STRING
 data_list ::= 'Data' [type_suffix] data_entry (',' data_entry)*
 
-datasection_head ::= 'DataSection' {pin=1 recoverWhile=nosep}
-datasection_foot ::= 'EndDataSection'
+data_section_head ::= 'DataSection' {pin=1 recoverWhile=nosep}
+data_section_foot ::= 'EndDataSection'
 
 // DeclareModule
-declaremodule ::= declaremodule_head [sep statements] sep declaremodule_foot
+declare_module ::= declare_module_head [sep statements] sep declare_module_foot
 
-declaremodule_head ::= 'DeclareModule' parse_identifier {pin=1 recoverWhile=nosep}
-declaremodule_foot ::= 'EndDeclareModule'
+declare_module_head ::= 'DeclareModule' parse_identifier {pin=1 recoverWhile=nosep}
+declare_module_foot ::= 'EndDeclareModule'
 
 // Module
-definemodule ::= definemodule_head [sep statements] sep definemodule_foot
+define_module ::= define_module_head [sep statements] sep define_module_foot
 
-definemodule_head ::= 'Module' parse_identifier {pin=1 recoverWhile=nosep}
-definemodule_foot ::= 'EndModule'
+define_module_head ::= 'Module' parse_identifier {pin=1 recoverWhile=nosep}
+define_module_foot ::= 'EndModule'
 
 // Enumeration
 enumeration ::= enumeration_head [sep statements] sep enumeration_foot
@@ -249,37 +249,37 @@ comp_condition ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_cond
 ////////////////////////
 
 include ::= ('XIncludeFile'|'IncludeFile') STRING
-includebinary ::= 'IncludeBinary' STRING
-includepath ::= 'IncludePath' STRING
-usemodule ::= 'UseModule' parse_identifier {pin=1}
-unusemodule ::= 'UnuseModule' parse_identifier {pin=1}
-undefinemacro ::= 'UndefineMacro' parse_identifier {pin=1}
+include_binary ::= 'IncludeBinary' STRING
+include_path ::= 'IncludePath' STRING
+use_module ::= 'UseModule' parse_identifier {pin=1}
+unuse_module ::= 'UnuseModule' parse_identifier {pin=1}
+undefine_macro ::= 'UndefineMacro' parse_identifier {pin=1}
 swap ::= 'Swap' identifier_or_call_chained ',' identifier_or_call_chained {pin=1}
 runtime ::= 'Runtime' (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure|enumeration) {pin=1}
 return ::= 'Return'
 restore ::= 'Restore' parse_identifier {pin=1}
 read ::= 'Read' [type_suffix] parse_identifier {pin=1}
 prototype ::= ('PrototypeC'|'Prototype') procedure_decl_pattern {pin=1}
-macroexpandedcount ::= 'MacroExpandedCount'
+macro_expanded_count ::= 'MacroExpandedCount'
 goto ::= 'Goto' parse_identifier {pin=1}
 gosub ::= 'Gosub' parse_identifier {pin=1}
-fakereturn ::= 'FakeReturn'
+fake_return ::= 'FakeReturn'
 end ::= 'End' expression {pin=1}
-enablejs ::= 'EnableJS'
-enableexplicit ::= 'EnableExplicit'
-enabledebugger ::= 'EnableDebugger'
-enableasm ::= 'EnableASM'
-disablejs ::= 'DisableJS'
-disableexplicit ::= 'DisableExplicit'
-disabledebugger ::= 'DisableDebugger'
-disableasm ::= 'DisableASM'
-debuglevel ::= 'DebugLevel' (parse_constant_identifier|NUMBER) {pin=1}
+enable_js ::= 'EnableJS'
+enable_explicit ::= 'EnableExplicit'
+enable_debugger ::= 'EnableDebugger'
+enable_asm ::= 'EnableASM'
+disable_js ::= 'DisableJS'
+disable_explicit ::= 'DisableExplicit'
+disable_debugger ::= 'DisableDebugger'
+disable_asm ::= 'DisableASM'
+debug_level ::= 'DebugLevel' (parse_constant_identifier|NUMBER) {pin=1}
 debug ::= 'Debug' expression [',' (parse_constant_identifier|NUMBER)] {pin=1}
 continue ::= 'Continue'
 break ::= 'Break'
-compilerwarning ::= 'CompilerWarning' (parse_constant_identifier|STRING) {pin=1}
-compilererror ::= 'CompilerError' (parse_constant_identifier|STRING) {pin=1}
-calldebugger ::= 'CallDebugger'
+compiler_warning ::= 'CompilerWarning' (parse_constant_identifier|STRING) {pin=1}
+compiler_error ::= 'CompilerError' (parse_constant_identifier|STRING) {pin=1}
+call_debugger ::= 'CallDebugger'
 
 ////////////////////////
 // Misc
