@@ -45,15 +45,15 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
             PureBasicArrayDeclaration.class,
             PureBasicListDeclaration.class,
             PureBasicMapDeclaration.class,
-            PureBasicLabel.class
+            PureBasicLabelStmt.class
     };
     private final Class[] blockElements = new Class[]{
-            PureBasicDeclareModule.class,
-            PureBasicDefineModule.class,
-            PureBasicStructure.class,
-            PureBasicInterface.class,
-            PureBasicProcedure.class,
-            PureBasicMacro.class,
+            PureBasicDeclareModuleBlock.class,
+            PureBasicDefineModuleBlock.class,
+            PureBasicStructureBlock.class,
+            PureBasicInterfaceBlock.class,
+            PureBasicProcedureBlock.class,
+            PureBasicMacroBlock.class,
             PureBasicFile.class
     };
 
@@ -92,25 +92,16 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
     @NotNull
     @Override
     public TreeElement[] getChildren() {
-        if (Arrays.asList(blockElements).contains(element.getClass())) {
+        if (PsiTreeUtil.instanceOf(element, blockElements)) {
             ArrayList<Class> classes = new ArrayList<>();
             classes.addAll(Arrays.asList(leafElements));
             classes.addAll(Arrays.asList(blockElements));
-            Class[] classesArray = classes.toArray(new Class[0]);
 
-            ArrayList<TreeElement> results = new ArrayList<>();
-            for (PsiElement e : PsiTreeUtil.getChildrenOfTypeAsList(element, PureBasicStatement.class)) {
-                if (PsiTreeUtil.instanceOf(e, classesArray)) {
-                    results.add(new PureBasicStructureViewElement((NavigatablePsiElement) e));
-                }
-            }
-            return results.toArray(new TreeElement[0]);
-
-//            ArrayList<PsiElement> results = new ArrayList<>();
-//            findChildren(element, classes.toArray(new Class[0]), results);
-//            return results.stream()
-//                    .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
-//                    .toArray(TreeElement[]::new);
+            ArrayList<PsiElement> results = new ArrayList<>();
+            findChildren(element, classes.toArray(new Class[0]), results);
+            return results.stream()
+                    .map(x -> new PureBasicStructureViewElement((NavigatablePsiElement) x))
+                    .toArray(TreeElement[]::new);
         }
 
         return new TreeElement[0];

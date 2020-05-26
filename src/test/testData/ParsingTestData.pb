@@ -4,6 +4,7 @@ EnableExplicit
 
 #constant = 42
 
+Define avariable.i = 0
 Global *apointer ; declaration
 *apointer = $af + %1010
 

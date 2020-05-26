@@ -54,7 +54,7 @@ public class PureBasicUtil {
         final LinkedList<Declaration> result = new LinkedList<>();
         for (PsiElement decl : PsiTreeUtil.findChildrenOfAnyType(file,
                 PureBasicVariableDeclaration.class,
-                PureBasicAssignment.class,
+                PureBasicAssignmentStmt.class,
                 PureBasicProcedureHead.class,
                 PureBasicMacroHead.class,
                 PureBasicStructureHead.class,

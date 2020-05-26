@@ -36,11 +36,16 @@
   tokenTypeClass="eu.bradan.purebasic.psi.PureBasicTokenType"
 
   psiImplUtilClass="eu.bradan.purebasic.psi.impl.PureBasicPsiImplUtil"
+
+  extends("simple_statement")=statement
+  extends("block_statement")=statement
+  extends(".*_stmt")=simple_statement
+  extends(".*_block")=block_statement
 }
 
 pureBasicFile ::= [sep] statements [sep]
 
-private sep ::= SEPARATOR+
+sep ::= SEPARATOR+
 private nosep ::= !sep
 
 parse_label_identifier ::= LABEL_IDENTIFIER {
@@ -60,14 +65,19 @@ parse_constant_identifier ::= CONSTANT_IDENTIFIER {
             implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
         }
 
-statement ::= simple_statement|block_statement|INLINE_ASM|COMMENT {recoverWhile=nosep}
-private block_statement ::= macro|comp_condition|procedure|with|structure|interface|import|data_section|
-                    enumeration|declare_module|define_module|loop|condition
-private simple_statement ::= include|include_binary|include_path|use_module|unuse_module|undefine_macro|swap|runtime|return|
-                     restore|read|prototype|macro_expanded_count|goto|gosub|fake_return|end|enable_js|enable_explicit|
-                     enable_debugger|enable_asm|disable_js|disable_explicit|disable_debugger|disable_asm|debug_level|
-                     debug|continue|break|compiler_warning|compiler_error|call_debugger|data_list|procedure_return|
-                     assignment|call|declaration|label
+statement ::= simple_statement_|block_statement_|INLINE_ASM|COMMENT {recoverWhile=nosep}
+private block_statement_ ::= macro_block|comp_condition_block|procedure_block|with_block|structure_block|interface_block|
+                    import_block|data_section_block|enumeration_block|declare_module_block|define_module_block|
+                    loop_block|condition_block
+fake block_statement ::= block_statement_
+private simple_statement_ ::= include_stmt|include_binary_stmt|include_path_stmt|use_module_stmt|unuse_module_stmt|
+                    undefine_macro_stmt|swap_stmt|runtime_stmt|return_stmt|restore_stmt|read_stmt|prototype_stmt|
+                    macro_expanded_count_stmt|goto_stmt|gosub_stmt|fake_return_stmt|end_stmt|enable_js_stmt|
+                    enable_explicit_stmt|enable_debugger_stmt|enable_asm_stmt|disable_js_stmt|disable_explicit_stmt|
+                    disable_debugger_stmt|disable_asm_stmt|debug_level_stmt|debug_stmt|continue_stmt|break_stmt|
+                    compiler_warning_stmt|compiler_error_stmt|call_debugger_stmt|data_list_stmt|procedure_return_stmt|
+                    assignment_stmt|call_stmt|declaration_stmt|label_stmt
+fake simple_statement ::= simple_statement_;
 
 private statements ::= statement (sep statement)*
 
@@ -75,7 +85,7 @@ pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
 type_suffix ::= '.' (pseudo_types|[module_path] parse_identifier)
 static_array_access ::= '[' expression ']'
 
-label ::= parse_label_identifier ':'
+label_stmt ::= parse_label_identifier ':'
 
 
 // Assignment
@@ -83,7 +93,7 @@ unary_operators ::= '-'|'!'|'~'|'Not'|'@'|'?'
 binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'|'-'|'*'|'/'|'&'|'|'|'!'|'~'|'<'|'>'|'%'|'#'|'And'|'Or'|'XOr'
 
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
-assignment ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}
+assignment_stmt ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}
 
 expression ::= '(' expression ')' |
                 (identifier_or_call_chained|atom) binary_operators expression |
@@ -92,16 +102,16 @@ expression ::= '(' expression ')' |
 
 module_path_element ::= parse_identifier
 module_path ::= ['::'] (module_path_element '::')*
-structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call
+structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call_stmt
 structure_path ::= ['\'] (structure_path_element '\')*
 identifier_chained ::= [module_path] [structure_path] parse_identifier [static_array_access]
-call_chained ::= [module_path] [structure_path] call
+call_chained ::= [module_path] [structure_path] call_stmt
 private identifier_or_call_chained ::= call_chained | identifier_chained
 
 atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING
 
 // Declarations
-declaration ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
+declaration_stmt ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
 declaration_scope ::= 'Global'|'Shared'|'Protected'|'Static'|'Threaded'|'Define'
 
 variable_decl_identifier ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
@@ -124,7 +134,7 @@ map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] 
 private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' [parameters_decl] ')'
 procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern {pin=1}
 
-procedure ::= procedure_head [sep statements] sep procedure_foot
+procedure_block ::= procedure_head [sep statements] sep procedure_foot
 
 private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] ['=' expression]
 private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
@@ -134,7 +144,7 @@ parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_de
 parameters_call ::= expression (',' expression)*
 
 procedure_head ::= ('ProcedureCDLL' | 'ProcedureDLL' | 'ProcedureC' | 'Procedure') procedure_decl_pattern {pin=1 recoverWhile=nosep}
-procedure_return ::= 'ProcedureReturn' [expression]
+procedure_return_stmt ::= 'ProcedureReturn' [expression]
 procedure_foot ::= 'EndProcedure'
 
 // Macro
@@ -142,22 +152,22 @@ macro_parameter_decl ::= parse_identifier ['=' [expression]]
 macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
 private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
-macro ::= macro_head [sep (statements | expression)] sep macro_foot
+macro_block ::= macro_head [sep (statements | expression)] sep macro_foot
 
 macro_head ::= 'Macro' macro_decl_pattern {pin=1 recoverWhile=nosep}
 macro_foot ::= 'EndMacro'
 
 // With
-with ::= with_head [sep statements] sep with_foot
+with_block ::= with_head [sep statements] sep with_foot
 
 with_head ::= 'With' identifier_or_call_chained {pin=1 recoverWhile=nosep}
 with_foot ::= 'EndWith'
 
 
-call ::= parse_identifier '(' [parameters_call] ')'
+call_stmt ::= parse_identifier '(' [parameters_call] ')'
 
 // Structure
-structure ::= structure_head [sep (statements|structure_union)] sep structure_foot
+structure_block ::= structure_head [sep (statements|structure_union)] sep structure_foot
 
 structure_head ::= 'Structure' parse_identifier ['Extends' parse_identifier] ['Align' (NUMBER|parse_constant_identifier)] {pin=1 recoverWhile=nosep}
 structure_foot ::= 'EndStructure'
@@ -168,40 +178,40 @@ structure_union_head ::= 'StructureUnion' parse_identifier {pin=1 recoverWhile=n
 structure_union_foot ::= 'EndStructureUnion'
 
 // Interface
-interface ::= interface_head [sep statements] sep interface_foot
+interface_block ::= interface_head [sep statements] sep interface_foot
 
 interface_head ::= 'Interface' parse_identifier ['Extends' parse_identifier] {pin=1 recoverWhile=nosep}
 interface_foot ::= 'EndInterface'
 
 // Import
-import ::= import_head [sep statements] sep import_foot
+import_block ::= import_head [sep statements] sep import_foot
 
 import_head ::= ('Import'|'ImportC') STRING {pin=1 recoverWhile=nosep}
 import_foot ::= 'EndImport'
 
 // DataSection
-data_section ::= data_section_head [sep statements] sep data_section_foot
+data_section_block ::= data_section_head [sep statements] sep data_section_foot
 
 data_entry ::= parse_constant_identifier|NUMBER|STRING
-data_list ::= 'Data' [type_suffix] data_entry (',' data_entry)*
+data_list_stmt ::= 'Data' [type_suffix] data_entry (',' data_entry)*
 
 data_section_head ::= 'DataSection' {pin=1 recoverWhile=nosep}
 data_section_foot ::= 'EndDataSection'
 
 // DeclareModule
-declare_module ::= declare_module_head [sep statements] sep declare_module_foot
+declare_module_block ::= declare_module_head [sep statements] sep declare_module_foot
 
 declare_module_head ::= 'DeclareModule' parse_identifier {pin=1 recoverWhile=nosep}
 declare_module_foot ::= 'EndDeclareModule'
 
 // Module
-define_module ::= define_module_head [sep statements] sep define_module_foot
+define_module_block ::= define_module_head [sep statements] sep define_module_foot
 
 define_module_head ::= 'Module' parse_identifier {pin=1 recoverWhile=nosep}
 define_module_foot ::= 'EndModule'
 
 // Enumeration
-enumeration ::= enumeration_head [sep statements] sep enumeration_foot
+enumeration_block ::= enumeration_head [sep statements] sep enumeration_foot
 
 enumeration_head ::= ('Enumeration' | 'EnumerationBinary') {pin=1 recoverWhile=nosep}
 enumeration_foot ::= 'EndEnumeration'
@@ -219,7 +229,7 @@ private foreach_head ::= 'ForEach' identifier_or_call_chained {pin=1 recoverWhil
 private foreach_foot ::= 'Next'
 private repeat ::= 'Repeat' [sep statements] sep ('Until' expression | 'ForEver') {pin=1}
 
-loop ::= while|for|foreach|repeat
+loop_block ::= while|for|foreach|repeat
 
 // Conditional
 private condition_if ::= 'If' expression [sep statements] {pin=1}
@@ -230,7 +240,7 @@ private condition_endif ::= 'EndIf'
 private condition_case ::= ('Case' expression|'Default') [sep statements]
 private condition_select ::= 'Select' expression (sep condition_case)* sep 'EndSelect' {pin=1}
 
-condition ::= condition_if (sep condition_elseif)* [sep condition_else] sep condition_endif | condition_select
+condition_block ::= condition_if (sep condition_elseif)* [sep condition_else] sep condition_endif | condition_select
 
 // Compiler Conditional
 private comp_condition_if ::= 'CompilerIf' expression [sep statements] {pin=1}
@@ -241,45 +251,45 @@ private comp_condition_endif ::= 'CompilerEndIf'
 private comp_condition_case ::= ('CompilerCase' expression|'CompilerDefault') [sep statements] {pin=1}
 private comp_condition_select ::= 'CompilerSelect' expression (sep comp_condition_case)* sep 'CompilerEndSelect' {pin=1}
 
-comp_condition ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_condition_else] sep comp_condition_endif |
+comp_condition_block ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_condition_else] sep comp_condition_endif |
                    comp_condition_select
 
 ////////////////////////
 // Simple Statements
 ////////////////////////
 
-include ::= ('XIncludeFile'|'IncludeFile') STRING
-include_binary ::= 'IncludeBinary' STRING
-include_path ::= 'IncludePath' STRING
-use_module ::= 'UseModule' parse_identifier {pin=1}
-unuse_module ::= 'UnuseModule' parse_identifier {pin=1}
-undefine_macro ::= 'UndefineMacro' parse_identifier {pin=1}
-swap ::= 'Swap' identifier_or_call_chained ',' identifier_or_call_chained {pin=1}
-runtime ::= 'Runtime' (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure|enumeration) {pin=1}
-return ::= 'Return'
-restore ::= 'Restore' parse_identifier {pin=1}
-read ::= 'Read' [type_suffix] parse_identifier {pin=1}
-prototype ::= ('PrototypeC'|'Prototype') procedure_decl_pattern {pin=1}
-macro_expanded_count ::= 'MacroExpandedCount'
-goto ::= 'Goto' parse_identifier {pin=1}
-gosub ::= 'Gosub' parse_identifier {pin=1}
-fake_return ::= 'FakeReturn'
-end ::= 'End' expression {pin=1}
-enable_js ::= 'EnableJS'
-enable_explicit ::= 'EnableExplicit'
-enable_debugger ::= 'EnableDebugger'
-enable_asm ::= 'EnableASM'
-disable_js ::= 'DisableJS'
-disable_explicit ::= 'DisableExplicit'
-disable_debugger ::= 'DisableDebugger'
-disable_asm ::= 'DisableASM'
-debug_level ::= 'DebugLevel' (parse_constant_identifier|NUMBER) {pin=1}
-debug ::= 'Debug' expression [',' (parse_constant_identifier|NUMBER)] {pin=1}
-continue ::= 'Continue'
-break ::= 'Break'
-compiler_warning ::= 'CompilerWarning' (parse_constant_identifier|STRING) {pin=1}
-compiler_error ::= 'CompilerError' (parse_constant_identifier|STRING) {pin=1}
-call_debugger ::= 'CallDebugger'
+include_stmt ::= ('XIncludeFile'|'IncludeFile') STRING
+include_binary_stmt ::= 'IncludeBinary' STRING
+include_path_stmt ::= 'IncludePath' STRING
+use_module_stmt ::= 'UseModule' parse_identifier {pin=1}
+unuse_module_stmt ::= 'UnuseModule' parse_identifier {pin=1}
+undefine_macro_stmt ::= 'UndefineMacro' parse_identifier {pin=1}
+swap_stmt ::= 'Swap' identifier_or_call_chained ',' identifier_or_call_chained {pin=1}
+runtime_stmt ::= 'Runtime' (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure_block|enumeration_block) {pin=1}
+return_stmt ::= 'Return'
+restore_stmt ::= 'Restore' parse_identifier {pin=1}
+read_stmt ::= 'Read' [type_suffix] parse_identifier {pin=1}
+prototype_stmt ::= ('PrototypeC'|'Prototype') procedure_decl_pattern {pin=1}
+macro_expanded_count_stmt ::= 'MacroExpandedCount'
+goto_stmt ::= 'Goto' parse_identifier {pin=1}
+gosub_stmt ::= 'Gosub' parse_identifier {pin=1}
+fake_return_stmt ::= 'FakeReturn'
+end_stmt ::= 'End' expression {pin=1}
+enable_js_stmt ::= 'EnableJS'
+enable_explicit_stmt ::= 'EnableExplicit'
+enable_debugger_stmt ::= 'EnableDebugger'
+enable_asm_stmt ::= 'EnableASM'
+disable_js_stmt ::= 'DisableJS'
+disable_explicit_stmt ::= 'DisableExplicit'
+disable_debugger_stmt ::= 'DisableDebugger'
+disable_asm_stmt ::= 'DisableASM'
+debug_level_stmt ::= 'DebugLevel' (parse_constant_identifier|NUMBER) {pin=1}
+debug_stmt ::= 'Debug' expression [',' (parse_constant_identifier|NUMBER)] {pin=1}
+continue_stmt ::= 'Continue'
+break_stmt ::= 'Break'
+compiler_warning_stmt ::= 'CompilerWarning' (parse_constant_identifier|STRING) {pin=1}
+compiler_error_stmt ::= 'CompilerError' (parse_constant_identifier|STRING) {pin=1}
+call_debugger_stmt ::= 'CallDebugger'
 
 ////////////////////////
 // Misc
