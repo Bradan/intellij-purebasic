@@ -39,7 +39,7 @@ public class PureBasicFileType extends LanguageFileType {
     @NotNull
     @Override
     public String getName() {
-        return "PureBasic file";
+        return "PureBasic File";
     }
 
     @NotNull
