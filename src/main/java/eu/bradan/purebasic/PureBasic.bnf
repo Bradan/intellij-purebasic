@@ -174,7 +174,7 @@ structure_foot ::= 'EndStructure'
 
 structure_union ::= structure_union_head [sep statements] sep structure_union_foot
 
-structure_union_head ::= 'StructureUnion' parse_identifier {pin=1 recoverWhile=nosep}
+structure_union_head ::= 'StructureUnion' {pin=1 recoverWhile=nosep}
 structure_union_foot ::= 'EndStructureUnion'
 
 // Interface
