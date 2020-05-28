@@ -23,5 +23,31 @@
 
 package eu.bradan.purebasic.psi.impl;
 
+import com.intellij.navigation.ItemPresentation;
+import eu.bradan.purebasic.psi.*;
+
 public class PureBasicPsiImplUtil {
+    public static ItemPresentation getPresentation(final PureBasicProcedureBlock element) {
+        return new PureBasicProcedureBlockPresentation(element);
+    }
+
+    public static ItemPresentation getPresentation(final PureBasicMacroBlock element) {
+        return new PureBasicMacroBlockPresentation(element);
+    }
+
+    public static ItemPresentation getPresentation(final PureBasicStructureBlock element) {
+        return new PureBasicStructureBlockPresentation(element);
+    }
+
+    public static ItemPresentation getPresentation(final PureBasicInterfaceBlock element) {
+        return new PureBasicInterfaceBlockPresentation(element);
+    }
+
+    public static ItemPresentation getPresentation(final PureBasicDeclareModuleBlock element) {
+        return new PureBasicDeclareModuleBlockPresentation(element);
+    }
+
+    public static ItemPresentation getPresentation(final PureBasicDefineModuleBlock element) {
+        return new PureBasicDefineModuleBlockPresentation(element);
+    }
 }
