@@ -23,6 +23,7 @@
 
 {
   parserClass="eu.bradan.purebasic.PureBasicParser"
+  parserUtilClass="eu.bradan.purebasic.psi.impl.PureBasicParserUtil"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -43,7 +44,7 @@
   extends(".*_block")=block_statement
 }
 
-pureBasicFile ::= [sep] statements [sep]
+pureBasicFile ::= [sep] statements_error_tolerant [sep]
 
 sep ::= SEPARATOR+
 private nosep ::= !sep
@@ -68,7 +69,7 @@ parse_constant_identifier ::= CONSTANT_IDENTIFIER {
 statement ::= simple_statement_|block_statement_|INLINE_ASM|COMMENT {recoverWhile=nosep}
 private block_statement_ ::= macro_block|comp_condition_block|procedure_block|with_block|structure_block|interface_block|
                     import_block|data_section_block|enumeration_block|declare_module_block|define_module_block|
-                    loop_block|condition_block
+                    loop_block|condition_block|structure_union_block
 fake block_statement ::= block_statement_
 private simple_statement_ ::= include_stmt|include_binary_stmt|include_path_stmt|use_module_stmt|unuse_module_stmt|
                     undefine_macro_stmt|swap_stmt|runtime_stmt|return_stmt|restore_stmt|read_stmt|prototype_stmt|
@@ -80,6 +81,11 @@ private simple_statement_ ::= include_stmt|include_binary_stmt|include_path_stmt
 fake simple_statement ::= simple_statement_;
 
 private statements ::= statement (sep statement)*
+
+// Error tolerant statements for the very first layer
+private external always_true_statement ::= parseAlwaysTrueStatement;
+private statement_error_tolerant ::= always_true_statement statement {pin=1 recoverWhile=nosep}
+private statements_error_tolerant ::= statement_error_tolerant (sep statement_error_tolerant)*
 
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
 type_suffix ::= '.' (pseudo_types|[module_path] parse_identifier)
@@ -134,7 +140,7 @@ map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] 
 private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' [parameters_decl] ')'
 procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern {pin=1}
 
-procedure_block ::= procedure_head [sep statements] sep procedure_foot {methods=[getPresentation]}
+procedure_block ::= procedure_head [sep statements] sep procedure_foot {pin=1 methods=[getPresentation]}
 
 private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] ['=' expression]
 private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
@@ -152,7 +158,7 @@ macro_parameter_decl ::= parse_identifier ['=' [expression]]
 macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
 private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
-macro_block ::= macro_head [sep (statements | expression)] sep macro_foot {methods=[getPresentation]}
+macro_block ::= macro_head [sep (statements | expression)] sep macro_foot {pin=1 methods=[getPresentation]}
 
 macro_head ::= 'Macro' macro_decl_pattern {pin=1 recoverWhile=nosep}
 macro_foot ::= 'EndMacro'
@@ -167,30 +173,30 @@ with_foot ::= 'EndWith'
 call_stmt ::= parse_identifier '(' [parameters_call] ')'
 
 // Structure
-structure_block ::= structure_head [sep (statements|structure_union)] sep structure_foot {methods=[getPresentation]}
+structure_block ::= structure_head [sep statements] sep structure_foot {pin=1 methods=[getPresentation]}
 
 structure_head ::= 'Structure' parse_identifier ['Extends' parse_identifier] ['Align' (NUMBER|parse_constant_identifier)] {pin=1 recoverWhile=nosep}
 structure_foot ::= 'EndStructure'
 
-structure_union ::= structure_union_head [sep statements] sep structure_union_foot
+structure_union_block ::= structure_union_head [sep statements] sep structure_union_foot {pin=1}
 
 structure_union_head ::= 'StructureUnion' {pin=1 recoverWhile=nosep}
 structure_union_foot ::= 'EndStructureUnion'
 
 // Interface
-interface_block ::= interface_head [sep statements] sep interface_foot {methods=[getPresentation]}
+interface_block ::= interface_head [sep statements] sep interface_foot {pin=1 methods=[getPresentation]}
 
 interface_head ::= 'Interface' parse_identifier ['Extends' parse_identifier] {pin=1 recoverWhile=nosep}
 interface_foot ::= 'EndInterface'
 
 // Import
-import_block ::= import_head [sep statements] sep import_foot
+import_block ::= import_head [sep statements] sep import_foot {pin=1}
 
 import_head ::= ('Import'|'ImportC') STRING {pin=1 recoverWhile=nosep}
 import_foot ::= 'EndImport'
 
 // DataSection
-data_section_block ::= data_section_head [sep statements] sep data_section_foot
+data_section_block ::= data_section_head [sep statements] sep data_section_foot {pin=1}
 
 data_entry ::= parse_constant_identifier|NUMBER|STRING
 data_list_stmt ::= 'Data' [type_suffix] data_entry (',' [sep] data_entry)*
@@ -199,32 +205,32 @@ data_section_head ::= 'DataSection' {pin=1 recoverWhile=nosep}
 data_section_foot ::= 'EndDataSection'
 
 // DeclareModule
-declare_module_block ::= declare_module_head [sep statements] sep declare_module_foot {methods=[getPresentation]}
+declare_module_block ::= declare_module_head [sep statements] sep declare_module_foot {pin=1 methods=[getPresentation]}
 
 declare_module_head ::= 'DeclareModule' parse_identifier {pin=1 recoverWhile=nosep}
 declare_module_foot ::= 'EndDeclareModule'
 
 // Module
-define_module_block ::= define_module_head [sep statements] sep define_module_foot {methods=[getPresentation]}
+define_module_block ::= define_module_head [sep statements] sep define_module_foot {pin=1 methods=[getPresentation]}
 
 define_module_head ::= 'Module' parse_identifier {pin=1 recoverWhile=nosep}
 define_module_foot ::= 'EndModule'
 
 // Enumeration
-enumeration_block ::= enumeration_head [sep statements] sep enumeration_foot
+enumeration_block ::= enumeration_head [sep statements] sep enumeration_foot {pin=1}
 
 enumeration_head ::= ('Enumeration' | 'EnumerationBinary') {pin=1 recoverWhile=nosep}
 enumeration_foot ::= 'EndEnumeration'
 
 
 // Loops
-private while ::= while_head [sep statements] sep while_foot
+private while ::= while_head [sep statements] sep while_foot {pin=1}
 private while_head ::= 'While' expression {pin=1 recoverWhile=nosep}
 private while_foot ::= 'Wend'
-private for ::= for_head [sep statements] sep for_foot
+private for ::= for_head [sep statements] sep for_foot {pin=1}
 private for_head ::= 'For' variable_decl_identifier '=' expression 'To' expression ['Step' NUMBER] {pin=1 recoverWhile=nosep}
 private for_foot ::= 'Next' [parse_identifier]
-private foreach ::= foreach_head [sep statements] sep foreach_foot
+private foreach ::= foreach_head [sep statements] sep foreach_foot {pin=1}
 private foreach_head ::= 'ForEach' identifier_or_call_chained {pin=1 recoverWhile=nosep}
 private foreach_foot ::= 'Next'
 private repeat ::= 'Repeat' [sep statements] sep ('Until' expression | 'ForEver') {pin=1}
@@ -238,7 +244,8 @@ private condition_else ::= 'Else' [sep statements] {pin=1}
 private condition_endif ::= 'EndIf'
 
 private condition_case ::= ('Case' expression|'Default') [sep statements]
-private condition_select ::= 'Select' expression (sep condition_case)* sep 'EndSelect' {pin=1}
+private condition_select ::= 'Select' expression (sep condition_case)* sep condition_endselect {pin=1}
+private condition_endselect ::= 'EndSelect'
 
 condition_block ::= condition_if (sep condition_elseif)* [sep condition_else] sep condition_endif | condition_select
 
@@ -249,7 +256,8 @@ private comp_condition_else ::= 'CompilerElse' [sep statements] {pin=1}
 private comp_condition_endif ::= 'CompilerEndIf'
 
 private comp_condition_case ::= ('CompilerCase' expression|'CompilerDefault') [sep statements] {pin=1}
-private comp_condition_select ::= 'CompilerSelect' expression (sep comp_condition_case)* sep 'CompilerEndSelect' {pin=1}
+private comp_condition_select ::= 'CompilerSelect' expression (sep comp_condition_case)* sep comp_condition_endselect {pin=1}
+private comp_condition_endselect ::= 'CompilerEndSelect'
 
 comp_condition_block ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_condition_else] sep comp_condition_endif |
                    comp_condition_select
