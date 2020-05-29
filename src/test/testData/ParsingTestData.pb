@@ -34,7 +34,8 @@ Procedure procedure2()
     ProcedureReturn 45
 EndProcedure
 
-Debug procedure1(1, procedure2())
+Debug procedure1(1,
+        procedure2())
 
 Macro macro1(a=, b=)
     (a + b)
