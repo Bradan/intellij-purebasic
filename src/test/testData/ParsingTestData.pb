@@ -2,7 +2,7 @@
 
 EnableExplicit
 
-#constant = 42
+#constant = 42 : #constant2 = 43
 
 Define avariable.i = 0
 Global *apointer ; declaration
