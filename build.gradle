@@ -62,15 +62,34 @@ task generatePureBasicLexer(type: GenerateLexer) {
     targetClass = "PureBasicLexer"
     purgeOldFiles = true
 }
-task generatePureBasicParser(type: GenerateParser) {
+task generatePureBasicParserPre(type: GenerateParser) {
+    dependsOn generatePureBasicLexer
+    mustRunAfter generatePureBasicLexer
+
     source = "src/main/java/eu/bradan/purebasic/PureBasic.bnf"
     targetRoot = "src/main/gen"
     pathToParser = 'eu/bradan/purebasic/PureBasicParser.java'
     pathToPsiRoot = 'eu/bradan/purebasic/psi'
     purgeOldFiles = true
 }
+task generatePureBasicParser(type: GenerateParser) {
+    dependsOn generatePureBasicParserPre
+    dependsOn compileJava
 
-//generatePureBasicParser.dependsOn(compileJava)
+    compileJava.mustRunAfter generatePureBasicParserPre
+
+    outputs.upToDateWhen { false } // always execute
+    doFirst {
+        classpath += sourceSets.main.runtimeClasspath // load the classes
+    }
+
+    // identical to generatePureBasicParserPre
+    source = "src/main/java/eu/bradan/purebasic/PureBasic.bnf"
+    targetRoot = "src/main/gen"
+    pathToParser = 'eu/bradan/purebasic/PureBasicParser.java'
+    pathToPsiRoot = 'eu/bradan/purebasic/psi'
+    purgeOldFiles = true
+}
 
 // TODO: Wait for a fix for issue https://github.com/JetBrains/gradle-grammar-kit-plugin/issues/3
 //       Cannot automatically generate lexer/parser without invoking the java compiler twice
