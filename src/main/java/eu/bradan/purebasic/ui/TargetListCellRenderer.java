@@ -21,38 +21,29 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.psi;
+package eu.bradan.purebasic.ui;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.navigation.ItemPresentation;
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.Nullable;
+import eu.bradan.purebasic.module.PureBasicTargetSettings;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class PureBasicDeclareModuleBlockPresentation implements ItemPresentation {
-    private final PureBasicDeclareModuleBlock element;
-
-    public PureBasicDeclareModuleBlockPresentation(PsiElement element) {
-        this.element = (PureBasicDeclareModuleBlock) element;
+public class TargetListCellRenderer extends JLabel implements ListCellRenderer<PureBasicTargetSettings> {
+    public TargetListCellRenderer() {
+        setOpaque(true);
+        setHorizontalAlignment(LEFT);
+        setVerticalAlignment(CENTER);
     }
 
-    @Nullable
     @Override
-    public String getPresentableText() {
-        final PureBasicParseIdentifier parseIdentifier = element.getDeclareModuleHead().getParseIdentifier();
-        return parseIdentifier != null ? parseIdentifier.getText() : null;
-    }
-
-    @Nullable
-    @Override
-    public String getLocationString() {
-        return element.getContainingFile().getName();
-    }
-
-    @Nullable
-    @Override
-    public Icon getIcon(boolean unused) {
-        return AllIcons.Nodes.Module; // TODO: replace by own icon
+    public Component getListCellRendererComponent(JList<? extends PureBasicTargetSettings> list,
+                                                  PureBasicTargetSettings value, int index,
+                                                  boolean isSelected, boolean hasFocus) {
+        if (value != null) {
+            setText(value.name + " (" + value.outputFile + ")");
+        } else {
+            setText("<<invalid>>");
+        }
+        return this;
     }
 }

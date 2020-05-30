@@ -42,6 +42,9 @@
         <compiler.buildTargetScopeProvider
                 implementation="eu.bradan.purebasic.builder.PureBasicBuildTargetScopeProvider"/>
 
+        <configurationType implementation="eu.bradan.purebasic.run.PureBasicConfigurationType"/>
+        <programRunner implementation="eu.bradan.purebasic.run.PureBasicProgramRunner"/>
+
         <projectConfigurable instance="eu.bradan.purebasic.settings.PureBasicCompilerSettingsConfigurable"
                              groupId="build.tools"/>
 

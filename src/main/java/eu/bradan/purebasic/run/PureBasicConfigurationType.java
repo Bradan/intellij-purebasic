@@ -21,38 +21,43 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.psi;
+package eu.bradan.purebasic.run;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.navigation.ItemPresentation;
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.Nullable;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationType;
+import eu.bradan.purebasic.PureBasicIcons;
+import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class PureBasicDeclareModuleBlockPresentation implements ItemPresentation {
-    private final PureBasicDeclareModuleBlock element;
-
-    public PureBasicDeclareModuleBlockPresentation(PsiElement element) {
-        this.element = (PureBasicDeclareModuleBlock) element;
+public class PureBasicConfigurationType implements ConfigurationType {
+    @Nls(capitalization = Nls.Capitalization.Title)
+    @NotNull
+    @Override
+    public String getDisplayName() {
+        return "PureBasic Application";
     }
 
-    @Nullable
+    @Nls(capitalization = Nls.Capitalization.Sentence)
     @Override
-    public String getPresentableText() {
-        final PureBasicParseIdentifier parseIdentifier = element.getDeclareModuleHead().getParseIdentifier();
-        return parseIdentifier != null ? parseIdentifier.getText() : null;
+    public String getConfigurationTypeDescription() {
+        return "Run a pureBasic application";
     }
 
-    @Nullable
     @Override
-    public String getLocationString() {
-        return element.getContainingFile().getName();
+    public Icon getIcon() {
+        return PureBasicIcons.PUREBASIC;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public Icon getIcon(boolean unused) {
-        return AllIcons.Nodes.Module; // TODO: replace by own icon
+    public String getId() {
+        return "PUREBASIC_RUN_CONFIGURATION";
+    }
+
+    @Override
+    public ConfigurationFactory[] getConfigurationFactories() {
+        return new ConfigurationFactory[]{new PureBasicConfigurationFactory(this)};
     }
 }

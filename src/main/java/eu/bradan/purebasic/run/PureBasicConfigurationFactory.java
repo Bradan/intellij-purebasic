@@ -21,38 +21,36 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.psi;
+package eu.bradan.purebasic.run;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.navigation.ItemPresentation;
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.Nullable;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
+public class PureBasicConfigurationFactory extends ConfigurationFactory {
+    private final static String FACTORY_NAME = "PureBasic configuration factory";
 
-public class PureBasicDeclareModuleBlockPresentation implements ItemPresentation {
-    private final PureBasicDeclareModuleBlock element;
-
-    public PureBasicDeclareModuleBlockPresentation(PsiElement element) {
-        this.element = (PureBasicDeclareModuleBlock) element;
+    protected PureBasicConfigurationFactory(@NotNull ConfigurationType type) {
+        super(type);
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getPresentableText() {
-        final PureBasicParseIdentifier parseIdentifier = element.getDeclareModuleHead().getParseIdentifier();
-        return parseIdentifier != null ? parseIdentifier.getText() : null;
+    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
+        return new PureBasicRunConfiguration(project, this, "PureBasic");
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getLocationString() {
-        return element.getContainingFile().getName();
+    public String getName() {
+        return FACTORY_NAME;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public Icon getIcon(boolean unused) {
-        return AllIcons.Nodes.Module; // TODO: replace by own icon
+    public String getId() {
+        return FACTORY_NAME;
     }
 }

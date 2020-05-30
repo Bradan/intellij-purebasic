@@ -27,14 +27,14 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.components.StoragePathMacros;
+import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @State(name = "PureBasicModule", storages = {@Storage(StoragePathMacros.MODULE_FILE)})
 public class PureBasicModuleSettings implements PersistentStateComponent<PureBasicModuleSettingsState> {
     public PureBasicModuleSettingsState state = new PureBasicModuleSettingsState();
 
-    @Nullable
+    @NotNull
     @Override
     public PureBasicModuleSettingsState getState() {
         return state;
@@ -42,7 +42,7 @@ public class PureBasicModuleSettings implements PersistentStateComponent<PureBas
 
     @Override
     public void loadState(@NotNull PureBasicModuleSettingsState state) {
-        this.state = state;
+        XmlSerializerUtil.copyBean(state, this.state);
     }
 
 }
