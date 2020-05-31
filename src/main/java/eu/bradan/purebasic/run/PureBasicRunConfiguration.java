@@ -27,6 +27,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
@@ -35,8 +36,11 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.intellij.util.xmlb.annotations.Property;
 import com.intellij.util.xmlb.annotations.Transient;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
 import eu.bradan.purebasic.module.PureBasicModuleSettings;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
+import eu.bradan.purebasic.settings.PureBasicCompilerSettings;
+import eu.bradan.purebasic.settings.PureBasicCompilerSettingsState;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -141,7 +145,7 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
         }
     }
 
-    public GeneralCommandLine getCommandLine() {
+    public GeneralCommandLine getCommandLine(boolean standaloneDebugger) {
         File executable = null;
         if (module != null && target != null) {
             executable = new File(new File(module.getModuleFilePath()).getParentFile(), target.outputFile);
@@ -152,6 +156,22 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
         }
 
         LinkedList<String> command = new LinkedList<>();
+
+        if (standaloneDebugger) {
+            final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
+            final PureBasicCompilerSettingsState state = settings.getState();
+            for (String sdk : state.sdks) {
+                final PureBasicCompiler compiler = PureBasicCompiler.getPureBasicCompiler(sdk);
+                if (compiler != null && Objects.equals(target.sdk, compiler.getVersionString())) {
+                    File debugger = new File(new File(compiler.getSdkHome(), "compilers"), "pbdebugger");
+                    if (debugger.exists()) {
+                        command.add(debugger.getAbsolutePath());
+                    }
+                    break;
+                }
+            }
+        }
+
         command.add(executable.getAbsolutePath());
         CommandLineTokenizer tokenizer = new CommandLineTokenizer(arguments);
         while (tokenizer.hasMoreTokens()) {

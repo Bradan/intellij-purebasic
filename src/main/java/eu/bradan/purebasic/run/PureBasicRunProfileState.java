@@ -26,6 +26,7 @@ package eu.bradan.purebasic.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.process.KillableColoredProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -46,7 +47,8 @@ public class PureBasicRunProfileState extends CommandLineState {
     @Override
     protected ProcessHandler startProcess() throws ExecutionException {
         PureBasicRunConfiguration runProfile = (PureBasicRunConfiguration) getEnvironment().getRunProfile();
-        GeneralCommandLine commandLine = runProfile.getCommandLine();
+        final boolean debug = DefaultDebugExecutor.EXECUTOR_ID.equals(getEnvironment().getExecutor().getId());
+        GeneralCommandLine commandLine = runProfile.getCommandLine(debug);
 
         KillableColoredProcessHandler processHandler = new KillableColoredProcessHandler(commandLine) {
             @Override

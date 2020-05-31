@@ -30,6 +30,8 @@ import com.intellij.execution.RunProfileStarter;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RunnerSettings;
+import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.runners.RunContentBuilder;
@@ -49,8 +51,9 @@ public class PureBasicProgramRunner implements ProgramRunner<RunnerSettings> {
     }
 
     @Override
-    public boolean canRun(@NotNull String s, @NotNull RunProfile runProfile) {
-        return runProfile instanceof PureBasicRunConfiguration;
+    public boolean canRun(@NotNull String executorId, @NotNull RunProfile runProfile) {
+        return runProfile instanceof PureBasicRunConfiguration
+                && (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId));
     }
 
     @Override
