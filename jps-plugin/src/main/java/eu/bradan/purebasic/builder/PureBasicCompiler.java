@@ -180,6 +180,8 @@ public class PureBasicCompiler {
             // Functions
             final Pattern patternFunction = Pattern.compile("([a-zA-Z_][a-zA-Z_0-9]*)\\s*\\(([^)]*)\\)\\s*-\\s*(.*)");
             writer.write("FUNCTIONLIST\n");
+            writer.flush();
+            reader.readLine(); // skip the amount
             while ((line = reader.readLine()) != null) {
                 if ("OUTPUT\tCOMPLETE".equals(line)) {
                     break;
@@ -187,15 +189,17 @@ public class PureBasicCompiler {
 
                 final Matcher m = patternFunction.matcher(line);
                 if (m.matches()) {
-                    final String name = m.group(0);
-                    final String args = m.group(1);
-                    final String description = m.group(2);
+                    final String name = m.group(1);
+                    final String args = m.group(2);
+                    final String description = m.group(3);
                     collector.declareFunction(name, args, description);
                 }
             }
 
             // Constants
             writer.write("CONSTANTLIST\n");
+            writer.flush();
+            reader.readLine(); // skip the amount
             while ((line = reader.readLine()) != null) {
                 if ("OUTPUT\tCOMPLETE".equals(line)) {
                     break;
@@ -210,6 +214,8 @@ public class PureBasicCompiler {
             // Structures
             LinkedList<String> structures = new LinkedList<>();
             writer.write("STRUCTURELIST\n");
+            writer.flush();
+            reader.readLine(); // skip the amount
             while ((line = reader.readLine()) != null) {
                 if ("OUTPUT\tCOMPLETE".equals(line)) {
                     break;
@@ -219,6 +225,7 @@ public class PureBasicCompiler {
 
             for (String structure : structures) {
                 writer.write("STRUCTURE\t" + structure + "\n");
+                writer.flush();
                 LinkedList<String> content = new LinkedList<>();
                 while ((line = reader.readLine()) != null) {
                     if ("OUTPUT\tCOMPLETE".equals(line)) {
@@ -232,6 +239,8 @@ public class PureBasicCompiler {
             // Interfaces
             LinkedList<String> interfaces = new LinkedList<>();
             writer.write("INTERFACELIST\n");
+            writer.flush();
+            reader.readLine(); // skip the amount
             while ((line = reader.readLine()) != null) {
                 if ("OUTPUT\tCOMPLETE".equals(line)) {
                     break;
@@ -241,6 +250,7 @@ public class PureBasicCompiler {
 
             for (String interf : interfaces) {
                 writer.write("INTERFACE\t" + interf + "\n");
+                writer.flush();
                 LinkedList<String> content = new LinkedList<>();
                 while ((line = reader.readLine()) != null) {
                     if ("OUTPUT\tCOMPLETE".equals(line)) {

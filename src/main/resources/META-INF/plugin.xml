@@ -34,7 +34,7 @@
                                       implementationClass="eu.bradan.purebasic.structure.PureBasicStructureViewFactory"/>
 
         <completion.contributor language="PureBasic"
-                                implementationClass="eu.bradan.purebasic.PureBasicCompletionContributor"/>
+                                implementationClass="eu.bradan.purebasic.completion.PureBasicCompletionContributor"/>
 
         <colorSettingsPage implementation="eu.bradan.purebasic.settings.PureBasicColorSettingsPage"/>
 
