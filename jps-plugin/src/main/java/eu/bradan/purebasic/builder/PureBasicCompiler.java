@@ -41,10 +41,14 @@ public class PureBasicCompiler {
 
     private String sdkHome;
     private File compiler;
+    private static final HashMap<String, PureBasicCompiler> compilerByHome = new HashMap<>();
+    private static PureBasicCompiler defaultCompiler = null;
+    private String labels;
 
     private PureBasicCompiler(String sdkHome, File compiler) {
         this.sdkHome = sdkHome;
         this.compiler = compiler;
+        this.labels = "";
     }
 
     @Nullable
@@ -67,12 +71,39 @@ public class PureBasicCompiler {
     }
 
     @Nullable
-    public static PureBasicCompiler getPureBasicCompiler(String sdkHome) {
-        File compiler = getCompilerExecutable(sdkHome);
+    public static PureBasicCompiler getDefaultCompiler() {
+        return defaultCompiler;
+    }
+
+    @Nullable
+    public static PureBasicCompiler getOrLoadCompilerByHome(String sdkHome) {
+        PureBasicCompiler compiler = compilerByHome.getOrDefault(sdkHome, null);
         if (compiler != null) {
-            return new PureBasicCompiler(sdkHome, compiler);
+            return compiler;
         }
 
+        File executable = getCompilerExecutable(sdkHome);
+        if (executable != null) {
+            compiler = new PureBasicCompiler(sdkHome, executable);
+            if (defaultCompiler == null) {
+                defaultCompiler = compiler;
+            }
+        }
+
+        if (compiler != null) {
+            compilerByHome.put(compiler.getSdkHome(), compiler);
+        }
+
+        return compiler;
+    }
+
+    @Nullable
+    public static PureBasicCompiler getCompilerByLabel(String label) {
+        for (PureBasicCompiler compiler : compilerByHome.values()) {
+            if (compiler.getLabels().contains(label)) {
+                return compiler;
+            }
+        }
         return null;
     }
 
@@ -83,6 +114,18 @@ public class PureBasicCompiler {
     public void setSdkHome(String sdkHome) {
         this.sdkHome = sdkHome;
         this.compiler = getCompilerExecutable(sdkHome);
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    public void setLabels(String labels) {
+        this.labels = labels;
+    }
+
+    private File getCompiler() {
+        return compiler;
     }
 
     @Nullable
@@ -218,8 +261,8 @@ public class PureBasicCompiler {
             contentRoot = contentRoot.substring("file://".length());
         }
 
-        final File inputFile = Paths.get(contentRoot, targetSettings.inputFile).toAbsolutePath().toFile();
-        final File outputFile = Paths.get(contentRoot, targetSettings.outputFile).toAbsolutePath().toFile();
+        final File inputFile = Paths.get(contentRoot, targetSettings.getInputFile()).toAbsolutePath().toFile();
+        final File outputFile = Paths.get(contentRoot, targetSettings.getOutputFile()).toAbsolutePath().toFile();
 
         final String[] command = new String[]{
                 compiler.getAbsolutePath(),

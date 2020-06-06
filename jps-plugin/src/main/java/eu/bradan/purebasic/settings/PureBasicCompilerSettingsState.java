@@ -23,26 +23,69 @@
 
 package eu.bradan.purebasic.settings;
 
+import com.intellij.util.xmlb.annotations.OptionTag;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Objects;
 
 public class PureBasicCompilerSettingsState {
-    public LinkedList<String> sdks;
+    @OptionTag
+    private final LinkedList<Sdk> sdks;
 
     public PureBasicCompilerSettingsState() {
         sdks = new LinkedList<>();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PureBasicCompilerSettingsState state = (PureBasicCompilerSettingsState) o;
-        return Objects.equals(sdks, state.sdks);
+    public PureBasicCompiler[] getSdks() {
+        ArrayList<PureBasicCompiler> result = new ArrayList<>();
+        for (Sdk sdk : sdks) {
+            PureBasicCompiler compiler = PureBasicCompiler.getOrLoadCompilerByHome(sdk.getHome());
+            if (compiler != null) {
+                compiler.setLabels(sdk.getLabels());
+            }
+            result.add(compiler);
+        }
+        return result.toArray(PureBasicCompiler[]::new);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(sdks);
+    public void addSdk(PureBasicCompiler sdk) {
+        if (sdk != null) {
+            sdks.add(new Sdk(sdk.getSdkHome(), sdk.getLabels()));
+        }
+    }
+
+    public void clearSdks() {
+        sdks.clear();
+    }
+
+    private static class Sdk {
+        private String home;
+        private String labels;
+
+        public Sdk() {
+            this("", "");
+        }
+
+        public Sdk(String home, String labels) {
+            this.home = home;
+            this.labels = labels;
+        }
+
+        public String getHome() {
+            return home;
+        }
+
+        public void setHome(String home) {
+            this.home = home;
+        }
+
+        public String getLabels() {
+            return labels;
+        }
+
+        public void setLabels(String labels) {
+            this.labels = labels;
+        }
     }
 }

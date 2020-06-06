@@ -34,7 +34,7 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.util.xmlb.XmlSerializer;
-import com.intellij.util.xmlb.annotations.Property;
+import com.intellij.util.xmlb.annotations.OptionTag;
 import com.intellij.util.xmlb.annotations.Transient;
 import eu.bradan.purebasic.builder.PureBasicCompiler;
 import eu.bradan.purebasic.module.PureBasicModuleSettings;
@@ -51,14 +51,14 @@ import java.util.Objects;
 
 public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRunProfileState> {
     private Module module;
-    private PureBasicTargetSettings target;
+
+    @OptionTag
+    private String moduleId; // for serialization purposes only
+
+    @OptionTag
+    private String target;
     private String arguments;
     private String workingDirectory;
-
-    @Property
-    private String moduleId; // for serialization purposes only
-    @Property
-    private String targetId; // for serialization purposes only
 
     protected PureBasicRunConfiguration(@NotNull Project project, @Nullable ConfigurationFactory factory, @Nullable String name) {
         super(project, factory, name);
@@ -92,7 +92,6 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
     @Override
     public void writeExternal(@NotNull Element element) {
         moduleId = module != null ? module.getName() : null;
-        targetId = target != null ? target.name : null;
 
         super.writeExternal(element);
 
@@ -114,19 +113,6 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
         for (Module module : modules) {
             if (Objects.equals(moduleId, module.getName())) {
                 this.module = module;
-
-                final PureBasicModuleSettings settings = this.module.getService(PureBasicModuleSettings.class);
-
-                this.target = null;
-                if (!settings.getState().targetOptions.isEmpty()) {
-                    this.target = settings.getState().targetOptions.getFirst();
-                }
-                for (PureBasicTargetSettings target : settings.getState().targetOptions) {
-                    if (Objects.equals(targetId, target.name)) {
-                        this.target = target;
-                        break;
-                    }
-                }
                 break;
             }
         }
@@ -140,15 +126,17 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
         if (modules.length > 0) {
             this.module = modules[0];
             final PureBasicModuleSettings settings = this.module.getService(PureBasicModuleSettings.class);
-            final LinkedList<PureBasicTargetSettings> targets = settings.getState().targetOptions;
-            this.target = !targets.isEmpty() ? targets.getFirst() : null;
+            final LinkedList<PureBasicTargetSettings> targets = settings.getState().getTargetOptions();
+            this.target = !targets.isEmpty() ? targets.getFirst().getName() : null;
         }
     }
 
     public GeneralCommandLine getCommandLine(boolean standaloneDebugger) {
+        final PureBasicTargetSettings target = getTarget();
+
         File executable = null;
         if (module != null && target != null) {
-            executable = new File(new File(module.getModuleFilePath()).getParentFile(), target.outputFile);
+            executable = new File(new File(module.getModuleFilePath()).getParentFile(), target.getOutputFile());
         }
 
         if (executable == null) {
@@ -160,9 +148,8 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
         if (standaloneDebugger) {
             final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
             final PureBasicCompilerSettingsState state = settings.getState();
-            for (String sdk : state.sdks) {
-                final PureBasicCompiler compiler = PureBasicCompiler.getPureBasicCompiler(sdk);
-                if (compiler != null && Objects.equals(target.sdk, compiler.getVersionString())) {
+            for (PureBasicCompiler compiler : state.getSdks()) {
+                if (compiler != null && target.getSdk() == compiler) {
                     File debugger = new File(new File(compiler.getSdkHome(), "compilers"), "pbdebugger");
                     if (debugger.exists()) {
                         command.add(debugger.getAbsolutePath());
@@ -200,11 +187,20 @@ public class PureBasicRunConfiguration extends RunConfigurationBase<PureBasicRun
 
     @Transient
     public PureBasicTargetSettings getTarget() {
-        return target;
+        if (module == null) {
+            return null;
+        }
+
+        final PureBasicModuleSettings settings = this.module.getService(PureBasicModuleSettings.class);
+
+        return settings.getState().getTargetOptions().stream()
+                .filter(t -> Objects.equals(target, t.getName()))
+                .findFirst()
+                .orElse(null);
     }
 
     public void setTarget(PureBasicTargetSettings target) {
-        this.target = target;
+        this.target = target != null ? target.getName() : null;
     }
 
     public String getArguments() {

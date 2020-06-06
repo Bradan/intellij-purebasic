@@ -23,11 +23,13 @@
 
 package eu.bradan.purebasic.run;
 
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.fields.ExpandableTextField;
 import eu.bradan.purebasic.module.PureBasicModuleSettings;
@@ -54,11 +56,14 @@ public class PureBasicRunConfigurationEditor extends SettingsEditor<PureBasicRun
             final Module m = (Module) comboBoxModule.getSelectedItem();
             if (m != null) {
                 final PureBasicModuleSettings settings = m.getService(PureBasicModuleSettings.class);
-                for (PureBasicTargetSettings target : settings.getState().targetOptions) {
+                for (PureBasicTargetSettings target : settings.getState().getTargetOptions()) {
                     comboBoxTarget.addItem(target);
                 }
             }
         });
+
+        textFieldWorkingDirectory.addBrowseFolderListener(new TextBrowseFolderListener(
+                FileChooserDescriptorFactory.createSingleFolderDescriptor()));
     }
 
     public PureBasicRunConfigurationEditor(Project project) {
@@ -95,14 +100,14 @@ public class PureBasicRunConfigurationEditor extends SettingsEditor<PureBasicRun
         comboBoxTarget.setRenderer(new TargetListCellRenderer());
     }
 
-    public void setData(PureBasicRunConfiguration data) {
+    public void setData(@NotNull PureBasicRunConfiguration data) {
         comboBoxModule.setSelectedItem(data.getModule());
         comboBoxTarget.setSelectedItem(data.getTarget());
         textFieldArguments.setText(data.getArguments());
         textFieldWorkingDirectory.setText(data.getWorkingDirectory());
     }
 
-    public void getData(PureBasicRunConfiguration data) {
+    public void getData(@NotNull PureBasicRunConfiguration data) {
         data.setModule((Module) comboBoxModule.getSelectedItem());
         data.setTarget((PureBasicTargetSettings) comboBoxTarget.getSelectedItem());
         data.setArguments(textFieldArguments.getText());

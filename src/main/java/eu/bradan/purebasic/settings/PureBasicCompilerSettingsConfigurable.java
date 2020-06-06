@@ -51,7 +51,8 @@ public class PureBasicCompilerSettingsConfigurable extends ConfigurableProvider 
     public JComponent createComponent() {
         final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
         if (settingsPanel == null) {
-            settingsPanel = new PureBasicCompilerSettingsPanel(settings.getState());
+            settingsPanel = new PureBasicCompilerSettingsPanel();
+            settingsPanel.setData(settings.getState());
         }
         return settingsPanel.getRoot();
     }
@@ -62,7 +63,7 @@ public class PureBasicCompilerSettingsConfigurable extends ConfigurableProvider 
             return false;
         }
         final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
-        return !settingsPanel.getState().equals(settings.getState());
+        return settingsPanel.isModified(settings.getState());
     }
 
     @Override
@@ -71,8 +72,9 @@ public class PureBasicCompilerSettingsConfigurable extends ConfigurableProvider 
             return;
         }
         final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
-        final PureBasicCompilerSettingsState modifiedState = settingsPanel.getState();
-        settings.loadState(modifiedState);
+        final PureBasicCompilerSettingsState state = settings.getState();
+        settingsPanel.getData(state);
+        settings.loadState(state);
     }
 
     @Nullable

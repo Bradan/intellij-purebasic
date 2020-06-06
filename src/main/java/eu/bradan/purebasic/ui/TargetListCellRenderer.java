@@ -40,7 +40,7 @@ public class TargetListCellRenderer extends JLabel implements ListCellRenderer<P
                                                   PureBasicTargetSettings value, int index,
                                                   boolean isSelected, boolean hasFocus) {
         if (value != null) {
-            setText(value.name + " (" + value.outputFile + ")");
+            setText(value.getName() + " (" + value.getOutputFile() + ")");
         } else {
             setText("<<invalid>>");
         }

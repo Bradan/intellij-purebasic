@@ -23,94 +23,81 @@
 
 package eu.bradan.purebasic.module;
 
-import com.intellij.openapi.components.ServiceManager;
-import eu.bradan.purebasic.builder.PureBasicCompiler;
-import eu.bradan.purebasic.settings.PureBasicCompilerSettings;
-import eu.bradan.purebasic.settings.PureBasicCompilerSettingsState;
-import eu.bradan.purebasic.ui.FileTextField;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.ui.TextBrowseFolderListener;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.vfs.VirtualFile;
+import eu.bradan.purebasic.PureBasicFileType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.nio.file.Paths;
 
 public class PureBasicTargetSettingsPanel extends JPanel {
-    private JComboBox<String> comboBoxSdk;
-    private FileTextField textFieldInput;
-    private JTextField textFieldOutput;
+    private final FileChooserDescriptor fileChooserDescriptor;
+    private JTextField textFieldLabel;
+    private TextFieldWithBrowseButton textFieldInput;
     private JPanel root;
+    private TextFieldWithBrowseButton textFieldOutput;
 
-    private PureBasicTargetSettings targetSettings;
-
-    public PureBasicTargetSettingsPanel() {
-        targetSettings = null;
-
-        final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
-        final PureBasicCompilerSettingsState state = settings.getState();
-        if (state != null) {
-            for (String sdk : state.sdks) {
-                final PureBasicCompiler compiler = PureBasicCompiler.getPureBasicCompiler(sdk);
-                if (compiler != null) {
-                    comboBoxSdk.addItem(compiler.getVersionString());
-                }
-            }
-            comboBoxSdk.addItem("<Other SDK>");
-        }
-        textFieldOutput.setText("Output.exe");
-
+    public PureBasicTargetSettingsPanel(@Nullable Module module) {
         this.setLayout(new BorderLayout());
         this.add(root, BorderLayout.CENTER);
 
-        comboBoxSdk.addActionListener(e -> {
-            if (targetSettings != null) {
-                targetSettings.sdk = (String) comboBoxSdk.getSelectedItem();
-            }
-        });
-        textFieldInput.addUpdateListener(() -> {
-            if (targetSettings != null) {
-                targetSettings.inputFile = textFieldInput.getText();
-            }
-        });
-        textFieldOutput.addActionListener(e -> {
-            if (targetSettings != null) {
-                targetSettings.outputFile = textFieldOutput.getText();
-            }
-        });
-        textFieldOutput.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                if (targetSettings != null) targetSettings.outputFile = textFieldOutput.getText();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                if (targetSettings != null) targetSettings.outputFile = textFieldOutput.getText();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                if (targetSettings != null) targetSettings.outputFile = textFieldOutput.getText();
-            }
-        });
-    }
-
-    public JPanel getRoot() {
-        return root;
-    }
-
-    public void setTargetSettings(PureBasicTargetSettings targetSettings) {
-        this.targetSettings = null;
-        comboBoxSdk.setSelectedIndex(comboBoxSdk.getItemCount() - 1);
-        if (targetSettings != null) {
-            textFieldInput.setText(targetSettings.inputFile);
-            textFieldOutput.setText(targetSettings.outputFile);
-            for (int i = 0; i < comboBoxSdk.getItemCount(); i++) {
-                if (comboBoxSdk.getItemAt(i).equals(targetSettings.sdk)) {
-                    comboBoxSdk.setSelectedIndex(i);
-                    break;
-                }
-            }
+        fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor(PureBasicFileType.INSTANCE);
+        final VirtualFile root = module != null && module.getModuleFile() != null ? module.getModuleFile().getParent() : null;
+        if (root != null) {
+            fileChooserDescriptor.setRoots(root);
         }
-        this.targetSettings = targetSettings;
+        textFieldInput.addBrowseFolderListener(new TextBrowseFolderListener(fileChooserDescriptor) {
+            @SuppressWarnings("UnstableApiUsage")
+            @NotNull
+            @Override
+            protected String chosenFileToResultingText(@NotNull VirtualFile chosenFile) {
+                if (root != null) {
+                    return Paths.get(root.getPath())
+                            .relativize(Paths.get(chosenFile.getPath()))
+                            .toString();
+                }
+                return super.chosenFileToResultingText(chosenFile);
+            }
+        });
+        textFieldOutput.addBrowseFolderListener(new TextBrowseFolderListener(fileChooserDescriptor) {
+            @SuppressWarnings("UnstableApiUsage")
+            @NotNull
+            @Override
+            protected String chosenFileToResultingText(@NotNull VirtualFile chosenFile) {
+                if (root != null) {
+                    return Paths.get(root.getPath())
+                            .relativize(Paths.get(chosenFile.getPath()))
+                            .toString();
+                }
+                return super.chosenFileToResultingText(chosenFile);
+            }
+        });
+    }
+
+    public void setData(@NotNull PureBasicTargetSettings data) {
+        textFieldInput.setText(data.getInputFile());
+        textFieldOutput.setText(data.getOutputFile());
+        textFieldLabel.setText(data.getSdkLabel());
+    }
+
+    public void getData(@NotNull PureBasicTargetSettings data) {
+        data.setInputFile(textFieldInput.getText());
+        data.setOutputFile(textFieldOutput.getText());
+        data.setSdkLabel(textFieldLabel.getText());
+    }
+
+    public boolean isModified(@NotNull PureBasicTargetSettings data) {
+        if (textFieldInput.getText() != null ? !textFieldInput.getText().equals(data.getInputFile()) : data.getInputFile() != null)
+            return true;
+        if (textFieldOutput.getText() != null ? !textFieldOutput.getText().equals(data.getOutputFile()) : data.getOutputFile() != null)
+            return true;
+        return textFieldLabel.getText() != null ? !textFieldLabel.getText().equals(data.getSdkLabel()) : data.getSdkLabel() != null;
     }
 }

@@ -23,42 +23,19 @@
 
 package eu.bradan.purebasic.module;
 
+import com.intellij.util.xmlb.annotations.OptionTag;
+
 import java.util.LinkedList;
-import java.util.Objects;
 
 public class PureBasicModuleSettingsState {
-    public LinkedList<PureBasicTargetSettings> targetOptions;
+    @OptionTag
+    private final LinkedList<PureBasicTargetSettings> targetOptions;
 
     public PureBasicModuleSettingsState() {
         targetOptions = new LinkedList<>();
     }
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        PureBasicModuleSettingsState state;
-        try {
-            state = (PureBasicModuleSettingsState) super.clone();
-        } catch (CloneNotSupportedException e) {
-            state = new PureBasicModuleSettingsState();
-        }
-        for (PureBasicTargetSettings to : targetOptions) {
-            state.targetOptions.add((PureBasicTargetSettings) to.clone());
-        }
-        return state;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PureBasicModuleSettingsState)) return false;
-
-        PureBasicModuleSettingsState state = (PureBasicModuleSettingsState) o;
-
-        return Objects.equals(targetOptions, state.targetOptions);
-    }
-
-    @Override
-    public int hashCode() {
-        return targetOptions != null ? targetOptions.hashCode() : 0;
+    public LinkedList<PureBasicTargetSettings> getTargetOptions() {
+        return targetOptions;
     }
 }

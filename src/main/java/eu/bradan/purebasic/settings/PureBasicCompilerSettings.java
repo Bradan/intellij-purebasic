@@ -27,15 +27,15 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.components.StoragePathMacros;
+import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @State(name = "PureBasicCompiler", storages = {@Storage(StoragePathMacros.NON_ROAMABLE_FILE)})
 public class PureBasicCompilerSettings implements PersistentStateComponent<PureBasicCompilerSettingsState> {
 
     public PureBasicCompilerSettingsState state = new PureBasicCompilerSettingsState();
 
-    @Nullable
+    @NotNull
     @Override
     public PureBasicCompilerSettingsState getState() {
         return state;
@@ -43,7 +43,7 @@ public class PureBasicCompilerSettings implements PersistentStateComponent<PureB
 
     @Override
     public void loadState(@NotNull PureBasicCompilerSettingsState state) {
-        this.state = state;
+        XmlSerializerUtil.copyBean(state, this.state);
     }
 
 }

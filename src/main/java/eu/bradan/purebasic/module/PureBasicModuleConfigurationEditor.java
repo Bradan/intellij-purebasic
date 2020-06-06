@@ -34,7 +34,7 @@ import javax.swing.*;
 
 public class PureBasicModuleConfigurationEditor implements ModuleConfigurationEditor {
     private PureBasicModuleSettingsPanel settingsPanel;
-    private Module module;
+    private final Module module;
 
     public PureBasicModuleConfigurationEditor(@NotNull Module module) {
         this.module = module;
@@ -52,7 +52,8 @@ public class PureBasicModuleConfigurationEditor implements ModuleConfigurationEd
     public JComponent createComponent() {
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
         if (settingsPanel == null) {
-            settingsPanel = new PureBasicModuleSettingsPanel(settings.getState());
+            settingsPanel = new PureBasicModuleSettingsPanel(module);
+            settingsPanel.setData(settings.getState());
         }
         return settingsPanel.getRoot();
     }
@@ -63,8 +64,7 @@ public class PureBasicModuleConfigurationEditor implements ModuleConfigurationEd
             return false;
         }
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
-        final PureBasicModuleSettingsState modifiedState = settingsPanel.getState();
-        return !modifiedState.equals(settings.getState());
+        return settingsPanel.isModified(settings.getState());
     }
 
     @Override
@@ -73,8 +73,9 @@ public class PureBasicModuleConfigurationEditor implements ModuleConfigurationEd
             return;
         }
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
-        final PureBasicModuleSettingsState modifiedState = settingsPanel.getState();
-        settings.loadState(modifiedState);
+        PureBasicModuleSettingsState state = new PureBasicModuleSettingsState();
+        settingsPanel.getData(state);
+        settings.loadState(state);
     }
 
     @Override

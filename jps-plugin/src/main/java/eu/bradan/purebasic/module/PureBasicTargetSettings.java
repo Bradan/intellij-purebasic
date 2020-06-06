@@ -23,47 +23,62 @@
 
 package eu.bradan.purebasic.module;
 
-import com.intellij.util.xmlb.XmlSerializerUtil;
-
-import java.util.Objects;
+import com.intellij.util.xmlb.annotations.Transient;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
+import org.jetbrains.annotations.Nullable;
 
 public class PureBasicTargetSettings {
-    public String name;
-    public String sdk;
-    public String inputFile;
-    public String outputFile;
+    private String name;
+    private String sdkLabel;
+    private String inputFile;
+    private String outputFile;
 
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        PureBasicTargetSettings options;
-        try {
-            options = (PureBasicTargetSettings) super.clone();
-        } catch (CloneNotSupportedException e) {
-            options = new PureBasicTargetSettings();
-        }
-        XmlSerializerUtil.copyBean(this, options);
-        return options;
+    public PureBasicTargetSettings() {
+        this("");
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PureBasicTargetSettings)) return false;
-
-        PureBasicTargetSettings that = (PureBasicTargetSettings) o;
-
-        if (!Objects.equals(name, that.name)) return false;
-        if (!Objects.equals(sdk, that.sdk)) return false;
-        if (!Objects.equals(inputFile, that.inputFile)) return false;
-        return Objects.equals(outputFile, that.outputFile);
+    public PureBasicTargetSettings(String name) {
+        this.name = name;
+        this.sdkLabel = "";
+        this.inputFile = "";
+        this.outputFile = "";
     }
 
-    @Override
-    public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (sdk != null ? sdk.hashCode() : 0);
-        result = 31 * result + (inputFile != null ? inputFile.hashCode() : 0);
-        result = 31 * result + (outputFile != null ? outputFile.hashCode() : 0);
-        return result;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Nullable
+    @Transient
+    public PureBasicCompiler getSdk() {
+        return PureBasicCompiler.getCompilerByLabel(getSdkLabel());
+    }
+
+    public String getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(String inputFile) {
+        this.inputFile = inputFile;
+    }
+
+    public String getOutputFile() {
+        return outputFile;
+    }
+
+    public void setOutputFile(String outputFile) {
+        this.outputFile = outputFile;
+    }
+
+    public String getSdkLabel() {
+        return this.sdkLabel;
+    }
+
+    public void setSdkLabel(String sdkLabel) {
+        this.sdkLabel = sdkLabel != null ? sdkLabel : "";
     }
 }

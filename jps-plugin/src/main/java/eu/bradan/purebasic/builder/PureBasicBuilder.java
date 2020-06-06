@@ -24,7 +24,6 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.openapi.diagnostic.Logger;
-import eu.bradan.purebasic.model.JpsPureBasicCompilers;
 import eu.bradan.purebasic.model.JpsPureBasicModuleElement;
 import eu.bradan.purebasic.module.PureBasicModuleSettingsState;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
@@ -99,8 +98,8 @@ public class PureBasicBuilder extends TargetBuilder<PureBasicBuildRootDescriptor
         };
 
         final String contentRoot = module.getContentRootsList().getUrls().get(0);
-        for (PureBasicTargetSettings targetSettings : settings.targetOptions) {
-            PureBasicCompiler compiler = JpsPureBasicCompilers.INSTANCE.getCompilerByVersion(targetSettings.sdk);
+        for (PureBasicTargetSettings targetSettings : settings.getTargetOptions()) {
+            PureBasicCompiler compiler = targetSettings.getSdk();
             if (compiler != null) {
                 try {
                     int exitCode = compiler.compile(targetSettings, contentRoot, logger);

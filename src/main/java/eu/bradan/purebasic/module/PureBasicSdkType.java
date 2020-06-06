@@ -24,8 +24,8 @@
 package eu.bradan.purebasic.module;
 
 import com.intellij.openapi.projectRoots.*;
-import eu.bradan.purebasic.builder.PureBasicCompiler;
 import eu.bradan.purebasic.PureBasicIcons;
+import eu.bradan.purebasic.builder.PureBasicCompiler;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,13 +55,13 @@ public class PureBasicSdkType extends SdkType {
 
     @Override
     public boolean isValidSdkHome(String path) {
-        return PureBasicCompiler.getPureBasicCompiler(path) != null;
+        return PureBasicCompiler.getOrLoadCompilerByHome(path) != null;
     }
 
     @Nullable
     @Override
     public String getVersionString(String sdkHome) {
-        final PureBasicCompiler compiler = PureBasicCompiler.getPureBasicCompiler(sdkHome);
+        final PureBasicCompiler compiler = PureBasicCompiler.getOrLoadCompilerByHome(sdkHome);
         if (compiler != null) {
             return compiler.getVersionString();
         }

@@ -23,91 +23,127 @@
 
 package eu.bradan.purebasic.module;
 
+import com.intellij.openapi.module.Module;
+import com.intellij.ui.JBSplitter;
+import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.table.JBTable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.Objects;
 
 public class PureBasicModuleSettingsPanel {
     private JPanel root;
-    private JButton buttonAdd;
-    private JButton buttonRemove;
-    private JTable listTargets;
-    private PureBasicTargetSettingsPanel panelTargetOptions;
+    private final CardLayout cardLayout;
+    private final TargetPanelsModel targetsModel;
+    private final Module module;
+    private JBTable listTargets;
+    private JPanel panelTargets;
+    private JBSplitter splitter;
 
-    private PureBasicModuleSettingsState state;
+    public PureBasicModuleSettingsPanel(@Nullable Module module) {
+        this.module = module;
 
-    private int editingTarget;
+        cardLayout = (CardLayout) panelTargets.getLayout();
 
-    public PureBasicModuleSettingsPanel(PureBasicModuleSettingsState state) {
-        this.editingTarget = -1;
+        targetsModel = new TargetPanelsModel(module);
 
-        if (state != null) {
-            try {
-                this.state = (PureBasicModuleSettingsState) state.clone();
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        } else {
-            this.state = new PureBasicModuleSettingsState();
-        }
-
-        final DefaultTableModel dm = new DefaultTableModel();
-        dm.setDataVector(null, new String[]{""});
-        listTargets.setModel(dm);
+        listTargets.setModel(targetsModel);
         listTargets.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listTargets.getSelectionModel().addListSelectionListener(e -> {
             int selected = listTargets.getSelectedRow();
-            if (selected == -1) {
-                panelTargetOptions.setEnabled(false);
-                stopEditTarget();
-            } else {
-                panelTargetOptions.setEnabled(true);
-                startEditTarget(selected);
+            if (selected != -1) {
+                final TargetPanelsModel.Entry entry = targetsModel.getEntry(selected);
+                if (entry.getPanel().getParent() != panelTargets) {
+                    panelTargets.add(entry.getPanel(), entry.getId());
+                }
+                cardLayout.show(panelTargets, entry.getId());
             }
         });
 
-        buttonAdd.addActionListener(e -> {
-            final PureBasicTargetSettings ts = new PureBasicTargetSettings();
-            ts.name = "Target";
-            this.state.targetOptions.add(ts);
-            dm.addRow(new String[]{ts.name});
+        listTargets.getEmptyText().setText("-");
+
+        final ToolbarDecorator toolbarDecorator = ToolbarDecorator.createDecorator(listTargets);
+        toolbarDecorator.setAddAction(anActionButton -> {
+            // add an entry
+            final TargetPanelsModel.Entry entry = targetsModel.add();
+            if (entry.getPanel().getParent() != panelTargets) {
+                panelTargets.add(entry.getPanel(), entry.getId());
+            }
+
+            final int index = targetsModel.getRowCount() - 1;
+            listTargets.getSelectionModel().setSelectionInterval(index, index);
         });
-        buttonRemove.addActionListener(e -> {
+        toolbarDecorator.setRemoveAction(anActionButton -> {
             int row = listTargets.getSelectedRow();
             if (row != -1) {
-                this.state.targetOptions.remove(row);
-                dm.removeRow(row);
+                panelTargets.remove(targetsModel.removeAt(row).getPanel());
             }
         });
-
-        panelTargetOptions.setEnabled(false);
-        for (PureBasicTargetSettings targetSettings : this.state.targetOptions) {
-            dm.addRow(new String[]{targetSettings.name});
-        }
-        if (!this.state.targetOptions.isEmpty()) {
-            panelTargetOptions.setEnabled(true);
-            listTargets.getSelectionModel().setSelectionInterval(0, 0);
-        }
-    }
-
-    private void stopEditTarget() {
-        panelTargetOptions.setEnabled(false);
-        this.editingTarget = -1;
-    }
-
-    private void startEditTarget(int index) {
-        stopEditTarget();
-        if (index >= 0) {
-            panelTargetOptions.setEnabled(true);
-            panelTargetOptions.setTargetSettings(state.targetOptions.get(index));
-        }
-        this.editingTarget = index;
+        toolbarDecorator.setEditAction(anActionButton -> {
+            int row = listTargets.getSelectedRow();
+            if (row != -1) {
+                listTargets.editCellAt(row, 0);
+            }
+        });
+        JPanel tbdPanel = toolbarDecorator.createPanel();
+        splitter.setFirstComponent(tbdPanel);
+        splitter.setSecondComponent(panelTargets);
     }
 
     public JPanel getRoot() {
         return root;
     }
 
-    public PureBasicModuleSettingsState getState() {
-        return this.state;
+    public void setData(@NotNull PureBasicModuleSettingsState data) {
+        targetsModel.removeAll();
+        panelTargets.removeAll();
+
+        for (PureBasicTargetSettings targetSettings : data.getTargetOptions()) {
+            final TargetPanelsModel.Entry entry = new TargetPanelsModel.Entry(module, targetSettings);
+            panelTargets.add(entry.getPanel(), entry.getId());
+            targetsModel.add(entry);
+        }
+        if (!targetsModel.isEmpty()) {
+            final TargetPanelsModel.Entry entry = targetsModel.getEntry(0);
+            listTargets.getSelectionModel().setSelectionInterval(0, 0);
+            cardLayout.show(panelTargets, entry.getId());
+        }
+    }
+
+    public void getData(@NotNull PureBasicModuleSettingsState data) {
+        data.getTargetOptions().clear();
+        for (TargetPanelsModel.Entry entry : targetsModel.getEntries()) {
+            PureBasicTargetSettings settings = new PureBasicTargetSettings(entry.getName());
+            entry.getPanel().getData(settings);
+            data.getTargetOptions().add(settings);
+        }
+    }
+
+    public boolean isModified(@NotNull PureBasicModuleSettingsState data) {
+        if (data.getTargetOptions().size() != targetsModel.getEntries().length) {
+            // amount of target options has changed
+            return true;
+        }
+        for (TargetPanelsModel.Entry entry : targetsModel.getEntries()) {
+            PureBasicTargetSettings settings = data.getTargetOptions().stream()
+                    .filter(t -> Objects.equals(t.getName(), entry.getName()))
+                    .findFirst()
+                    .orElse(null);
+            if (settings == null) {
+                // a new target option or name has changed
+                return true;
+            } else if (entry.getPanel().isModified(settings)) {
+                // content has changed
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void createUIComponents() {
+        splitter = new JBSplitter(false, "PureBasicModuleSettingsTargets", 0.2f);
     }
 }

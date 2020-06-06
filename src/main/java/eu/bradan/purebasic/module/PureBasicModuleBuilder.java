@@ -30,7 +30,6 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 public class PureBasicModuleBuilder extends ModuleBuilder implements ModuleBuilderListener {
+    PureBasicModuleSettingsState moduleSettings = null;
+
     public PureBasicModuleBuilder() {
         super();
         addListener(this);
@@ -58,20 +59,27 @@ public class PureBasicModuleBuilder extends ModuleBuilder implements ModuleBuild
     @Override
     public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
         return new ModuleWizardStep[]{new ModuleWizardStep() {
-            PureBasicModuleSettingsPanel panel = new PureBasicModuleSettingsPanel(null);
+            final PureBasicModuleSettingsPanel settingsPanel = new PureBasicModuleSettingsPanel(null);
 
             @Override
             public JComponent getComponent() {
-                return panel.getRoot();
+                return settingsPanel.getRoot();
             }
 
             @Override
             public void updateDataModel() {
+                moduleSettings = new PureBasicModuleSettingsState();
+                settingsPanel.getData(moduleSettings);
             }
         }};
     }
 
     @Override
     public void moduleCreated(@NotNull Module module) {
+        if (moduleSettings != null) {
+            final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
+            settings.loadState(moduleSettings);
+            moduleSettings = null;
+        }
     }
 }

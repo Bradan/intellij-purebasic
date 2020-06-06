@@ -64,7 +64,7 @@ public class JpsPureBasicModelSerializerExtension extends JpsModelSerializerExte
     @NotNull
     @Override
     public List<? extends JpsModulePropertiesSerializer<?>> getModulePropertiesSerializers() {
-        return Collections.singletonList(new JpsModulePropertiesSerializer<JpsPureBasicModuleElement>(
+        return Collections.singletonList(new JpsModulePropertiesSerializer<>(
                 JpsPureBasicModuleType.INSTANCE, MODULE_TYPE, MODULE_COMPONENT_NAME) {
             @Override
             public JpsPureBasicModuleElement loadProperties(@Nullable Element componentTag) {
@@ -107,9 +107,7 @@ public class JpsPureBasicModelSerializerExtension extends JpsModelSerializerExte
             public void loadExtension(@NotNull JpsGlobal jpsGlobal, @NotNull Element componentTag) {
                 PureBasicCompilerSettingsState values = XmlSerializer.deserialize(componentTag,
                         PureBasicCompilerSettingsState.class);
-                for (String sdk : values.sdks) {
-                    JpsPureBasicCompilers.INSTANCE.addCompiler(sdk);
-                }
+                values.getSdks();
             }
 
             @Override
