@@ -114,25 +114,6 @@ public class PureBasicCompilerSettingsPanel {
         return false;
     }
 
-    @NotNull
-    public PureBasicCompilerSettingsState getState() {
-        PureBasicCompilerSettingsState results = new PureBasicCompilerSettingsState();
-
-        results.clearSdks();
-        for (Component component : panelSdks.getComponents()) {
-            if (component instanceof PBCompilerPanel) {
-                PBCompilerPanel pbCompilerPanel = (PBCompilerPanel) component;
-                PureBasicCompiler compiler = PureBasicCompiler.getOrLoadCompilerByHome(pbCompilerPanel.getSdkHome());
-                if (compiler != null) {
-                    compiler.setLabels(pbCompilerPanel.getSdkLabels());
-                    results.addSdk(compiler);
-                }
-            }
-        }
-
-        return results;
-    }
-
     private static class PBCompilerPanel extends JPanel {
         private final TextFieldWithBrowseButton sdkDir;
         private final JTextField sdkLabels;
