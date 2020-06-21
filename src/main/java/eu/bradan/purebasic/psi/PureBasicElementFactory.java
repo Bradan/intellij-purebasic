@@ -23,6 +23,7 @@
 
 package eu.bradan.purebasic.psi;
 
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
@@ -44,5 +45,14 @@ public class PureBasicElementFactory {
 
     public static PsiElement createIdentifier(Project project, String identifier) {
         return createFile(project, identifier + " = 1").getFirstChild();
+    }
+
+    public static ASTNode createString(Project project, @NotNull String string) {
+        return createFile(project, "Debug ~\"" + string.replaceAll("\"", "\\\"") + "\"")
+                .getFirstChild() // Debug Statement
+                .getLastChild() // Expression
+                .getLastChild() // Atom
+                .getNode()
+                .findChildByType(PureBasicTypes.STRING);
     }
 }

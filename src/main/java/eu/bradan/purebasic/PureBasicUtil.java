@@ -23,92 +23,36 @@
 
 package eu.bradan.purebasic;
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.util.PsiTreeUtil;
-import eu.bradan.purebasic.psi.*;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
 public class PureBasicUtil {
-    @Contract(pure = true)
-    public static List<String> getScopePath(PsiElement element) {
-        // TODO: find the scope path of this element
-        return Collections.emptyList();
-    }
-
-    @NotNull
-    @Contract(pure = true)
-    public static List<Declaration> findDeclarations(PureBasicFile file) {
-        final HashMap<String, DeclarationScope> scopeMap = new HashMap<>();
-        scopeMap.put("global", DeclarationScope.GLOBAL);
-        scopeMap.put("shared", DeclarationScope.SHARED);
-        scopeMap.put("protected", DeclarationScope.PROTECTED);
-        scopeMap.put("static", DeclarationScope.STATIC);
-        scopeMap.put("threaded", DeclarationScope.THREADED);
-
-        final LinkedList<Declaration> result = new LinkedList<>();
-        for (PsiElement decl : PsiTreeUtil.findChildrenOfAnyType(file,
-                PureBasicVariableDeclaration.class,
-                PureBasicAssignmentStmt.class,
-                PureBasicProcedureHead.class,
-                PureBasicMacroHead.class,
-                PureBasicStructureHead.class,
-                PureBasicInterfaceHead.class,
-                PureBasicImportHead.class,
-                PureBasicDeclareModuleHead.class,
-                PureBasicDefineModuleHead.class,
-                PureBasicProcedureDeclaration.class,
-                PureBasicEnumerationHead.class)) {
-            DeclarationScope scope = DeclarationScope.UNSPECIFIED;
-//            PureBasicDeclarationScope scopeElement = decl.getDeclarationScope();
-//            if (scopeElement != null) {
-//                scope = scopeMap.getOrDefault(scopeElement.getText(), DeclarationScope.UNSPECIFIED);
-//            }
-        }
-        return result;
-    }
-
-    public enum DeclarationType {
-        CONSTANT,
-        VARIABLE,
-        PROC,
-        MACRO,
-        ENUMERATION,
-        STRUCTURE,
-    }
-
-    public enum DeclarationScope {
-        GLOBAL,
-        SHARED,
-        PROTECTED,
-        STATIC,
-        THREADED,
-        UNSPECIFIED
-    }
-
-    public static class Declaration {
-        public DeclarationScope scope;
-        public DeclarationType type;
-        public String name;
-        public PsiElement element;
-
-        public Declaration() {
-            this.scope = DeclarationScope.UNSPECIFIED;
-            this.type = DeclarationType.VARIABLE;
-            this.name = null;
-            this.element = null;
+    public static String getStringContents(String string) {
+        if (string == null) {
+            return null;
         }
 
-        public Declaration(DeclarationScope scope, DeclarationType type, String name, PsiElement element) {
-            this.scope = scope;
-            this.type = type;
-            this.name = name;
-            this.element = element;
+        boolean escaped = false;
+        if (string.startsWith("~")) {
+            string = string.substring(1);
+            escaped = true;
         }
+
+        if (string.startsWith("\"")) {
+            string = string.substring(1);
+        }
+        if (string.endsWith("\"")) {
+            string = string.substring(0, string.length() - 1);
+        }
+        if (escaped) {
+            string = string.replaceAll("\\\\a", "\u0007")
+                    .replaceAll("\\\\b", "\u0008")
+                    .replaceAll("\\\\f", "\u000c")
+                    .replaceAll("\\\\n", "\n")
+                    .replaceAll("\\\\r", "\r")
+                    .replaceAll("\\\\t", "\t")
+                    .replaceAll("\\\\v", "\u000b")
+                    .replaceAll("\\\\\"", "\"")
+                    .replaceAll("\\\\", "\\");
+        }
+
+        return string;
     }
 }

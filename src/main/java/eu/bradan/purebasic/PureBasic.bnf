@@ -266,9 +266,15 @@ comp_condition_block ::= comp_condition_if (sep comp_condition_elseif)* [sep com
 // Simple Statements
 ////////////////////////
 
-include_stmt ::= ('XIncludeFile'|'IncludeFile') STRING
-include_binary_stmt ::= 'IncludeBinary' STRING
-include_path_stmt ::= 'IncludePath' STRING
+include_stmt ::= ('XIncludeFile'|'IncludeFile') STRING {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
+        }
+include_binary_stmt ::= 'IncludeBinary' STRING {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
+        }
+include_path_stmt ::= 'IncludePath' STRING {
+            mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
+        }
 use_module_stmt ::= 'UseModule' parse_identifier {pin=1}
 unuse_module_stmt ::= 'UnuseModule' parse_identifier {pin=1}
 undefine_macro_stmt ::= 'UndefineMacro' parse_identifier {pin=1}
