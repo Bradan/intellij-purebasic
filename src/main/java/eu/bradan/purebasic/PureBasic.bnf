@@ -84,7 +84,7 @@ private statements ::= statement (sep statement)*
 
 // Error tolerant statements for the very first layer
 private external always_true_statement ::= parseAlwaysTrueStatement;
-private statement_error_tolerant ::= always_true_statement statement {pin=1 recoverWhile=nosep}
+private statement_error_tolerant ::= always_true_statement [statement] {pin=1 recoverWhile=nosep}
 private statements_error_tolerant ::= statement_error_tolerant (sep statement_error_tolerant)*
 
 pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
@@ -124,7 +124,9 @@ variable_decl_identifier ::= (parse_identifier|parse_pointer_identifier) [type_s
 variable_decl_identifier_notype ::= (parse_identifier|parse_pointer_identifier)
 variable_decl_list ::= variable_decl_identifier ['=' expression] (',' [sep] variable_decl_identifier ['=' expression])*
 variable_decl_list_notype ::= variable_decl_identifier_notype (',' [sep] variable_decl_identifier_notype)*
-variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype|declaration_scope variable_decl_list|variable_decl_identifier
+variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype |
+    declaration_scope variable_decl_list |
+    variable_decl_identifier [static_array_access]
 
 array_declaration ::= [declaration_scope] ('Dim'|'ReDim') parse_identifier [type_suffix] '(' parameters_call ')'
 list_declaration ::= [declaration_scope] 'NewList' parse_identifier [type_suffix] '(' ')'
