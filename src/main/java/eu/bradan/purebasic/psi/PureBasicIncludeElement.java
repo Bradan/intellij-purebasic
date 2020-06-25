@@ -32,11 +32,13 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
 import eu.bradan.purebasic.PureBasicUtil;
+import eu.bradan.purebasic.psi.impl.PureBasicIncludePathStmtImpl;
 import eu.bradan.purebasic.psi.impl.PureBasicSimpleStatementImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
     public PureBasicIncludeElement(@NotNull ASTNode node) {
@@ -44,9 +46,7 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
     }
 
     @Nullable
-    private static String findIncludePath(@NotNull PsiElement element) {
-        String defaultPath = element.getContainingFile().getVirtualFile().getParent().getCanonicalPath();
-
+    private static PureBasicIncludePathStmtImpl findIncludePathStatement(@NotNull PsiElement element) {
         while (element != null && !(element instanceof PureBasicIncludePathStmt)) {
             PsiElement previous = element.getPrevSibling();
             if (previous == null) {
@@ -55,19 +55,26 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
             element = previous;
         }
 
-        final String path = element != null ? ((PureBasicIncludeElement) element).getFilename() : null;
-        return path != null && !"".equals(path) ? path : defaultPath;
+        return (PureBasicIncludePathStmtImpl) element;
     }
 
-    @Nullable
-    public String getFilename() {
-        String path = this.getContainingFile().getVirtualFile().getParent().getCanonicalPath();
+    /**
+     * @return The base path to which the include statement is relative to.
+     */
+    @NotNull
+    private String getBasePath() {
         if (!(this instanceof PureBasicIncludePathStmt)) {
-            String newPath = findIncludePath(this);
-            if (newPath != null && !"".equals(newPath)) {
-                path = newPath;
+            PureBasicIncludePathStmtImpl includePathStatement = findIncludePathStatement(this);
+            if (includePathStatement != null) {
+                return includePathStatement.getFilename();
             }
         }
+        return getContainingFile().getVirtualFile().getParent().getPath();
+    }
+
+    @NotNull
+    public String getFilename() {
+        final String basePath = getBasePath();
 
         final ASTNode string = getNode().findChildByType(PureBasicTypes.STRING);
         String filename = string != null ? PureBasicUtil.getStringContents(string.getText()) : null;
@@ -76,22 +83,14 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
             filename = null;
         }
 
-        File file = null;
-        if (path != null && filename != null) {
-            file = new File(path, filename);
-        } else if (filename != null) {
-            file = new File(filename);
-        } else if (path != null) {
-            file = new File(path);
-        }
-
-        return file != null ? file.getPath() : null;
+        File file = filename != null ? new File(basePath, filename) : new File(basePath);
+        return file.getPath();
     }
 
     @Nullable
     public VirtualFile getVirtualFile() {
         String filename = getFilename();
-        if (filename != null && !"".equals(filename)) {
+        if (!"".equals(filename)) {
             return LocalFileSystem.getInstance().findFileByIoFile(new File(filename));
         }
 
@@ -108,12 +107,51 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
         return null;
     }
 
+    @NotNull
+    @Override
+    public PsiReference[] getReferences() {
+        final String basePath = getBasePath();
+
+        final ASTNode string = getNode().findChildByType(PureBasicTypes.STRING);
+        if (string == null) {
+            return new PsiReference[]{};
+        }
+        String filenameString = string.getText();
+        String filename = PureBasicUtil.getStringContents(filenameString);
+
+        int offset = string.getStartOffsetInParent() + 1; // a quote symbol is always there
+        if (filenameString.startsWith("~")) {
+            offset++; // skip the tilde as well
+        }
+
+        ArrayList<PsiReference> references = new ArrayList<>();
+        final String[] pathParts = filename.split("[\\\\/]");
+        File current = new File(basePath);
+        for (String pathPart : pathParts) {
+            current = new File(current, pathPart);
+            VirtualFile file = LocalFileSystem.getInstance().findFileByIoFile(current);
+            PsiElement resolvedElement = null;
+            if (file != null) {
+                resolvedElement = PsiManager.getInstance(getProject()).findFile(file);
+                if (resolvedElement == null) {
+                    resolvedElement = PsiManager.getInstance(getProject()).findDirectory(file);
+                }
+            }
+            references.add(new PureBasicIncludeReference(
+                    this,
+                    TextRange.create(offset, offset + pathPart.length()),
+                    resolvedElement));
+            offset += pathPart.length() + 1; // + 1 for the separator
+        }
+
+        return references.toArray(PsiReference[]::new);
+    }
+
     @Override
     public PsiReference getReference() {
-        final ASTNode node = getNode().findChildByType(PureBasicTypes.STRING);
-        if (node != null) {
-            final TextRange range = node.getTextRange().shiftLeft(getNode().getStartOffset());
-            return new PureBasicReference(this, range, true);
+        PsiReference[] references = getReferences();
+        if (references.length > 0) {
+            return references[references.length - 1];
         }
         return null;
     }

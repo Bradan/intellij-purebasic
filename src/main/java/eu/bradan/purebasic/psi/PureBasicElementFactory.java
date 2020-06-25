@@ -25,6 +25,7 @@ package eu.bradan.purebasic.psi;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFileFactory;
 import eu.bradan.purebasic.PureBasicFileType;
@@ -54,5 +55,11 @@ public class PureBasicElementFactory {
                 .getLastChild() // Atom
                 .getNode()
                 .findChildByType(PureBasicTypes.STRING);
+    }
+
+    public static PsiElement replaceSubstring(Project project, @NotNull PsiElement originalElement, @NotNull TextRange range, String newText) {
+        String text = originalElement.getText();
+        text = text.substring(0, range.getStartOffset()) + newText + text.substring(range.getEndOffset());
+        return createFile(project, text).getFirstChild();
     }
 }

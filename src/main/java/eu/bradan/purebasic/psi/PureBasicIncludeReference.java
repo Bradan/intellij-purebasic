@@ -23,7 +23,6 @@
 
 package eu.bradan.purebasic.psi;
 
-import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
@@ -32,45 +31,25 @@ import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class PureBasicReference extends PsiReferenceBase<PsiElement> implements PsiReference {
-    public PureBasicReference(@NotNull PsiElement element, TextRange rangeInElement, boolean soft) {
-        super(element, rangeInElement, soft);
-    }
+public class PureBasicIncludeReference extends PsiReferenceBase<PsiElement> implements PsiReference {
+    private final PsiElement resolvedElement;
 
-    public PureBasicReference(@NotNull PsiElement element, TextRange rangeInElement) {
+    public PureBasicIncludeReference(@NotNull PureBasicIncludeElement element, TextRange rangeInElement, PsiElement resolvedElement) {
         super(element, rangeInElement);
-    }
-
-    public PureBasicReference(@NotNull PsiElement element, boolean soft) {
-        super(element, soft);
-    }
-
-    public PureBasicReference(@NotNull PsiElement element) {
-        super(element);
+        this.resolvedElement = resolvedElement;
     }
 
     @Nullable
     @Override
     public PsiElement resolve() {
-        final PsiElement element = getElement();
-        if (element instanceof PureBasicIncludeElement) {
-            return ((PureBasicIncludeElement) element).getPsiFile();
-        }
-        return null;
+        return this.resolvedElement;
     }
 
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
-        if (getElement() instanceof PureBasicNamedElement) {
-            ((PureBasicNamedElement) getElement()).setName(newElementName);
-        } else if (getElement() instanceof PureBasicIncludeElement) {
-            PureBasicIncludeElement element = (PureBasicIncludeElement) getElement();
-            final ASTNode oldNode = element.getNode().findChildByType(PureBasicTypes.STRING);
-            if (oldNode != null) {
-                final ASTNode newNode = PureBasicElementFactory.createString(element.getProject(), newElementName);
-                element.getNode().replaceChild(oldNode, newNode);
-            }
-        }
-        return getElement();
+        PureBasicIncludeElement element = (PureBasicIncludeElement) getElement();
+        PsiElement newElement = PureBasicElementFactory.replaceSubstring(element.getProject(), element, getRangeInElement(), newElementName);
+        element.replace(newElement);
+        return newElement;
     }
 }
