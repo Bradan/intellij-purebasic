@@ -29,4 +29,5 @@ import javax.swing.*;
 
 public class PureBasicIcons {
     public static final Icon PUREBASIC = IconLoader.getIcon("/icons/pbFile.svg");
+    public static final Icon CompilePureBasic = IconLoader.getIcon("/icons/compilePureBasic.svg");
 }
