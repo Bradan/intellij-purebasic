@@ -46,8 +46,6 @@ public class PureBasicCompilerSettingsPanel {
     private JPanel root;
     private JPanel panelSdks;
 
-    private final ResourceBundle resources = ResourceBundle.getBundle("texts/texts");
-
     public PureBasicCompilerSettingsPanel() {
         panelSdks.setLayout(new BoxLayout(panelSdks, BoxLayout.Y_AXIS));
 

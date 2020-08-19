@@ -11,11 +11,6 @@
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
 
-    <!-- TODO: check how to get rid of this, such that we can build in any IntelliJ platform.
-               Without this we won't have jps-builders.jar, which contains the BuilderService
-               classes etc. -->
-    <depends>com.intellij.java</depends>
-
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="PureBasic File" implementationClass="eu.bradan.purebasic.PureBasicFileType"
                   fieldName="INSTANCE" language="PureBasic" extensions="pb;pbi;pbh;pbf;sb;sbi;sbh;sbf"/>
@@ -38,12 +33,14 @@
 
         <colorSettingsPage implementation="eu.bradan.purebasic.settings.PureBasicColorSettingsPage"/>
 
-        <compileServer.plugin classpath="jps-plugin.jar"/>
-        <compiler.buildTargetScopeProvider
-                implementation="eu.bradan.purebasic.builder.PureBasicBuildTargetScopeProvider"/>
-
         <configurationType implementation="eu.bradan.purebasic.run.PureBasicConfigurationType"/>
         <programRunner implementation="eu.bradan.purebasic.run.PureBasicProgramRunner"/>
+
+        <projectTaskRunner implementation="eu.bradan.purebasic.builder.PureBasicBuildProjectTaskRunner"/>
+        <toolWindow id="PureBasic Build"
+                    icon="/icons/compilePureBasic.svg"
+                    anchor="bottom"
+                    factoryClass="eu.bradan.purebasic.builder.PureBasicBuildToolWindowFactory"/>
 
         <projectConfigurable instance="eu.bradan.purebasic.settings.PureBasicCompilerSettingsConfigurable"
                              groupId="build.tools"/>
@@ -57,6 +54,14 @@
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <group id="PureBasicBuildMenu" popup="true">
+            <action id="CompilePureBasic" class="eu.bradan.purebasic.builder.CompilePureBasicModulesAction"
+                    icon="/icons/compilePureBasic.svg"/>
+            <add-to-group group-id="BuildMenu" anchor="first"/>
+        </group>
+        <group id="PureBasicToolbarMakeGroup">
+            <reference ref="CompilePureBasic"/>
+            <add-to-group group-id="ToolbarRunGroup" relative-to-action="RunConfiguration" anchor="before"/>
+        </group>
     </actions>
 </idea-plugin>

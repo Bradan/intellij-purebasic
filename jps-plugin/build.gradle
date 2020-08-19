@@ -1,8 +1,0 @@
-intellij {
-    type = 'jps'
-    // TODO: check how to get rid of this, such that we can build in any IntelliJ platform.
-    //       Without this we won't have jps-builders.jar, which contains the BuilderService
-    //       classes etc.
-    plugins = ['java']
-}
-jar.archiveFileName = 'jps-plugin.jar'

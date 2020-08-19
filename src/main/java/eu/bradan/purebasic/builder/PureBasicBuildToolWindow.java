@@ -21,15 +21,36 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.model;
+package eu.bradan.purebasic.builder;
 
-import org.jetbrains.jps.model.ex.JpsElementTypeBase;
-import org.jetbrains.jps.model.module.JpsModuleType;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.components.JBList;
 
-public class JpsPureBasicModuleType extends JpsElementTypeBase<JpsPureBasicModuleElement>
-        implements JpsModuleType<JpsPureBasicModuleElement> {
-    public static final JpsPureBasicModuleType INSTANCE = new JpsPureBasicModuleType();
+import javax.swing.*;
+import java.awt.*;
 
-    private JpsPureBasicModuleType() {
+public class PureBasicBuildToolWindow extends JPanel {
+    private final DefaultListModel<String> model;
+    private JPanel toolWindowContent;
+    private JBList<String> listCompileResult;
+
+    public PureBasicBuildToolWindow(ToolWindow toolWindow) {
+        this.setLayout(new BorderLayout());
+        this.add(toolWindowContent, BorderLayout.CENTER);
+
+        model = new DefaultListModel<>();
+        listCompileResult.setModel(model);
+    }
+
+    public void clear() {
+        model.clear();
+    }
+
+    public void addElement(String s) {
+        model.addElement(s);
+    }
+
+    public JPanel getContent() {
+        return this;
     }
 }

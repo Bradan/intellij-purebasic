@@ -21,15 +21,21 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.model;
+package eu.bradan.purebasic.builder;
 
-import org.jetbrains.jps.model.JpsDummyElement;
-import org.jetbrains.jps.model.ex.JpsElementTypeWithDummyProperties;
-import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import org.jetbrains.annotations.NotNull;
 
-public class PureBasicSourceRootType extends JpsElementTypeWithDummyProperties implements JpsModuleSourceRootType<JpsDummyElement> {
-    public static final PureBasicSourceRootType INSTANCE = new PureBasicSourceRootType();
-
-    private PureBasicSourceRootType() {
+public class PureBasicBuildToolWindowFactory implements ToolWindowFactory {
+    @Override
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        PureBasicBuildToolWindow pbToolWindow = new PureBasicBuildToolWindow(toolWindow);
+        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        Content content = contentFactory.createContent(pbToolWindow, "PureBasic Build", false);
+        toolWindow.getContentManager().addContent(content);
     }
 }

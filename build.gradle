@@ -12,7 +12,7 @@ allprojects {
 
     // See https://github.com/JetBrains/gradle-intellij-plugin/
     intellij {
-        version '2020.1'
+        version '2020.2'
         downloadSources true
         pluginName 'PureBasic'
     }
@@ -32,7 +32,6 @@ group "eu.bradan.purebasic"
 version "1.0-SNAPSHOT"
 
 dependencies {
-    compile project('jps-plugin')
 }
 intellij {
 }
@@ -42,18 +41,13 @@ patchPluginXml {
       <em>most HTML tags may be used</em>'''
 }
 runIde {
-    jvmArgs += ['-Dcompiler.process.debug.port=5005']
+    jvmArgs += ['-Dcompiler.process.debug.port=5005', '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED']
+    ideDirectory = '/home/daniel/.local/share/JetBrains/Toolbox/apps/PhpStorm/ch-0/202.6397.115'
 }
 sourceSets {
     main {
         java.srcDirs += "src/main/gen"
     }
-}
-
-task createFatJar(type: Jar) {
-    baseName = 'IntelliJ-PureBasic'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
 }
 
 task generatePureBasicLexer(type: GenerateLexer) {

@@ -23,32 +23,23 @@
 
 package eu.bradan.purebasic.builder;
 
-import org.jetbrains.jps.builders.BuildRootDescriptor;
-import org.jetbrains.jps.builders.BuildTarget;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
+import com.intellij.task.ProjectTaskManager;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-
-public class PureBasicBuildRootDescriptor extends BuildRootDescriptor {
-    private PureBasicBuildTarget target;
-    private File rootFile;
-
-    public PureBasicBuildRootDescriptor(PureBasicBuildTarget target, File rootFile) {
-        this.target = target;
-        this.rootFile = rootFile;
+public class CompilePureBasicModulesAction extends AnAction {
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent e) {
+        final Project project = e.getProject();
+        if (project != null) {
+            ProjectTaskManager.getInstance(project).buildAllModules();
+        }
     }
 
     @Override
-    public String getRootId() {
-        return this.rootFile.getAbsolutePath();
-    }
-
-    @Override
-    public File getRootFile() {
-        return this.rootFile;
-    }
-
-    @Override
-    public BuildTarget<?> getTarget() {
-        return target;
+    public void update(@NotNull AnActionEvent e) {
+        e.getPresentation().setEnabledAndVisible(e.getProject() != null);
     }
 }

@@ -25,6 +25,7 @@ package eu.bradan.purebasic.builder;
 
 import com.intellij.openapi.diagnostic.Logger;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
+import eu.bradan.purebasic.settings.PureBasicCompilerSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PureBasicCompiler {
-    private static final Logger LOG = Logger.getInstance(PureBasicBuilder.class);
+    private static final Logger LOG = Logger.getInstance(PureBasicCompiler.class);
 
     private String sdkHome;
     private File compiler;
@@ -72,11 +73,13 @@ public class PureBasicCompiler {
 
     @Nullable
     public static PureBasicCompiler getDefaultCompiler() {
+        PureBasicCompilerSettings.loadAllCompilers();
         return defaultCompiler;
     }
 
     @Nullable
     public static PureBasicCompiler getOrLoadCompilerByHome(String sdkHome) {
+        PureBasicCompilerSettings.loadAllCompilers();
         PureBasicCompiler compiler = compilerByHome.getOrDefault(sdkHome, null);
         if (compiler != null) {
             return compiler;
@@ -99,6 +102,7 @@ public class PureBasicCompiler {
 
     @Nullable
     public static PureBasicCompiler getCompilerByLabel(String label) {
+        PureBasicCompilerSettings.loadAllCompilers();
         for (PureBasicCompiler compiler : compilerByHome.values()) {
             if (compiler.getLabels().contains(label)) {
                 return compiler;

@@ -23,10 +23,7 @@
 
 package eu.bradan.purebasic.settings;
 
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.components.StoragePathMacros;
+import com.intellij.openapi.components.*;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 public class PureBasicCompilerSettings implements PersistentStateComponent<PureBasicCompilerSettingsState> {
 
     public PureBasicCompilerSettingsState state = new PureBasicCompilerSettingsState();
+    private static boolean loaded = false;
 
     @NotNull
     @Override
@@ -44,6 +42,17 @@ public class PureBasicCompilerSettings implements PersistentStateComponent<PureB
     @Override
     public void loadState(@NotNull PureBasicCompilerSettingsState state) {
         XmlSerializerUtil.copyBean(state, this.state);
+    }
+
+    public static void loadAllCompilers() {
+        if (loaded) {
+            return;
+        }
+
+        loaded = true;
+        final PureBasicCompilerSettings settings = ServiceManager.getService(PureBasicCompilerSettings.class);
+        final PureBasicCompilerSettingsState state = settings.getState();
+        state.getSdks();
     }
 
 }

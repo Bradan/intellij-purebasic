@@ -21,39 +21,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package eu.bradan.purebasic.builder;
+package eu.bradan.purebasic.module;
 
-import com.intellij.openapi.diagnostic.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jps.incremental.BuilderService;
-import org.jetbrains.jps.incremental.ModuleLevelBuilder;
-import org.jetbrains.jps.incremental.TargetBuilder;
+import org.jetbrains.jps.model.JpsDummyElement;
+import org.jetbrains.jps.model.ex.JpsElementTypeWithDummyProperties;
+import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
 
-import java.util.Collections;
-import java.util.List;
+public class PureBasicSourceRootType extends JpsElementTypeWithDummyProperties implements JpsModuleSourceRootType<JpsDummyElement> {
+    public static final PureBasicSourceRootType INSTANCE = new PureBasicSourceRootType();
 
-public class PureBasicBuilderService extends BuilderService {
-    private static final Logger LOG = Logger.getInstance(PureBasicBuilderService.class);
-
-    public PureBasicBuilderService() {
-        super();
-    }
-
-    @NotNull
-    @Override
-    public List<PureBasicBuildTargetType> getTargetTypes() {
-        return Collections.singletonList(PureBasicBuildTargetType.getInstance());
-    }
-
-    @NotNull
-    @Override
-    public List<? extends ModuleLevelBuilder> createModuleLevelBuilders() {
-        return super.createModuleLevelBuilders();
-    }
-
-    @NotNull
-    @Override
-    public List<? extends TargetBuilder<?, ?>> createBuilders() {
-        return Collections.singletonList(new PureBasicBuilder());
+    private PureBasicSourceRootType() {
     }
 }
