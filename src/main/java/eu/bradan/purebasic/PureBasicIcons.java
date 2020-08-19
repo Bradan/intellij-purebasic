@@ -28,5 +28,5 @@ import com.intellij.openapi.util.IconLoader;
 import javax.swing.*;
 
 public class PureBasicIcons {
-    public static final Icon PUREBASIC = IconLoader.getIcon("/icons/pb_file.png");
+    public static final Icon PUREBASIC = IconLoader.getIcon("/icons/pbFile.svg");
 }

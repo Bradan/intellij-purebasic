@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:cc="http://creativecommons.org/ns#"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+        xmlns="http://www.w3.org/2000/svg"
+        inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+        sodipodi:docname="pb_file.svg"
+        id="svg4"
+        version="1.1"
+        viewBox="0 0 16 16"
+        height="16"
+        width="16">
+  <metadata
+          id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+              rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+                rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+          id="defs8"/>
+  <sodipodi:namedview
+          inkscape:current-layer="svg4"
+          inkscape:window-maximized="1"
+          inkscape:window-y="27"
+          inkscape:window-x="0"
+          inkscape:cy="4.0623448"
+          inkscape:cx="10.334128"
+          inkscape:zoom="37.830213"
+          showgrid="true"
+          id="namedview6"
+          inkscape:window-height="1016"
+          inkscape:window-width="1920"
+          inkscape:pageshadow="2"
+          inkscape:pageopacity="0"
+          guidetolerance="10"
+          gridtolerance="10"
+          objecttolerance="10"
+          borderopacity="1"
+          bordercolor="#666666"
+          pagecolor="#ffffff">
+    <inkscape:grid
+            id="grid835"
+            type="xygrid"/>
+  </sodipodi:namedview>
+  <path
+          inkscape:label="pbicon"
+          d="M 5 1 L 3.4394531 3 L 11 3 L 7.6660156 7 L 3.8808594 7 L 2.1191406 9 L 6 9 L 1 15 L 13.457031 15 L 15 13 L 5 13 L 8.3339844 9 L 12.119141 9 L 13.880859 7 L 10 7 L 15 1 L 5 1 z "
+          style="fill:#fc0000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+          id="path857"/>
+</svg>
