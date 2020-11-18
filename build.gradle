@@ -42,7 +42,7 @@ patchPluginXml {
 }
 runIde {
     jvmArgs += ['-Dcompiler.process.debug.port=5005', '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED']
-    ideDirectory = '/home/daniel/.local/share/JetBrains/Toolbox/apps/PhpStorm/ch-0/202.6397.115'
+    //ideDirectory = '/home/daniel/.local/share/JetBrains/Toolbox/apps/PhpStorm/ch-0/202.7660.42'
 }
 sourceSets {
     main {

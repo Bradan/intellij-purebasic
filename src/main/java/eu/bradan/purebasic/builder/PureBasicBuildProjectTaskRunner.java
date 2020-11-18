@@ -58,7 +58,7 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
         final String rootPath = root.getCanonicalPath();
 
         if (rootPath == null) {
-            toolWindow.addElement(String.format(resources.getString("invalidRootPath"), module.getName()));
+            toolWindow.addLine(String.format(resources.getString("invalidRootPath"), module.getName()));
             return false;
         }
 
@@ -69,25 +69,17 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
                 // just continue, there might be targets that are only available on a different OS
                 continue;
             }
-            toolWindow.addElement(String.format(resources.getString("compilingModule"), module.getName()));
-            toolWindow.addElement("");
+            toolWindow.addLine(String.format(resources.getString("compilingModule"), module.getName()));
+            toolWindow.addLine("");
             try {
-                sdk.compile(target, rootPath, new PureBasicCompiler.CompileMessageLogger() {
-                    @Override
-                    public void logInfo(String message, String file, int line) {
-                        toolWindow.addElement(message);
-                    }
-
-                    @Override
-                    public void logError(String message, String file, int line) {
-                        toolWindow.addElement(message);
-                        result[0] = false;
-                    }
+                sdk.compile(target, rootPath, msg -> {
+                    toolWindow.addElement(msg);
+                    result[0] &= msg.type != PureBasicCompiler.CompileMessageType.ERROR;
                 });
-                toolWindow.addElement("");
-                toolWindow.addElement("");
+                toolWindow.addLine("");
+                toolWindow.addLine("");
             } catch (IOException e) {
-                toolWindow.addElement(e.getMessage());
+                toolWindow.addLine(e.getMessage());
             }
         }
         return result[0];
@@ -104,12 +96,12 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
 
     @Override
     public Promise<Result> run(@NotNull Project project, @NotNull ProjectTaskContext context, @NotNull ProjectTask... tasks) {
-        final ToolWindow toolWindow = (ToolWindow) ToolWindowManager.getInstance(project)
+        final ToolWindow toolWindow = ToolWindowManager.getInstance(project)
                 .getToolWindow("PureBasic Build");
         if (toolWindow == null) {
             return null;
         }
-        final Content buildToolWindowContent = (Content) toolWindow.getContentManager().getContent(0);
+        final Content buildToolWindowContent = toolWindow.getContentManager().getContent(0);
         if (buildToolWindowContent == null) {
             return null;
         }

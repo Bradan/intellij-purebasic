@@ -23,16 +23,25 @@
 
 package eu.bradan.purebasic.builder;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectLocator;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 public class PureBasicBuildToolWindow extends JPanel {
-    private final DefaultListModel<String> model;
+    private final DefaultListModel<PureBasicCompiler.CompileMessage> model;
     private JPanel toolWindowContent;
-    private JBList<String> listCompileResult;
+    private JBList<PureBasicCompiler.CompileMessage> listCompileResult;
 
     public PureBasicBuildToolWindow(ToolWindow toolWindow) {
         this.setLayout(new BorderLayout());
@@ -40,14 +49,45 @@ public class PureBasicBuildToolWindow extends JPanel {
 
         model = new DefaultListModel<>();
         listCompileResult.setModel(model);
+        listCompileResult.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listCompileResult.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
+            JLabel result;
+            if (value.type == PureBasicCompiler.CompileMessageType.ERROR) {
+                result = new JLabel(value.message, AllIcons.Ide.FatalError, JLabel.LEADING);
+            } else {
+                result = new JLabel(value.message);
+            }
+            result.setBackground(isSelected ? JBColor.BLUE : JBColor.background());
+            return result;
+        });
+        listCompileResult.addListSelectionListener(e -> {
+            final PureBasicCompiler.CompileMessage msg = model.get(e.getFirstIndex());
+            if (msg.file == null || msg.line <= 0) return;
+
+            final VirtualFile file = VfsUtil.findFileByIoFile(new File(msg.file), true);
+            if (file == null || file.getFileType().isBinary()) return;
+
+            Project project = ProjectLocator.getInstance().guessProjectForFile(file);
+            if (project == null) return;
+
+            FileEditorManager.getInstance(project).openEditor(
+                    new OpenFileDescriptor(project, file, msg.line - 1, 0),
+                    true);
+        });
     }
 
     public void clear() {
         model.clear();
     }
 
-    public void addElement(String s) {
-        model.addElement(s);
+    public void addLine(String s) {
+        model.addElement(new PureBasicCompiler.CompileMessage(
+                PureBasicCompiler.CompileMessageType.INFO,
+                s, null, -1));
+    }
+
+    public void addElement(PureBasicCompiler.CompileMessage msg) {
+        model.addElement(msg);
     }
 
     public JPanel getContent() {

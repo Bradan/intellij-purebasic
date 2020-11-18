@@ -39,11 +39,10 @@ import java.util.regex.Pattern;
 
 public class PureBasicCompiler {
     private static final Logger LOG = Logger.getInstance(PureBasicCompiler.class);
-
-    private String sdkHome;
-    private File compiler;
     private static final HashMap<String, PureBasicCompiler> compilerByHome = new HashMap<>();
     private static PureBasicCompiler defaultCompiler = null;
+    private String sdkHome;
+    private File compiler;
     private String labels;
 
     private PureBasicCompiler(String sdkHome, File compiler) {
@@ -305,9 +304,11 @@ public class PureBasicCompiler {
                     errorFile = matchErrorInclude.group(1);
                 }
                 if (matchErrorLine.matches()) {
-                    logger.logError(line, errorFile, Integer.parseInt(matchErrorLine.group(2)));
+                    logger.log(new CompileMessage(CompileMessageType.ERROR,
+                            line, errorFile, Integer.parseInt(matchErrorLine.group(2))));
                 } else {
-                    logger.logInfo(line, null, -1);
+                    logger.log(new CompileMessage(CompileMessageType.INFO,
+                            line, null, -1));
                 }
             }
             while ((line = errorReader.readLine()) != null) {
@@ -318,19 +319,25 @@ public class PureBasicCompiler {
                     errorFile = matchErrorInclude.group(1);
                 }
                 if (matchErrorLine.matches()) {
-                    logger.logError(line, errorFile, Integer.parseInt(matchErrorLine.group(2)));
+                    logger.log(new CompileMessage(CompileMessageType.ERROR,
+                            line, errorFile, Integer.parseInt(matchErrorLine.group(2))));
                 } else {
-                    logger.logError(line, null, -1);
+                    logger.log(new CompileMessage(CompileMessageType.ERROR,
+                            line, null, -1));
                 }
             }
         }
         return proc.exitValue();
     }
 
-    public interface CompileMessageLogger {
-        void logInfo(String message, String file, int line);
+    public enum CompileMessageType {
+        INFO,
+        WARN,
+        ERROR
+    }
 
-        void logError(String message, String file, int line);
+    public interface CompileMessageLogger {
+        void log(CompileMessage message);
     }
 
     public interface DeclarationsCollector {
@@ -341,5 +348,19 @@ public class PureBasicCompiler {
         void declareInterface(String name, List<String> content);
 
         void declareFunction(String name, String args, String description);
+    }
+
+    public static class CompileMessage {
+        public final CompileMessageType type;
+        public final String message;
+        public final String file;
+        public final int line;
+
+        public CompileMessage(CompileMessageType type, String message, String file, int line) {
+            this.type = type;
+            this.message = message;
+            this.file = file;
+            this.line = line;
+        }
     }
 }
