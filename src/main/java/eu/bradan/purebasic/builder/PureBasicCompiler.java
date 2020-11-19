@@ -24,6 +24,12 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectLocator;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
 import eu.bradan.purebasic.settings.PureBasicCompilerSettings;
 import org.jetbrains.annotations.NotNull;
@@ -361,6 +367,20 @@ public class PureBasicCompiler {
             this.message = message;
             this.file = file;
             this.line = line;
+        }
+
+        public void navigateTo() {
+            if (file == null || line <= 0) return;
+
+            final VirtualFile vFile = VfsUtil.findFileByIoFile(new File(file), true);
+            if (vFile == null || vFile.getFileType().isBinary()) return;
+
+            Project project = ProjectLocator.getInstance().guessProjectForFile(vFile);
+            if (project == null) return;
+
+            FileEditorManager.getInstance(project).openEditor(
+                    new OpenFileDescriptor(project, vFile, line - 1, 0),
+                    true);
         }
     }
 }

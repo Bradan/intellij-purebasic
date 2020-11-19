@@ -24,19 +24,19 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectLocator;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBList;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class PureBasicBuildToolWindow extends JPanel {
     private final DefaultListModel<PureBasicCompiler.CompileMessage> model;
@@ -48,31 +48,31 @@ public class PureBasicBuildToolWindow extends JPanel {
         this.add(toolWindowContent, BorderLayout.CENTER);
 
         model = new DefaultListModel<>();
+
+        final JLabel cell = new JLabel();
+        cell.setBackground(null);
+        cell.setHorizontalAlignment(JLabel.LEADING);
+
         listCompileResult.setModel(model);
         listCompileResult.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        listCompileResult.setCellRenderer((list, value, index, isSelected, cellHasFocus) -> {
-            JLabel result;
-            if (value.type == PureBasicCompiler.CompileMessageType.ERROR) {
-                result = new JLabel(value.message, AllIcons.Ide.FatalError, JLabel.LEADING);
-            } else {
-                result = new JLabel(value.message);
+        listCompileResult.setCellRenderer(new CompilerMessageCellRenderer());
+        listCompileResult.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                final PureBasicCompiler.CompileMessage msg = listCompileResult.getSelectedValue();
+                if (msg != null)
+                    msg.navigateTo();
             }
-            result.setBackground(isSelected ? JBColor.BLUE : JBColor.background());
-            return result;
         });
-        listCompileResult.addListSelectionListener(e -> {
-            final PureBasicCompiler.CompileMessage msg = model.get(e.getFirstIndex());
-            if (msg.file == null || msg.line <= 0) return;
-
-            final VirtualFile file = VfsUtil.findFileByIoFile(new File(msg.file), true);
-            if (file == null || file.getFileType().isBinary()) return;
-
-            Project project = ProjectLocator.getInstance().guessProjectForFile(file);
-            if (project == null) return;
-
-            FileEditorManager.getInstance(project).openEditor(
-                    new OpenFileDescriptor(project, file, msg.line - 1, 0),
-                    true);
+        listCompileResult.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    final PureBasicCompiler.CompileMessage msg = listCompileResult.getSelectedValue();
+                    if (msg != null)
+                        msg.navigateTo();
+                }
+            }
         });
     }
 
@@ -92,5 +92,23 @@ public class PureBasicBuildToolWindow extends JPanel {
 
     public JPanel getContent() {
         return this;
+    }
+
+    private static class CompilerMessageCellRenderer extends ColoredListCellRenderer<PureBasicCompiler.CompileMessage> {
+        @Override
+        protected void customizeCellRenderer(@NotNull JList list, PureBasicCompiler.CompileMessage value,
+                                             int index, boolean selected, boolean hasFocus) {
+            if (value != null) {
+                if (value.type == PureBasicCompiler.CompileMessageType.ERROR) {
+                    setIcon(AllIcons.Ide.FatalError);
+                    append(value.message, new SimpleTextAttributes(
+                            SimpleTextAttributes.STYLE_BOLD,
+                            JBColor.foreground()));
+                } else {
+                    setIcon(null);
+                    append(value.message);
+                }
+            }
+        }
     }
 }
