@@ -27,6 +27,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.JBColor;
+import eu.bradan.purebasic.Texts;
 import eu.bradan.purebasic.builder.PureBasicCompiler;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.ResourceBundle;
 
 public class PureBasicCompilerSettingsPanel {
     private JScrollPane scrollPaneSdks;
@@ -121,8 +121,6 @@ public class PureBasicCompilerSettingsPanel {
 
             setLayout(new BorderLayout());
 
-            final ResourceBundle resources = ResourceBundle.getBundle("texts/texts");
-
             setBorder(BorderFactory.createEmptyBorder(7, 7, 7, 7));
 
             final JPanel panel = new JPanel();
@@ -161,10 +159,8 @@ public class PureBasicCompilerSettingsPanel {
                 }
             });
 
-            sdkRemove.setText(resources.getString("remove"));
-            sdkRemove.addActionListener(e -> {
-                parent.remove(this);
-            });
+            sdkRemove.setText(Texts.get("remove"));
+            sdkRemove.addActionListener(e -> parent.remove(this));
 
             panel.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
@@ -175,7 +171,7 @@ public class PureBasicCompilerSettingsPanel {
             c.gridy = 0;
             c.gridwidth = 1;
             c.weightx = 1.0;
-            panel.add(new JLabel(resources.getString("sdk_version")), c);
+            panel.add(new JLabel(Texts.get("sdk_version")), c);
 
             c.gridx = 1;
             c.gridy = 0;
@@ -193,7 +189,7 @@ public class PureBasicCompilerSettingsPanel {
             c.gridy = 1;
             c.gridwidth = 1;
             c.weightx = 1.0;
-            panel.add(new JLabel(resources.getString("sdk_home_directory")), c);
+            panel.add(new JLabel(Texts.get("sdk_home_directory")), c);
 
             c.gridx = 1;
             c.gridy = 1;
@@ -205,7 +201,7 @@ public class PureBasicCompilerSettingsPanel {
             c.gridy = 2;
             c.gridwidth = 1;
             c.weightx = 0.0;
-            panel.add(new JLabel(resources.getString("sdk_labels")), c);
+            panel.add(new JLabel(Texts.get("sdk_labels")), c);
 
             c.gridx = 1;
             c.gridy = 2;
