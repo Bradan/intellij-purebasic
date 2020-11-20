@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.task.ProjectTaskManager;
+import com.intellij.util.PlatformUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class CompilePureBasicModulesAction extends AnAction {
@@ -40,6 +41,11 @@ public class CompilePureBasicModulesAction extends AnAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(e.getProject() != null);
+        if (PlatformUtils.isIdeaCommunity() || PlatformUtils.isIdeaUltimate() || PlatformUtils.isIdeaEducational()) {
+            e.getPresentation().setEnabledAndVisible(false);
+            e.getPresentation().setVisible(false);
+        } else {
+            e.getPresentation().setEnabledAndVisible(e.getProject() != null);
+        }
     }
 }
