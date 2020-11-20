@@ -73,10 +73,12 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
             toolWindow.addLine(String.format(resources.getString("compilingModule"), module.getName()));
             toolWindow.addLine("");
             try {
-                sdk.compile(target, rootPath, msg -> {
+                int exitCode = sdk.compile(target, rootPath, msg -> {
                     toolWindow.addElement(msg);
-                    result[0] &= msg.type != PureBasicCompiler.CompileMessageType.ERROR;
+                    result[0] &= msg.type != CompileMessage.CompileMessageType.ERROR;
                 });
+                toolWindow.addLine("");
+                toolWindow.addLine(String.format(resources.getString("processExitCode"), exitCode));
                 toolWindow.addLine("");
                 toolWindow.addLine("");
             } catch (IOException e) {

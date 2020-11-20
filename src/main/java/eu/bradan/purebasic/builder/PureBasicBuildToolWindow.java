@@ -39,9 +39,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class PureBasicBuildToolWindow extends JPanel {
-    private final DefaultListModel<PureBasicCompiler.CompileMessage> model;
+    private final DefaultListModel<CompileMessage> model;
     private JPanel toolWindowContent;
-    private JBList<PureBasicCompiler.CompileMessage> listCompileResult;
+    private JBList<CompileMessage> listCompileResult;
     private JScrollPane scrollPane;
 
     public PureBasicBuildToolWindow(ToolWindow toolWindow) {
@@ -60,7 +60,7 @@ public class PureBasicBuildToolWindow extends JPanel {
         listCompileResult.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                final PureBasicCompiler.CompileMessage msg = listCompileResult.getSelectedValue();
+                final CompileMessage msg = listCompileResult.getSelectedValue();
                 if (msg != null)
                     msg.navigateTo();
             }
@@ -69,7 +69,7 @@ public class PureBasicBuildToolWindow extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    final PureBasicCompiler.CompileMessage msg = listCompileResult.getSelectedValue();
+                    final CompileMessage msg = listCompileResult.getSelectedValue();
                     if (msg != null)
                         msg.navigateTo();
                 }
@@ -82,12 +82,12 @@ public class PureBasicBuildToolWindow extends JPanel {
     }
 
     public void addLine(String s) {
-        model.addElement(new PureBasicCompiler.CompileMessage(
-                PureBasicCompiler.CompileMessageType.INFO,
+        model.addElement(new CompileMessage(
+                CompileMessage.CompileMessageType.INFO,
                 s, null, -1));
     }
 
-    public void addElement(PureBasicCompiler.CompileMessage msg) {
+    public void addElement(CompileMessage msg) {
         model.addElement(msg);
     }
 
@@ -95,12 +95,12 @@ public class PureBasicBuildToolWindow extends JPanel {
         return this;
     }
 
-    private static class CompilerMessageCellRenderer extends ColoredListCellRenderer<PureBasicCompiler.CompileMessage> {
+    private static class CompilerMessageCellRenderer extends ColoredListCellRenderer<CompileMessage> {
         @Override
-        protected void customizeCellRenderer(@NotNull JList list, PureBasicCompiler.CompileMessage value,
+        protected void customizeCellRenderer(@NotNull JList list, CompileMessage value,
                                              int index, boolean selected, boolean hasFocus) {
             if (value != null) {
-                if (value.type == PureBasicCompiler.CompileMessageType.ERROR) {
+                if (value.type == CompileMessage.CompileMessageType.ERROR) {
                     setIcon(AllIcons.Ide.FatalError);
                     append(value.message, new SimpleTextAttributes(
                             SimpleTextAttributes.STYLE_BOLD,
