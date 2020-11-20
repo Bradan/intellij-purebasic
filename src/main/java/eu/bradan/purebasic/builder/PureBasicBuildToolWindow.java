@@ -39,7 +39,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class PureBasicBuildToolWindow extends JPanel {
-    private final DefaultListModel<CompileMessage> model;
     private JPanel toolWindowContent;
     private JBList<CompileMessage> listCompileResult;
     private JScrollPane scrollPane;
@@ -48,13 +47,11 @@ public class PureBasicBuildToolWindow extends JPanel {
         this.setLayout(new BorderLayout());
         this.add(toolWindowContent, BorderLayout.CENTER);
 
-        model = new DefaultListModel<>();
-
         final JLabel cell = new JLabel();
         cell.setBackground(null);
         cell.setHorizontalAlignment(JLabel.LEADING);
 
-        listCompileResult.setModel(model);
+        listCompileResult.setModel(CompileLog.getInstance());
         listCompileResult.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listCompileResult.setCellRenderer(new CompilerMessageCellRenderer());
         listCompileResult.addMouseListener(new MouseAdapter() {
@@ -78,17 +75,7 @@ public class PureBasicBuildToolWindow extends JPanel {
     }
 
     public void clear() {
-        model.clear();
-    }
-
-    public void addLine(String s) {
-        model.addElement(new CompileMessage(
-                CompileMessage.CompileMessageType.INFO,
-                s, null, -1));
-    }
-
-    public void addElement(CompileMessage msg) {
-        model.addElement(msg);
+        CompileLog.getInstance().clear();
     }
 
     public JPanel getContent() {

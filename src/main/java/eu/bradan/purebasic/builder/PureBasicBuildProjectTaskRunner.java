@@ -34,7 +34,6 @@ import com.intellij.task.ModuleBuildTask;
 import com.intellij.task.ProjectTask;
 import com.intellij.task.ProjectTaskContext;
 import com.intellij.task.ProjectTaskRunner;
-import com.intellij.ui.content.Content;
 import eu.bradan.purebasic.module.PureBasicModuleSettings;
 import eu.bradan.purebasic.module.PureBasicModuleType;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
@@ -43,7 +42,6 @@ import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
 
 import java.awt.*;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
@@ -53,36 +51,41 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
     @NotNull
     private final ResourceBundle resources = ResourceBundle.getBundle("texts/texts");
 
-    private boolean compileAllTargets(@NotNull Module module, PureBasicBuildToolWindow toolWindow) {
+    private boolean compileAllTargets(@NotNull Module module) {
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
         final VirtualFile root = ModuleRootManager.getInstance(module).getContentRoots()[0];
         final String rootPath = root.getCanonicalPath();
 
+        final CompileLog log = CompileLog.getInstance();
+
         if (rootPath == null) {
-            toolWindow.addLine(String.format(resources.getString("invalidRootPath"), module.getName()));
+            log.addLine(String.format(resources.getString("invalidRootPath"), module.getName()));
             return false;
         }
 
         final boolean[] result = {true};
         for (PureBasicTargetSettings target : settings.getState().getTargetOptions()) {
+            System.out.println("Compiling " + target.getName());
             PureBasicCompiler sdk = target.getSdk();
             if (sdk == null) {
                 // just continue, there might be targets that are only available on a different OS
                 continue;
             }
-            toolWindow.addLine(String.format(resources.getString("compilingModule"), module.getName()));
-            toolWindow.addLine("");
+            System.out.println("with " + sdk.getSdkHome());
+            log.addLine(String.format(resources.getString("compilingModule"), module.getName()));
             try {
+                System.out.println("A");
                 int exitCode = sdk.compile(target, rootPath, msg -> {
-                    toolWindow.addElement(msg);
+                    log.addMessage(msg);
                     result[0] &= msg.type != CompileMessage.CompileMessageType.ERROR;
                 });
-                toolWindow.addLine("");
-                toolWindow.addLine(String.format(resources.getString("processExitCode"), exitCode));
-                toolWindow.addLine("");
-                toolWindow.addLine("");
-            } catch (IOException e) {
-                toolWindow.addLine(e.getMessage());
+                System.out.println("B");
+                log.addLine("");
+                log.addLine(String.format(resources.getString("processExitCode"), exitCode));
+                log.addLine("");
+                log.addLine("");
+            } catch (Exception e) {
+                log.addLine(e.getMessage());
             }
         }
         return result[0];
@@ -101,16 +104,11 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
     public Promise<Result> run(@NotNull Project project, @NotNull ProjectTaskContext context, @NotNull ProjectTask... tasks) {
         final ToolWindow toolWindow = ToolWindowManager.getInstance(project)
                 .getToolWindow("PureBasic Build");
-        if (toolWindow == null) {
-            return null;
+        if (toolWindow != null) {
+            EventQueue.invokeLater(toolWindow::show);
         }
-        final Content buildToolWindowContent = toolWindow.getContentManager().getContent(0);
-        if (buildToolWindowContent == null) {
-            return null;
-        }
-        final PureBasicBuildToolWindow buildToolWindow = (PureBasicBuildToolWindow) buildToolWindowContent.getComponent();
-        buildToolWindow.clear();
-        EventQueue.invokeLater(toolWindow::show);
+
+        CompileLog.getInstance().clear();
 
         final AsyncPromise<Result> result = new AsyncPromise<>();
         JobScheduler.getScheduler().schedule(() -> {
@@ -119,7 +117,7 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
                     .filter(t -> t instanceof ModuleBuildTask)
                     .map(t -> (ModuleBuildTask) t)
                     .toArray(ModuleBuildTask[]::new)) {
-                success &= compileAllTargets(task.getModule(), buildToolWindow);
+                success &= compileAllTargets(task.getModule());
             }
             boolean finalSuccess = success;
             result.setResult(new Result() {

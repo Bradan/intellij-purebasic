@@ -24,6 +24,7 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.openapi.diagnostic.Logger;
+import eu.bradan.purebasic.PureBasicUtil;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
 import eu.bradan.purebasic.settings.PureBasicCompilerSettings;
 import org.jetbrains.annotations.NotNull;
@@ -53,6 +54,7 @@ public class PureBasicCompiler {
 
     @Nullable
     private static File getCompilerExecutable(String sdkHome) {
+        // PureBasic
         // Linux
         File compiler = Paths.get(sdkHome, "compilers", "pbcompiler").toFile();
         if (!compiler.exists()) {
@@ -63,6 +65,21 @@ public class PureBasicCompiler {
             // MacOS
             compiler = Paths.get(sdkHome, "Contents", "Resources", "compilers", "pbcompiler").toFile();
         }
+
+        // SpiderBasic
+        if (!compiler.exists()) {
+            // Linux
+            compiler = Paths.get(sdkHome, "compilers", "sbcompiler").toFile();
+        }
+        if (!compiler.exists()) {
+            // Windows
+            compiler = Paths.get(sdkHome, "compilers", "sbcompiler.exe").toFile();
+        }
+        if (!compiler.exists()) {
+            // MacOS
+            compiler = Paths.get(sdkHome, "Contents", "Resources", "compilers", "sbcompiler").toFile();
+        }
+
         if (compiler.exists() && compiler.canExecute()) {
             return compiler;
         }
@@ -133,6 +150,11 @@ public class PureBasicCompiler {
 
     @Nullable
     private Process run(String[] command) {
+        return run(command, null);
+    }
+
+    @Nullable
+    private Process run(String[] command, File workingDir) {
         HashMap<String, String> envVars = new HashMap<>(System.getenv());
         envVars.put("PUREBASIC_HOME", sdkHome);
         envVars.put("SPIDERBASIC_HOME", sdkHome);
@@ -143,7 +165,11 @@ public class PureBasicCompiler {
 
         Runtime rt = Runtime.getRuntime();
         try {
-            return rt.exec(command, env);
+            if (workingDir != null) {
+                return rt.exec(command, env, workingDir);
+            } else {
+                return rt.exec(command, env);
+            }
         } catch (IOException ignored) {
         }
         return null;
@@ -162,6 +188,20 @@ public class PureBasicCompiler {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean isPureBasic() {
+        String v = getVersionString();
+        if (v == null)
+            v = "";
+        return v.startsWith("PureBasic");
+    }
+
+    public boolean isSpiderBasic() {
+        String v = getVersionString();
+        if (v == null)
+            v = "";
+        return v.startsWith("SpiderBasic");
     }
 
     public void getSdkDeclarations(DeclarationsCollector collector) {
@@ -277,13 +317,42 @@ public class PureBasicCompiler {
         final File inputFile = Paths.get(contentRoot, targetSettings.getInputFile()).toAbsolutePath().toFile();
         final File outputFile = Paths.get(contentRoot, targetSettings.getOutputFile()).toAbsolutePath().toFile();
 
-        final String[] command = new String[]{
-                compiler.getAbsolutePath(),
-                "-e", outputFile.toString(),
-                inputFile.toString()
-        };
+        String[] command;
 
-        Process proc = run(command);
+        File workingDir = outputFile.getParentFile();
+
+        if (isPureBasic()) {
+            command = new String[]{
+                    compiler.getAbsolutePath(),
+                    "-e", outputFile.toString(),
+                    inputFile.toString()
+            };
+        } else if (isSpiderBasic()) {
+            String name = outputFile.getName();
+            int index = name.lastIndexOf('.');
+            if (index > 0) {
+                name = name.substring(0, index) + ".js";
+            } else {
+                name = name + ".js";
+            }
+            File jsFile = new File(workingDir, name);
+            File depDir = new File(workingDir, "spiderbasic");
+            command = new String[]{
+                    compiler.getAbsolutePath(),
+                    "-o", PureBasicUtil.relativeTo(outputFile, workingDir),
+                    "-js", PureBasicUtil.relativeTo(jsFile, workingDir),
+                    "-lp", "spiderbasic",
+                    "-cl", depDir.toString(),
+                    PureBasicUtil.relativeTo(inputFile, workingDir)
+            };
+        } else {
+            logger.log(new CompileMessage(CompileMessage.CompileMessageType.ERROR,
+                    "Error: invalid compiler", "", -1));
+            // no valid compiler?
+            return -1;
+        }
+
+        Process proc = run(command, workingDir);
         if (proc == null) {
             return -1;
         }
@@ -296,6 +365,7 @@ public class PureBasicCompiler {
             Pattern patternErrorInclude = Pattern.compile("Error: in included file '(.*)'");
             Pattern patternErrorLine = Pattern.compile("(Error: )?Line ([0-9]+) - (.*)");
 
+            System.out.println("X");
             while ((line = outputReader.readLine()) != null) {
                 Matcher matchErrorInclude = patternErrorInclude.matcher(line);
                 Matcher matchErrorLine = patternErrorLine.matcher(line);
@@ -311,6 +381,7 @@ public class PureBasicCompiler {
                             line, null, -1));
                 }
             }
+            System.out.println("Y");
             while ((line = errorReader.readLine()) != null) {
                 Matcher matchErrorInclude = patternErrorInclude.matcher(line);
                 Matcher matchErrorLine = patternErrorLine.matcher(line);
@@ -326,6 +397,7 @@ public class PureBasicCompiler {
                             line, null, -1));
                 }
             }
+            System.out.println("Z");
         }
         return proc.exitValue();
     }

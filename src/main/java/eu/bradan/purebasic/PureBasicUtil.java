@@ -23,6 +23,8 @@
 
 package eu.bradan.purebasic;
 
+import java.io.File;
+
 public class PureBasicUtil {
     public static String getStringContents(String string) {
         if (string == null) {
@@ -54,5 +56,9 @@ public class PureBasicUtil {
         }
 
         return string;
+    }
+
+    public static String relativeTo(File file, File relativeTo) {
+        return relativeTo.toURI().relativize(file.toURI()).getPath();
     }
 }
