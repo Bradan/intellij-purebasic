@@ -144,7 +144,7 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
             offset += pathPart.length() + 1; // + 1 for the separator
         }
 
-        return references.toArray(PsiReference[]::new);
+        return references.toArray(new PsiReference[0]);
     }
 
     @Override

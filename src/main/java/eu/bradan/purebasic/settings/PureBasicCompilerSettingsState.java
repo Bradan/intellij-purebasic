@@ -46,7 +46,7 @@ public class PureBasicCompilerSettingsState {
             }
             result.add(compiler);
         }
-        return result.toArray(PureBasicCompiler[]::new);
+        return result.toArray(new PureBasicCompiler[0]);
     }
 
     public void addSdk(PureBasicCompiler sdk) {

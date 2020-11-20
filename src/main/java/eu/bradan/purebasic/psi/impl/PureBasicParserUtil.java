@@ -27,6 +27,7 @@ import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.parser.GeneratedParserUtilBase;
 
 public class PureBasicParserUtil extends GeneratedParserUtilBase {
+    @SuppressWarnings("SameReturnValue")
     public static boolean parseAlwaysTrueStatement(PsiBuilder builder, int level) {
         return true;
     }

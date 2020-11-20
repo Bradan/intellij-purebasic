@@ -35,7 +35,7 @@ import java.util.UUID;
 
 class TargetPanelsModel extends AbstractTableModel implements EditableModel {
     private final ArrayList<Entry> panels;
-    private Module module;
+    private final Module module;
 
     public TargetPanelsModel(@Nullable Module module) {
         this.module = module;

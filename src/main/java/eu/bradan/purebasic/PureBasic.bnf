@@ -311,5 +311,6 @@ call_debugger_stmt ::= 'CallDebugger'
 // Misc
 ////////////////////////
 
+//noinspection BnfUnusedRule
 private leftTokens ::= KEYWORD|OPERATOR
 // private tokenTypes_ ::= COMMENT|KEYWORD|OPERATOR|STRING|CHARACTER|CONSTANT_IDENTIFIER|NUMBER|IDENTIFIER|POINTER_IDENTIFIER

@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PureBasicSdkData implements SdkAdditionalData, PersistentStateComponent<PureBasicSdkData> {
-    private String sdkHome;
+    private final String sdkHome;
 
     public PureBasicSdkData() {
         this.sdkHome = "";
