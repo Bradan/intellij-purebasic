@@ -1,0 +1,53 @@
+/*
+ * Copyright (c) 2020 Daniel Brall
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+package eu.bradan.purebasic.ui;
+
+import com.intellij.ide.actions.CreateFileFromTemplateAction;
+import com.intellij.ide.actions.CreateFileFromTemplateDialog;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiDirectory;
+import eu.bradan.purebasic.PureBasicIcons;
+import eu.bradan.purebasic.Texts;
+import org.jetbrains.annotations.NotNull;
+
+public class CreatePureBasicFileAction extends CreateFileFromTemplateAction implements DumbAware {
+    private static final String NEW_PUREBASIC_FILE = "New PureBasic File";
+
+    public CreatePureBasicFileAction() {
+        super(NEW_PUREBASIC_FILE, "", PureBasicIcons.PUREBASIC);
+    }
+
+    @Override
+    protected void buildDialog(@NotNull Project project, @NotNull PsiDirectory directory, CreateFileFromTemplateDialog.@NotNull Builder builder) {
+        builder.setTitle(Texts.get("createPureBasicFile")).
+                addKind("PureBasic source", PureBasicIcons.PUREBASIC, "PureBasic Source").
+                addKind("PureBasic include", PureBasicIcons.PUREBASIC, "PureBasic Include");
+    }
+
+    @Override
+    protected String getActionName(PsiDirectory directory, @NotNull String newName, String templateName) {
+        return NEW_PUREBASIC_FILE;
+    }
+}

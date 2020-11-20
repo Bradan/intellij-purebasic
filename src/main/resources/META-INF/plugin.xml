@@ -63,5 +63,12 @@
             <reference ref="CompilePureBasic"/>
             <add-to-group group-id="ToolbarRunGroup" relative-to-action="RunConfiguration" anchor="before"/>
         </group>
+        <group id="PureBasicNewFileGroup">
+            <action id="NewPureBasicFile" class="eu.bradan.purebasic.ui.CreatePureBasicFileAction"
+                    text="PureBasic File" description="Create new PureBasic file"/>
+            <action id="NewSpiderBasicFile" class="eu.bradan.purebasic.ui.CreateSpiderBasicFileAction"
+                    text="SpiderBasic File" description="Create new SpiderBasic file"/>
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewDir"/>
+        </group>
     </actions>
 </idea-plugin>
