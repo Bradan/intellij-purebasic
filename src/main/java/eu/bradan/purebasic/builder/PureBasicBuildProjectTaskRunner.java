@@ -24,6 +24,9 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.concurrency.JobScheduler;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -43,6 +46,7 @@ import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
 
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -94,10 +98,20 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
 
     @Override
     public Promise<Result> run(@NotNull Project project, @NotNull ProjectTaskContext context, @NotNull ProjectTask... tasks) {
-        final ToolWindow toolWindow = ToolWindowManager.getInstance(project)
-                .getToolWindow("PureBasic Build");
-        if (toolWindow != null) {
-            EventQueue.invokeLater(toolWindow::show);
+        try {
+            EventQueue.invokeAndWait(() -> {
+                final ToolWindow toolWindow = ToolWindowManager.getInstance(project)
+                        .getToolWindow("PureBasic Build");
+                if (toolWindow != null) {
+                    toolWindow.show();
+                }
+
+                Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+                if (editor != null) {
+                    FileDocumentManager.getInstance().saveDocumentAsIs(editor.getDocument());
+                }
+            });
+        } catch (InterruptedException | InvocationTargetException ignored) {
         }
 
         CompileLog.getInstance().clear();
