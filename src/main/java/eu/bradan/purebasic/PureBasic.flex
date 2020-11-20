@@ -46,12 +46,12 @@ CONSTANT_IDENTIFIER="#"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 
 {END_OF_LINE_COMMENT}                             { yybegin(YYINITIAL); return storeLast(PureBasicTypes.COMMENT); }
 
-{STRING_DELIM}([^\R\"]*){STRING_DELIM}            { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.STRING); }
+{STRING_DELIM}([^\r\n\"]*){STRING_DELIM}            { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.STRING); }
 
-"~"{STRING_DELIM}([^\R\\\"]+|("\\"{STRING_DELIM})|"\\"[abfnrtv\\])*{STRING_DELIM}
+"~"{STRING_DELIM}([^\r\n\\\"]+|("\\"{STRING_DELIM})|"\\"[abfnrtv\\])*{STRING_DELIM}
                                                   { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.STRING); }
 
-{CHAR_DELIM}([^\R\\\"]+|("\\"{CHAR_DELIM})|"\\"[0abfnrtv\\]){CHAR_DELIM}
+{CHAR_DELIM}([^\r\n\\\"]+|("\\"{CHAR_DELIM})|"\\"[0abfnrtv\\]){CHAR_DELIM}
                                                   { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.CHARACTER); }
 
 {KEYWORDS}                                        { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.KEYWORD); }
