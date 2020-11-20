@@ -7,10 +7,20 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="fa392" class="com.intellij.ui.components.JBList" binding="listCompileResult">
+      <scrollpane id="e41a3" binding="scrollPane">
         <constraints border-constraint="Center"/>
         <properties/>
-      </component>
+        <border type="none"/>
+        <children>
+          <component id="fa392" class="com.intellij.ui.components.JBList" binding="listCompileResult">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
+  <inspectionSuppressions>
+    <suppress inspection="NoLabelFor" id="e41a3"/>
+  </inspectionSuppressions>
 </form>

@@ -42,6 +42,7 @@ public class PureBasicBuildToolWindow extends JPanel {
     private final DefaultListModel<PureBasicCompiler.CompileMessage> model;
     private JPanel toolWindowContent;
     private JBList<PureBasicCompiler.CompileMessage> listCompileResult;
+    private JScrollPane scrollPane;
 
     public PureBasicBuildToolWindow(ToolWindow toolWindow) {
         this.setLayout(new BorderLayout());
