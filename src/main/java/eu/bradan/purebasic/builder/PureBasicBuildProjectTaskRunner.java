@@ -42,6 +42,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.ResourceBundle;
@@ -107,12 +108,14 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
         }
         final PureBasicBuildToolWindow buildToolWindow = (PureBasicBuildToolWindow) buildToolWindowContent.getComponent();
         buildToolWindow.clear();
+        EventQueue.invokeLater(toolWindow::show);
 
         final AsyncPromise<Result> result = new AsyncPromise<>();
         JobScheduler.getScheduler().schedule(() -> {
             boolean success = true;
             for (ModuleBuildTask task : Arrays.stream(tasks)
                     .filter(t -> t instanceof ModuleBuildTask)
+                    .map(t -> (ModuleBuildTask) t)
                     .toArray(ModuleBuildTask[]::new)) {
                 success &= compileAllTargets(task.getModule(), buildToolWindow);
             }
