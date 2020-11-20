@@ -36,14 +36,15 @@ public class CreateSpiderBasicFileAction extends CreateFileFromTemplateAction im
     private static final String NEW_PUREBASIC_FILE = "New SpiderBasic File";
 
     public CreateSpiderBasicFileAction() {
-        super(NEW_PUREBASIC_FILE, "", PureBasicIcons.PUREBASIC);
+        super(NEW_PUREBASIC_FILE, "", PureBasicIcons.PureBasicFile);
     }
 
     @Override
     protected void buildDialog(@NotNull Project project, @NotNull PsiDirectory directory, CreateFileFromTemplateDialog.@NotNull Builder builder) {
+        //noinspection DialogTitleCapitalization
         builder.setTitle(Texts.get("createSpiderBasicFile")).
-                addKind("SpiderBasic source", PureBasicIcons.PUREBASIC, "SpiderBasic Source").
-                addKind("SpiderBasic include", PureBasicIcons.PUREBASIC, "SpiderBasic Include");
+                addKind("SpiderBasic source", PureBasicIcons.PureBasicFile, "SpiderBasic Source").
+                addKind("SpiderBasic include", PureBasicIcons.PureBasicFile, "SpiderBasic Include");
     }
 
     @Override

@@ -36,14 +36,15 @@ public class CreatePureBasicFileAction extends CreateFileFromTemplateAction impl
     private static final String NEW_PUREBASIC_FILE = "New PureBasic File";
 
     public CreatePureBasicFileAction() {
-        super(NEW_PUREBASIC_FILE, "", PureBasicIcons.PUREBASIC);
+        super(NEW_PUREBASIC_FILE, "", PureBasicIcons.PureBasicFile);
     }
 
     @Override
     protected void buildDialog(@NotNull Project project, @NotNull PsiDirectory directory, CreateFileFromTemplateDialog.@NotNull Builder builder) {
+        //noinspection DialogTitleCapitalization
         builder.setTitle(Texts.get("createPureBasicFile")).
-                addKind("PureBasic source", PureBasicIcons.PUREBASIC, "PureBasic Source").
-                addKind("PureBasic include", PureBasicIcons.PUREBASIC, "PureBasic Include");
+                addKind("PureBasic source", PureBasicIcons.PureBasicFile, "PureBasic Source").
+                addKind("PureBasic include", PureBasicIcons.PureBasicFile, "PureBasic Include");
     }
 
     @Override

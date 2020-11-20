@@ -57,6 +57,6 @@ public class PureBasicFileType extends LanguageFileType {
     @Nullable
     @Override
     public Icon getIcon() {
-        return PureBasicIcons.PUREBASIC;
+        return PureBasicIcons.PureBasicFile;
     }
 }

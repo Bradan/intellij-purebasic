@@ -3,18 +3,14 @@
         xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:cc="http://creativecommons.org/ns#"
         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
         xmlns="http://www.w3.org/2000/svg"
-        inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-        sodipodi:docname="pb_file.svg"
-        id="svg4"
-        version="1.1"
-        viewBox="0 0 16 16"
+        width="16"
         height="16"
-        width="16">
+        viewBox="0 0 16 16"
+        version="1.1"
+        id="svg10">
   <metadata
-          id="metadata10">
+          id="metadata16">
     <rdf:RDF>
       <cc:Work
               rdf:about="">
@@ -26,34 +22,24 @@
     </rdf:RDF>
   </metadata>
   <defs
-          id="defs8"/>
-  <sodipodi:namedview
-          inkscape:current-layer="svg4"
-          inkscape:window-maximized="1"
-          inkscape:window-y="27"
-          inkscape:window-x="0"
-          inkscape:cy="4.0623448"
-          inkscape:cx="10.334128"
-          inkscape:zoom="37.830213"
-          showgrid="true"
-          id="namedview6"
-          inkscape:window-height="1016"
-          inkscape:window-width="1920"
-          inkscape:pageshadow="2"
-          inkscape:pageopacity="0"
-          guidetolerance="10"
-          gridtolerance="10"
-          objecttolerance="10"
-          borderopacity="1"
-          bordercolor="#666666"
-          pagecolor="#ffffff">
-    <inkscape:grid
-            id="grid835"
-            type="xygrid"/>
-  </sodipodi:namedview>
-  <path
-          inkscape:label="pbicon"
-          d="M 5 1 L 3.4394531 3 L 11 3 L 7.6660156 7 L 3.8808594 7 L 2.1191406 9 L 6 9 L 1 15 L 13.457031 15 L 15 13 L 5 13 L 8.3339844 9 L 12.119141 9 L 13.880859 7 L 10 7 L 15 1 L 5 1 z "
-          style="fill:#fc0000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-          id="path857"/>
+          id="defs14"/>
+  <g
+          fill="none"
+          fill-rule="evenodd"
+          id="g8">
+    <polygon
+            fill="#9AA7B0"
+            fill-opacity=".8"
+            points="7 1 3 5 7 5"
+            id="polygon2"/>
+    <polygon
+            fill="#9AA7B0"
+            fill-opacity=".8"
+            points="8 1 8 6 3 6 3 15 13 15 13 1"
+            id="polygon4"/>
+    <path
+            d="M 6.2660241,6.8849847 5.3640404,8.0409694 H 9.733976 L 7.80696,10.352938 H 5.6191698 l -1.0182594,1.155984 h 2.2431059 l -2.8899604,3.467953 h 7.2000651 l 0.891823,-1.155984 H 6.2660241 L 8.1930408,11.508922 H 10.380831 L 11.39909,10.352938 H 9.1559843 L 12.045944,6.8849847 Z"
+            style="fill:#fc0000;fill-opacity:1;stroke:none;stroke-width:0.577991px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+            id="path857"/>
+  </g>
 </svg>
