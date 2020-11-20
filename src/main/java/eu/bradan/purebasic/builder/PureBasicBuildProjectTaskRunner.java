@@ -34,6 +34,7 @@ import com.intellij.task.ModuleBuildTask;
 import com.intellij.task.ProjectTask;
 import com.intellij.task.ProjectTaskContext;
 import com.intellij.task.ProjectTaskRunner;
+import eu.bradan.purebasic.Texts;
 import eu.bradan.purebasic.module.PureBasicModuleSettings;
 import eu.bradan.purebasic.module.PureBasicModuleType;
 import eu.bradan.purebasic.module.PureBasicTargetSettings;
@@ -43,14 +44,9 @@ import org.jetbrains.concurrency.Promise;
 
 import java.awt.*;
 import java.util.Arrays;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
 public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
-
-    @NotNull
-    private final ResourceBundle resources = ResourceBundle.getBundle("texts/texts");
-
     private boolean compileAllTargets(@NotNull Module module) {
         final PureBasicModuleSettings settings = module.getService(PureBasicModuleSettings.class);
         final VirtualFile root = ModuleRootManager.getInstance(module).getContentRoots()[0];
@@ -59,29 +55,25 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
         final CompileLog log = CompileLog.getInstance();
 
         if (rootPath == null) {
-            log.addLine(String.format(resources.getString("invalidRootPath"), module.getName()));
+            log.addLine(String.format(Texts.get("invalidRootPath"), module.getName()));
             return false;
         }
 
         final boolean[] result = {true};
         for (PureBasicTargetSettings target : settings.getState().getTargetOptions()) {
-            System.out.println("Compiling " + target.getName());
             PureBasicCompiler sdk = target.getSdk();
             if (sdk == null) {
                 // just continue, there might be targets that are only available on a different OS
                 continue;
             }
-            System.out.println("with " + sdk.getSdkHome());
-            log.addLine(String.format(resources.getString("compilingModule"), module.getName()));
+            log.addLine(String.format(Texts.get("compilingModule"), module.getName()));
             try {
-                System.out.println("A");
                 int exitCode = sdk.compile(target, rootPath, msg -> {
                     log.addMessage(msg);
                     result[0] &= msg.type != CompileMessage.CompileMessageType.ERROR;
                 });
-                System.out.println("B");
                 log.addLine("");
-                log.addLine(String.format(resources.getString("processExitCode"), exitCode));
+                log.addLine(String.format(Texts.get("processExitCode"), exitCode));
                 log.addLine("");
                 log.addLine("");
             } catch (Exception e) {

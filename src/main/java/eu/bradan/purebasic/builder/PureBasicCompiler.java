@@ -365,7 +365,6 @@ public class PureBasicCompiler {
             Pattern patternErrorInclude = Pattern.compile("Error: in included file '(.*)'");
             Pattern patternErrorLine = Pattern.compile("(Error: )?Line ([0-9]+) - (.*)");
 
-            System.out.println("X");
             while ((line = outputReader.readLine()) != null) {
                 Matcher matchErrorInclude = patternErrorInclude.matcher(line);
                 Matcher matchErrorLine = patternErrorLine.matcher(line);
@@ -381,7 +380,6 @@ public class PureBasicCompiler {
                             line, null, -1));
                 }
             }
-            System.out.println("Y");
             while ((line = errorReader.readLine()) != null) {
                 Matcher matchErrorInclude = patternErrorInclude.matcher(line);
                 Matcher matchErrorLine = patternErrorLine.matcher(line);
@@ -397,9 +395,14 @@ public class PureBasicCompiler {
                             line, null, -1));
                 }
             }
-            System.out.println("Z");
         }
-        return proc.exitValue();
+
+        try {
+            return proc.waitFor();
+        } catch (InterruptedException ignored) {
+        }
+
+        return -1;
     }
 
     public interface CompileMessageLogger {
