@@ -1,10 +1,32 @@
 <idea-plugin>
     <id>eu.bradan.purebasic.PureBasic</id>
     <name>PureBasic Language</name>
-    <vendor email="purebasic@bradan.eu" url="http://www.bradan.eu/">Daniel Brall</vendor>
+    <vendor email="purebasic@bradan.eu" url="https://www.bradan.eu/">Daniel Brall</vendor>
 
     <description><![CDATA[
-    PureBasic/SpiderBasic language support for IntelliJ IDEA.
+    PureBasic and SpiderBasic language support for IntelliJ IDEA and IDEA based IDEs.<br>
+    <br>
+    Known to work with<br>
+    <ul>
+    <li>PureBasic 5.72 (Linux - x64)</li>
+    <li>SpiderBasic 2.10 (Linux - x64)</li>
+    </ul>
+    <br>
+    Usage instructions<br>
+    <ol>
+    <li>Install this plugin and a PureBasic or SpiderBasic compiler.</li>
+    <li>Go to <a href="jetbrains://Idea/settings?name=Build%2C+Execution%2C+Deployment--Build+Tools--PureBasic">
+        File | Settings | Build, Execution, Deployment | Build Tools | PureBasic</a> and set up your SDK paths.
+        Add a label to them (for example PureBasic 5.72 can be labelled as "pb572").</li>
+    <li>Create a project with a PureBasic module.</li>
+    <li>Create some PureBasic or SpiderBasic sources files (Module context menu | New | New PureBasic File).</li>
+    <li>Open the module settings and create a build target. Name it, specify the main source file and the output
+     filename as well as a SDK label.</li>
+    <li>Create a PureBasic run configuration which is linked to this module and build target. (PureBasic only)</li>
+    <li>Compile the project and run it.</li>
+    </ol>
+    <br>
+    The current version is still very limited (and there are probably bugs), hence it is only available in the alpha channel.
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
