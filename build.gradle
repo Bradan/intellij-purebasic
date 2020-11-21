@@ -29,7 +29,7 @@ allprojects {
 apply plugin: "org.jetbrains.grammarkit"
 
 group "eu.bradan.purebasic"
-version "0.1-SNAPSHOT"
+version "0.11-SNAPSHOT"
 
 dependencies {
 }
