@@ -77,7 +77,7 @@ private simple_statement_ ::= include_stmt|include_binary_stmt|include_path_stmt
                     enable_explicit_stmt|enable_debugger_stmt|enable_asm_stmt|disable_js_stmt|disable_explicit_stmt|
                     disable_debugger_stmt|disable_asm_stmt|debug_level_stmt|debug_stmt|continue_stmt|break_stmt|
                     compiler_warning_stmt|compiler_error_stmt|call_debugger_stmt|data_list_stmt|procedure_return_stmt|
-                    assignment_stmt|call_stmt|declaration_stmt|label_stmt
+                    assignment_stmt|call_stmt|declaration_stmt|label_stmt|parse_constant_identifier
 fake simple_statement ::= simple_statement_;
 
 private statements ::= statement (sep statement)*
@@ -221,7 +221,7 @@ define_module_foot ::= 'EndModule'
 // Enumeration
 enumeration_block ::= enumeration_head [sep statements] sep enumeration_foot {pin=1}
 
-enumeration_head ::= ('Enumeration' | 'EnumerationBinary') {pin=1 recoverWhile=nosep}
+enumeration_head ::= ('Enumeration' | 'EnumerationBinary') [parse_identifier] {pin=1 recoverWhile=nosep}
 enumeration_foot ::= 'EndEnumeration'
 
 
