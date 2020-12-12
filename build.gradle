@@ -1,9 +1,17 @@
-import org.jetbrains.grammarkit.tasks.*
-
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.6.4'
-    id 'org.jetbrains.grammarkit' version '2020.1.2'
+    id 'org.jetbrains.grammarkit' version '2020.3.2'
+}
+
+apply plugin: 'org.jetbrains.grammarkit'
+
+import org.jetbrains.intellij.tasks.*
+import org.jetbrains.grammarkit.tasks.*
+
+grammarKit {
+    jflexRelease = '1.7.0-1'
+    grammarKitRelease = 'e7687f2b32'
 }
 
 allprojects {
@@ -66,7 +74,11 @@ task generatePureBasicLexer(type: GenerateLexer) {
 }
 task generatePureBasicParserPre(type: GenerateParser) {
     dependsOn generatePureBasicLexer
-    mustRunAfter generatePureBasicLexer
+
+    outputs.upToDateWhen { false } // always execute
+    doFirst {
+        classpath += sourceSets.main.runtimeClasspath // load the classes
+    }
 
     source = "src/main/java/eu/bradan/purebasic/PureBasic.bnf"
     targetRoot = "src/main/gen"
@@ -90,7 +102,7 @@ task generatePureBasicParser(type: GenerateParser) {
     targetRoot = "src/main/gen"
     pathToParser = 'eu/bradan/purebasic/PureBasicParser.java'
     pathToPsiRoot = 'eu/bradan/purebasic/psi'
-    purgeOldFiles = true
+    purgeOldFiles = false
 }
 
 // TODO: Wait for a fix for issue https://github.com/JetBrains/gradle-grammar-kit-plugin/issues/3
@@ -98,3 +110,24 @@ task generatePureBasicParser(type: GenerateParser) {
 //       Invoking gradle tasks multiple times is not supported, so invoke it manually!
 //compileJava.dependsOn(generatePureBasicLexer)
 //compileJava.dependsOn(generatePureBasicParser)
+
+task runFlexDebug(type: RunIdeTask) {
+    dependsOn compileJava
+    dependsOn buildPlugin
+
+    classpath += sourceSets.main.runtimeClasspath
+    classpath += project.files()
+
+//    doFirst {
+//        classpath += sourceSets.main.runtimeClasspath
+//        classpath.each { println it }
+//        // The classpath does not contain the GrammarKit libraries,
+//        // so it doesn't find com/intellij/lexer/FlexLexer
+//    }
+
+    group = "verification"
+    description = "Run JFlex %debug"
+
+    main = 'eu.bradan.purebasic.PureBasicLexer'
+    args = ["src/test/testData/ParsingTestData.pb"]
+}
