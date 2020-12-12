@@ -34,6 +34,7 @@ import java.io.StringReader;
 public class TestPureBasicLexer extends TestCase {
     @Override
     protected void setUp() throws Exception {
+        //PureBasicLexer.main(new String[] {"src/test/testData/ParsingTestData.pb"});
     }
 
     @Override
