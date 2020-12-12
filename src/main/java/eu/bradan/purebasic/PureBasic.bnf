@@ -38,6 +38,22 @@
 
   psiImplUtilClass="eu.bradan.purebasic.psi.impl.PureBasicPsiImplUtil"
 
+//  tokens = [
+//    SEPARATOR='regexp:[:\n]'
+//    SPACE='regexp:\s+'
+//
+//    COMMENT='regexp:;.*'
+//    INLINE_ASM='regexp:^\s*![^\r\n:]*'
+//    STRING='regexp:\"([^\r\n\"]*)\"|~\"([^\r\n\\\"]+|("\\"\")|"\\"[abfnrtv\\])*\"'
+//    CHARACTER="regexp:'([^\r\n\"]+|(\\')|\\[0abfnrtv\\])'"
+//    KEYWORD='regexp:XOr|XIncludeFile|With|While|Wend|UseModule|UnuseModule|Until|UndefineMacro|To|Threaded|Swap|StructureUnion|Structure|Step|Static|Shared|Select|Runtime|Return|Restore|Repeat|ReDim|Read|PrototypeC|Prototype|Protected|ProcedureReturn|ProcedureDLL|ProcedureCDLL|ProcedureC|Procedure|Or|Not|Next|NewMap|NewList|Module|Map|MacroExpandedCount|Macro|List|Interface|IncludePath|IncludeFile|IncludeBinary|ImportC|Import|If|Goto|Gosub|Global|ForEver|ForEach|For|FakeReturn|Extends|EnumerationBinary|Enumeration|EndWith|EndStructureUnion|EndStructure|EndSelect|EndProcedure|EndModule|EndMacro|EndInterface|EndImport|EndIf|EndEnumeration|EndDeclareModule|EndDataSection|End|EnableJS|EnableExplicit|EnableDebugger|EnableASM|ElseIf|Else|DisableJS|DisableExplicit|DisableDebugger|DisableASM|Dim|Define|Default|DeclareModule|DeclareDLL|DeclareCDLL|DeclareC|Declare|DebugLevel|Debug|DataSection|Data|Continue|CompilerWarning|CompilerSelect|CompilerIf|CompilerError|CompilerEndSelect|CompilerEndIf|CompilerElseIf|CompilerElse|CompilerDefault|CompilerCase|Case|CallDebugger|Break|As|Array|And|Align'
+//    NUMBER='regexp:\$[0-9A-Fa-f]+|%[01]+|[0-9]+(\.[0-9]+|)'
+//    OPERATOR='regexp:\(|\)|[|]|<=|=<|>=|=>|<>|<<|>>|=|\+|-|\*|/|&|\||!|~|<|>|%|.|,|\\|#|::|@|\?'
+//    IDENTIFIER='regexp:[a-zA-Z_][a-zA-Z_0-9]*(\$|)'
+//    POINTER_IDENTIFIER='regexp:\*[a-zA-Z_][a-zA-Z_0-9]*(\$|)'
+//    CONSTANT_IDENTIFIER='regexp:#[a-zA-Z_][a-zA-Z_0-9]*(\$|)'
+//  ]
+
   extends("simple_statement")=statement
   extends("block_statement")=statement
   extends(".*_stmt")=simple_statement
@@ -66,7 +82,7 @@ parse_constant_identifier ::= CONSTANT_IDENTIFIER {
             implements="eu.bradan.purebasic.psi.PureBasicNamedElement"
         }
 
-statement ::= simple_statement_|block_statement_|INLINE_ASM|COMMENT {recoverWhile=nosep}
+statement ::= simple_statement_|block_statement_|INLINE_ASM|COMMENT
 private block_statement_ ::= macro_block|comp_condition_block|procedure_block|with_block|structure_block|interface_block|
                     import_block|data_section_block|enumeration_block|declare_module_block|define_module_block|
                     loop_block|condition_block|structure_union_block
@@ -142,7 +158,7 @@ map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] 
 private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' [parameters_decl] ')'
 procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern {pin=1}
 
-procedure_block ::= procedure_head [sep statements] sep procedure_foot {pin=1 methods=[getPresentation]}
+procedure_block ::= procedure_start procedure_foot {pin=1 methods=[getPresentation]}
 
 private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] ['=' expression]
 private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
@@ -151,90 +167,118 @@ private parameters_decl_map ::= 'Map' parse_identifier [type_suffix] '(' ')' {pi
 parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map) [',' [sep] parameters_decl]
 parameters_call ::= expression (',' [sep] expression)*
 
+private procedure_start ::= procedure_head [sep statements] sep {pin=1 recoverWhile=no_procedure_foot}
 procedure_head ::= ('ProcedureCDLL' | 'ProcedureDLL' | 'ProcedureC' | 'Procedure') procedure_decl_pattern {pin=1 recoverWhile=nosep}
 procedure_return_stmt ::= 'ProcedureReturn' [expression]
 procedure_foot ::= 'EndProcedure'
+private no_procedure_foot ::= !procedure_foot
 
 // Macro
 macro_parameter_decl ::= parse_identifier ['=' [expression]]
 macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
 private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
-macro_block ::= macro_head [sep (statements | expression)] sep macro_foot {pin=1 methods=[getPresentation]}
+macro_block ::= macro_start macro_foot {pin=1 methods=[getPresentation]}
 
+private macro_start ::= macro_head [sep (expression | statements)] sep {pin=1 recoverWhile=no_macro_foot}
 macro_head ::= 'Macro' macro_decl_pattern {pin=1 recoverWhile=nosep}
 macro_foot ::= 'EndMacro'
+private no_macro_foot ::= !macro_foot
 
 // With
-with_block ::= with_head [sep statements] sep with_foot
+with_block ::= with_start sep with_foot
 
+private with_start ::= with_head [sep statements] sep {pin=1 recoverWhile=no_with_foot}
 with_head ::= 'With' identifier_or_call_chained {pin=1 recoverWhile=nosep}
 with_foot ::= 'EndWith'
+private no_with_foot ::= !with_foot
 
 
 call_stmt ::= parse_identifier '(' [parameters_call] ')'
 
 // Structure
-structure_block ::= structure_head [sep statements] sep structure_foot {pin=1 methods=[getPresentation]}
+structure_block ::= structure_start structure_foot {pin=1 methods=[getPresentation]}
 
+private structure_start ::= structure_head [sep statements] sep {pin=1 recoverWhile=no_structure_foot}
 structure_head ::= 'Structure' parse_identifier ['Extends' parse_identifier] ['Align' (NUMBER|parse_constant_identifier)] {pin=1 recoverWhile=nosep}
 structure_foot ::= 'EndStructure'
+private no_structure_foot ::= !structure_foot
 
-structure_union_block ::= structure_union_head [sep statements] sep structure_union_foot {pin=1}
+structure_union_block ::= structure_union_start structure_union_foot {pin=1}
 
+private structure_union_start ::= structure_union_head [sep statements] sep {pin=1 recoverWhile=no_structure_union_foot}
 structure_union_head ::= 'StructureUnion' {pin=1 recoverWhile=nosep}
 structure_union_foot ::= 'EndStructureUnion'
+private no_structure_union_foot ::= !structure_union_foot
 
 // Interface
-interface_block ::= interface_head [sep statements] sep interface_foot {pin=1 methods=[getPresentation]}
+interface_block ::= interface_start interface_foot {pin=1 methods=[getPresentation]}
 
+private interface_start ::= interface_head [sep statements] sep {pin=1 recoverWhile=no_interface_foot}
 interface_head ::= 'Interface' parse_identifier ['Extends' parse_identifier] {pin=1 recoverWhile=nosep}
 interface_foot ::= 'EndInterface'
+private no_interface_foot ::= !interface_foot
 
 // Import
-import_block ::= import_head [sep statements] sep import_foot {pin=1}
+import_block ::= import_start import_foot {pin=1}
 
+private import_start ::= import_head [sep statements] sep {pin=1 recoverWhile=no_import_foot}
 import_head ::= ('Import'|'ImportC') STRING {pin=1 recoverWhile=nosep}
 import_foot ::= 'EndImport'
+private no_import_foot ::= !import_foot
 
 // DataSection
-data_section_block ::= data_section_head [sep statements] sep data_section_foot {pin=1}
+data_section_block ::= data_section_start data_section_foot {pin=1}
 
 data_entry ::= parse_constant_identifier|NUMBER|STRING
 data_list_stmt ::= 'Data' [type_suffix] data_entry (',' [sep] data_entry)*
 
+private data_section_start ::= data_section_head [sep statements] sep {pin=1 recoverWhile=no_data_section_foot}
 data_section_head ::= 'DataSection' {pin=1 recoverWhile=nosep}
 data_section_foot ::= 'EndDataSection'
+private no_data_section_foot ::= !data_section_foot
 
 // DeclareModule
-declare_module_block ::= declare_module_head [sep statements] sep declare_module_foot {pin=1 methods=[getPresentation]}
+declare_module_block ::= declare_module_start declare_module_foot {pin=1 methods=[getPresentation]}
 
+private declare_module_start ::= declare_module_head [sep statements] sep {pin=1 recoverWhile=no_declare_module_foot}
 declare_module_head ::= 'DeclareModule' parse_identifier {pin=1 recoverWhile=nosep}
 declare_module_foot ::= 'EndDeclareModule'
+private no_declare_module_foot ::= !declare_module_foot
 
 // Module
-define_module_block ::= define_module_head [sep statements] sep define_module_foot {pin=1 methods=[getPresentation]}
+define_module_block ::= define_module_start define_module_foot {pin=1 methods=[getPresentation]}
 
+private define_module_start ::= define_module_head [sep statements] sep {pin=1 recoverWhile=no_define_module_foot}
 define_module_head ::= 'Module' parse_identifier {pin=1 recoverWhile=nosep}
 define_module_foot ::= 'EndModule'
+private no_define_module_foot ::= !define_module_foot
 
 // Enumeration
-enumeration_block ::= enumeration_head [sep statements] sep enumeration_foot {pin=1}
+enumeration_block ::= enumeration_start enumeration_foot {pin=1}
 
+private enumeration_start ::= enumeration_head [sep statements] sep {pin=1 recoverWhile=no_enumeration_foot}
 enumeration_head ::= ('Enumeration' | 'EnumerationBinary') [parse_identifier] {pin=1 recoverWhile=nosep}
 enumeration_foot ::= 'EndEnumeration'
+private no_enumeration_foot ::= !enumeration_foot
 
 
 // Loops
-private while ::= while_head [sep statements] sep while_foot {pin=1}
+private while ::= while_start while_foot {pin=1}
+private while_start ::= while_head [sep statements] sep {pin=1 recoverWhile=no_while_foot}
 private while_head ::= 'While' expression {pin=1 recoverWhile=nosep}
 private while_foot ::= 'Wend'
-private for ::= for_head [sep statements] sep for_foot {pin=1}
+private no_while_foot ::= !while_foot
+private for ::= for_start for_foot {pin=1}
+private for_start ::= for_head [sep statements] sep {pin=1 recoverWhile=no_for_foot}
 private for_head ::= 'For' variable_decl_identifier '=' expression 'To' expression ['Step' NUMBER] {pin=1 recoverWhile=nosep}
 private for_foot ::= 'Next' [parse_identifier]
-private foreach ::= foreach_head [sep statements] sep foreach_foot {pin=1}
+private no_for_foot ::= !for_foot
+private foreach ::= foreach_start foreach_foot {pin=1}
+private foreach_start ::= foreach_head [sep statements] sep {pin=1 recoverWhile=no_foreach_foot}
 private foreach_head ::= 'ForEach' identifier_or_call_chained {pin=1 recoverWhile=nosep}
 private foreach_foot ::= 'Next'
+private no_foreach_foot ::= !foreach_foot
 private repeat ::= 'Repeat' [sep statements] sep ('Until' expression | 'ForEver') {pin=1}
 
 loop_block ::= while|for|foreach|repeat
