@@ -120,6 +120,7 @@ assignment_stmt ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}
 expression ::= '(' expression ')' |
                 (identifier_or_call_chained|atom) binary_operators expression |
                  unary_operators expression |
+                (identifier_or_call_chained|atom) expression | // for macro usage
                 (identifier_or_call_chained|atom)
 
 module_path_element ::= parse_identifier
@@ -178,12 +179,11 @@ macro_parameter_decl ::= parse_identifier ['=' [expression]]
 macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
 private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
 
-macro_block ::= macro_start macro_foot {pin=1 methods=[getPresentation]}
+macro_block ::= macro_start {pin=1 methods=[getPresentation]}
 
-private macro_start ::= macro_head [sep (expression | statements)] sep {pin=1 recoverWhile=no_macro_foot}
+private external accept_until_macro_foot ::= acceptUntil "EndMacro"; // macros can be weird, just don't parse their inner.
+private macro_start ::= macro_head sep accept_until_macro_foot {pin=1}
 macro_head ::= 'Macro' macro_decl_pattern {pin=1 recoverWhile=nosep}
-macro_foot ::= 'EndMacro'
-private no_macro_foot ::= !macro_foot
 
 // With
 with_block ::= with_start sep with_foot
