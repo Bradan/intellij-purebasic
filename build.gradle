@@ -20,7 +20,7 @@ allprojects {
 
     // See https://github.com/JetBrains/gradle-intellij-plugin/
     intellij {
-        version '2020.2'
+        version '2020.3'
         downloadSources true
         pluginName 'PureBasic'
     }
@@ -37,7 +37,7 @@ allprojects {
 apply plugin: "org.jetbrains.grammarkit"
 
 group "eu.bradan.purebasic"
-version "0.11-SNAPSHOT"
+version "0.12-SNAPSHOT"
 
 dependencies {
 }
@@ -45,11 +45,10 @@ intellij {
 }
 patchPluginXml {
     changeNotes '''
-      First version uploaded into the plugin repository.<br>
-      What should work by now:<br>
-      1. Syntax Highlighting<br>
-      2. Compiling with PureBasic and SpiderBasic<br>
-      3. Running native applications<br>
+      Still has some syntax problems.
+      <ul>
+      <li>Macro inner is now always accepted by the parser.</li>
+      </ul>
       '''
 }
 runIde {

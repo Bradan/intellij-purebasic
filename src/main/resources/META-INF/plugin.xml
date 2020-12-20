@@ -27,6 +27,8 @@
     </ol>
     <br>
     The current version is still very limited (and there are probably bugs), hence it is only available in the alpha channel.
+    <br>
+    External links: <a href="https://github.com/Bradan/intellij-purebasic">Source code</a>
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
