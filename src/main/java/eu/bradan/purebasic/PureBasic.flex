@@ -38,7 +38,7 @@ CHAR_DELIM="'"
 NUMBER="$"[0-9A-Fa-f]+ | "%"[01]+ | [0-9]+(\.[0-9]+|"")
 IDENTIFIER=[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 POINTER_IDENTIFIER="*"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
-CONSTANT_IDENTIFIER="#"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
+CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 
 %state FOLLOW_UP
 
