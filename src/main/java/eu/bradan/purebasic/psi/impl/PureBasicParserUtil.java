@@ -32,12 +32,12 @@ public class PureBasicParserUtil extends GeneratedParserUtilBase {
         return true;
     }
 
-    public static boolean acceptUntil(PsiBuilder b, int l, String token) {
+    public static boolean acceptUntil(PsiBuilder b, int l, Parser token) {
         if (!recursion_guard_(b, l, "parseWhileNotStatement")) return false;
         PsiBuilder.Marker m = enter_section_(b);
         boolean r = false;
         while (!b.eof()) {
-            if (consumeToken(b, token)) {
+            if (token.parse(b, l + 1)) {
                 r = true;
                 break;
             }

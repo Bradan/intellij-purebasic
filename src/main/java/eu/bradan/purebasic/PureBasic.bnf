@@ -111,8 +111,9 @@ label_stmt ::= parse_label_identifier ':'
 
 
 // Assignment
-unary_operators ::= '-'|'!'|'~'|'Not'|'@'|'?'
-binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'[sep]|'-'|'*'|'/'|'&'|'|'[sep]|'!'|'~'|'<'|'>'|'%'|'#'|'And'[sep]|'Or'[sep]|'XOr'[sep]
+unary_operators ::= '-'|'!'|'~'|KEYWORD_NOT|'@'|'?'
+binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'[sep]|'-'|'*'|'/'|'&'|'|'[sep]|'!'|'~'|'<'|'>'|'%'|'#'|
+                      KEYWORD_AND[sep]|KEYWORD_OR[sep]|KEYWORD_XOR[sep]|KEYWORD_AS
 
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
 assignment_stmt ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}
@@ -135,7 +136,7 @@ atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identif
 
 // Declarations
 declaration_stmt ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration
-declaration_scope ::= 'Global'|'Shared'|'Protected'|'Static'|'Threaded'|'Define'
+declaration_scope ::= KEYWORD_GLOBAL|KEYWORD_SHARED|KEYWORD_PROTECTED|KEYWORD_STATIC|KEYWORD_THREADED|KEYWORD_DEFINE
 
 variable_decl_identifier ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
 variable_decl_identifier_notype ::= (parse_identifier|parse_pointer_identifier)
@@ -145,9 +146,9 @@ variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype
     declaration_scope variable_decl_list |
     variable_decl_identifier [static_array_access]
 
-array_declaration ::= [declaration_scope] ('Dim'|'ReDim') parse_identifier [type_suffix] '(' parameters_call ')'
-list_declaration ::= [declaration_scope] 'NewList' parse_identifier [type_suffix] '(' ')'
-map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] '(' ')'
+array_declaration ::= [declaration_scope] (KEYWORD_DIM|KEYWORD_REDIM) parse_identifier [type_suffix] '(' parameters_call ')'
+list_declaration ::= [declaration_scope] KEYWORD_NEWLIST parse_identifier [type_suffix] '(' ')'
+map_declaration ::= [declaration_scope] KEYWORD_NEWMAP parse_identifier [type_suffix] '(' ')'
 
 
 
@@ -157,21 +158,21 @@ map_declaration ::= [declaration_scope] 'NewMap' parse_identifier [type_suffix] 
 
 // Procedure
 private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' [parameters_decl] ')'
-procedure_declaration ::= ('DeclareC'|'Declare') procedure_decl_pattern {pin=1}
+procedure_declaration ::= (KEYWORD_DECLARECDLL|KEYWORD_DECLAREDLL|KEYWORD_DECLAREC|KEYWORD_DECLARE) procedure_decl_pattern {pin=1}
 
 procedure_block ::= procedure_start procedure_foot {pin=1 methods=[getPresentation]}
 
 private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] ['=' expression]
-private parameters_decl_array ::= 'Array' parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
-private parameters_decl_list ::= 'List' parse_identifier [type_suffix] '(' ')' {pin=1}
-private parameters_decl_map ::= 'Map' parse_identifier [type_suffix] '(' ')' {pin=1}
+private parameters_decl_array ::= KEYWORD_ARRAY parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
+private parameters_decl_list ::= KEYWORD_LIST parse_identifier [type_suffix] '(' ')' {pin=1}
+private parameters_decl_map ::= KEYWORD_MAP parse_identifier [type_suffix] '(' ')' {pin=1}
 parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map) [',' [sep] parameters_decl]
 parameters_call ::= expression (',' [sep] expression)*
 
 private procedure_start ::= procedure_head [sep statements] sep {pin=1 recoverWhile=no_procedure_foot}
-procedure_head ::= ('ProcedureCDLL' | 'ProcedureDLL' | 'ProcedureC' | 'Procedure') procedure_decl_pattern {pin=1 recoverWhile=nosep}
-procedure_return_stmt ::= 'ProcedureReturn' [expression]
-procedure_foot ::= 'EndProcedure'
+procedure_head ::= (KEYWORD_PROCEDURECDLL | KEYWORD_PROCEDUREDLL | KEYWORD_PROCEDUREC | KEYWORD_PROCEDURE) procedure_decl_pattern {pin=1 recoverWhile=nosep}
+procedure_return_stmt ::= KEYWORD_PROCEDURERETURN [expression]
+procedure_foot ::= KEYWORD_ENDPROCEDURE
 private no_procedure_foot ::= !procedure_foot
 
 // Macro
@@ -181,16 +182,16 @@ private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parame
 
 macro_block ::= macro_start {pin=1 methods=[getPresentation]}
 
-private external accept_until_macro_foot ::= acceptUntil "EndMacro"; // macros can be weird, just don't parse their inner.
+private external accept_until_macro_foot ::= acceptUntil KEYWORD_ENDMACRO; // macros can be weird, just don't parse their inner.
 private macro_start ::= macro_head sep accept_until_macro_foot {pin=1}
-macro_head ::= 'Macro' macro_decl_pattern {pin=1 recoverWhile=nosep}
+macro_head ::= KEYWORD_MACRO macro_decl_pattern {pin=1 recoverWhile=nosep}
 
 // With
 with_block ::= with_start sep with_foot
 
 private with_start ::= with_head [sep statements] sep {pin=1 recoverWhile=no_with_foot}
-with_head ::= 'With' identifier_or_call_chained {pin=1 recoverWhile=nosep}
-with_foot ::= 'EndWith'
+with_head ::= KEYWORD_WITH identifier_or_call_chained {pin=1 recoverWhile=nosep}
+with_foot ::= KEYWORD_ENDWITH
 private no_with_foot ::= !with_foot
 
 
@@ -200,110 +201,110 @@ call_stmt ::= parse_identifier '(' [parameters_call] ')'
 structure_block ::= structure_start structure_foot {pin=1 methods=[getPresentation]}
 
 private structure_start ::= structure_head [sep statements] sep {pin=1 recoverWhile=no_structure_foot}
-structure_head ::= 'Structure' parse_identifier ['Extends' parse_identifier] ['Align' (NUMBER|parse_constant_identifier)] {pin=1 recoverWhile=nosep}
-structure_foot ::= 'EndStructure'
+structure_head ::= KEYWORD_STRUCTURE parse_identifier [KEYWORD_EXTENDS parse_identifier] [KEYWORD_ALIGN (NUMBER|parse_constant_identifier)] {pin=1 recoverWhile=nosep}
+structure_foot ::= KEYWORD_ENDSTRUCTURE
 private no_structure_foot ::= !structure_foot
 
 structure_union_block ::= structure_union_start structure_union_foot {pin=1}
 
 private structure_union_start ::= structure_union_head [sep statements] sep {pin=1 recoverWhile=no_structure_union_foot}
-structure_union_head ::= 'StructureUnion' {pin=1 recoverWhile=nosep}
-structure_union_foot ::= 'EndStructureUnion'
+structure_union_head ::= KEYWORD_STRUCTUREUNION {pin=1 recoverWhile=nosep}
+structure_union_foot ::= KEYWORD_ENDSTRUCTUREUNION
 private no_structure_union_foot ::= !structure_union_foot
 
 // Interface
 interface_block ::= interface_start interface_foot {pin=1 methods=[getPresentation]}
 
 private interface_start ::= interface_head [sep statements] sep {pin=1 recoverWhile=no_interface_foot}
-interface_head ::= 'Interface' parse_identifier ['Extends' parse_identifier] {pin=1 recoverWhile=nosep}
-interface_foot ::= 'EndInterface'
+interface_head ::= KEYWORD_INTERFACE parse_identifier [KEYWORD_EXTENDS parse_identifier] {pin=1 recoverWhile=nosep}
+interface_foot ::= KEYWORD_ENDINTERFACE
 private no_interface_foot ::= !interface_foot
 
 // Import
 import_block ::= import_start import_foot {pin=1}
 
 private import_start ::= import_head [sep statements] sep {pin=1 recoverWhile=no_import_foot}
-import_head ::= ('Import'|'ImportC') STRING {pin=1 recoverWhile=nosep}
-import_foot ::= 'EndImport'
+import_head ::= (KEYWORD_IMPORT|KEYWORD_IMPORTC) STRING {pin=1 recoverWhile=nosep}
+import_foot ::= KEYWORD_ENDIMPORT
 private no_import_foot ::= !import_foot
 
 // DataSection
 data_section_block ::= data_section_start data_section_foot {pin=1}
 
 data_entry ::= parse_constant_identifier|NUMBER|STRING
-data_list_stmt ::= 'Data' [type_suffix] data_entry (',' [sep] data_entry)*
+data_list_stmt ::= KEYWORD_DATA [type_suffix] data_entry (',' [sep] data_entry)*
 
 private data_section_start ::= data_section_head [sep statements] sep {pin=1 recoverWhile=no_data_section_foot}
-data_section_head ::= 'DataSection' {pin=1 recoverWhile=nosep}
-data_section_foot ::= 'EndDataSection'
+data_section_head ::= KEYWORD_DATASECTION {pin=1 recoverWhile=nosep}
+data_section_foot ::= KEYWORD_ENDDATASECTION
 private no_data_section_foot ::= !data_section_foot
 
 // DeclareModule
 declare_module_block ::= declare_module_start declare_module_foot {pin=1 methods=[getPresentation]}
 
 private declare_module_start ::= declare_module_head [sep statements] sep {pin=1 recoverWhile=no_declare_module_foot}
-declare_module_head ::= 'DeclareModule' parse_identifier {pin=1 recoverWhile=nosep}
-declare_module_foot ::= 'EndDeclareModule'
+declare_module_head ::= KEYWORD_DECLAREMODULE parse_identifier {pin=1 recoverWhile=nosep}
+declare_module_foot ::= KEYWORD_ENDDECLAREMODULE
 private no_declare_module_foot ::= !declare_module_foot
 
 // Module
 define_module_block ::= define_module_start define_module_foot {pin=1 methods=[getPresentation]}
 
 private define_module_start ::= define_module_head [sep statements] sep {pin=1 recoverWhile=no_define_module_foot}
-define_module_head ::= 'Module' parse_identifier {pin=1 recoverWhile=nosep}
-define_module_foot ::= 'EndModule'
+define_module_head ::= KEYWORD_MODULE parse_identifier {pin=1 recoverWhile=nosep}
+define_module_foot ::= KEYWORD_ENDMODULE
 private no_define_module_foot ::= !define_module_foot
 
 // Enumeration
 enumeration_block ::= enumeration_start enumeration_foot {pin=1}
 
 private enumeration_start ::= enumeration_head [sep statements] sep {pin=1 recoverWhile=no_enumeration_foot}
-enumeration_head ::= ('Enumeration' | 'EnumerationBinary') [parse_identifier] {pin=1 recoverWhile=nosep}
-enumeration_foot ::= 'EndEnumeration'
+enumeration_head ::= (KEYWORD_ENUMERATION | KEYWORD_ENUMERATIONBINARY) [parse_identifier] {pin=1 recoverWhile=nosep}
+enumeration_foot ::= KEYWORD_ENDENUMERATION
 private no_enumeration_foot ::= !enumeration_foot
 
 
 // Loops
 private while ::= while_start while_foot {pin=1}
 private while_start ::= while_head [sep statements] sep {pin=1 recoverWhile=no_while_foot}
-private while_head ::= 'While' expression {pin=1 recoverWhile=nosep}
-private while_foot ::= 'Wend'
+private while_head ::= KEYWORD_WHILE expression {pin=1 recoverWhile=nosep}
+private while_foot ::= KEYWORD_WEND
 private no_while_foot ::= !while_foot
 private for ::= for_start for_foot {pin=1}
 private for_start ::= for_head [sep statements] sep {pin=1 recoverWhile=no_for_foot}
-private for_head ::= 'For' variable_decl_identifier '=' expression 'To' expression ['Step' NUMBER] {pin=1 recoverWhile=nosep}
-private for_foot ::= 'Next' [parse_identifier]
+private for_head ::= KEYWORD_FOR variable_decl_identifier '=' expression KEYWORD_TO expression [KEYWORD_STEP NUMBER] {pin=1 recoverWhile=nosep}
+private for_foot ::= KEYWORD_NEXT [parse_identifier]
 private no_for_foot ::= !for_foot
 private foreach ::= foreach_start foreach_foot {pin=1}
 private foreach_start ::= foreach_head [sep statements] sep {pin=1 recoverWhile=no_foreach_foot}
-private foreach_head ::= 'ForEach' identifier_or_call_chained {pin=1 recoverWhile=nosep}
-private foreach_foot ::= 'Next'
+private foreach_head ::= KEYWORD_FOREACH identifier_or_call_chained {pin=1 recoverWhile=nosep}
+private foreach_foot ::= KEYWORD_NEXT
 private no_foreach_foot ::= !foreach_foot
-private repeat ::= 'Repeat' [sep statements] sep ('Until' expression | 'ForEver') {pin=1}
+private repeat ::= KEYWORD_REPEAT [sep statements] sep (KEYWORD_UNTIL expression | KEYWORD_FOREVER) {pin=1}
 
 loop_block ::= while|for|foreach|repeat
 
 // Conditional
-private condition_if ::= 'If' expression [sep statements] {pin=1}
-private condition_elseif ::= 'ElseIf' expression [sep statements] {pin=1}
-private condition_else ::= 'Else' [sep statements] {pin=1}
-private condition_endif ::= 'EndIf'
+private condition_if ::= KEYWORD_IF expression [sep statements] {pin=1}
+private condition_elseif ::= KEYWORD_ELSEIF expression [sep statements] {pin=1}
+private condition_else ::= KEYWORD_ELSE [sep statements] {pin=1}
+private condition_endif ::= KEYWORD_ENDIF
 
-private condition_case ::= ('Case' expression|'Default') [sep statements]
-private condition_select ::= 'Select' expression (sep condition_case)* sep condition_endselect {pin=1}
-private condition_endselect ::= 'EndSelect'
+private condition_case ::= (KEYWORD_CASE expression|KEYWORD_DEFAULT) [sep statements]
+private condition_select ::= KEYWORD_SELECT expression (sep condition_case)* sep condition_endselect {pin=1}
+private condition_endselect ::= KEYWORD_ENDSELECT
 
 condition_block ::= condition_if (sep condition_elseif)* [sep condition_else] sep condition_endif | condition_select
 
 // Compiler Conditional
-private comp_condition_if ::= 'CompilerIf' expression [sep statements] {pin=1}
-private comp_condition_elseif ::= 'CompilerElseIf' expression [sep statements] {pin=1}
-private comp_condition_else ::= 'CompilerElse' [sep statements] {pin=1}
-private comp_condition_endif ::= 'CompilerEndIf'
+private comp_condition_if ::= KEYWORD_COMPILERIF expression [sep statements] {pin=1}
+private comp_condition_elseif ::= KEYWORD_COMPILERELSEIF expression [sep statements] {pin=1}
+private comp_condition_else ::= KEYWORD_COMPILERELSE [sep statements] {pin=1}
+private comp_condition_endif ::= KEYWORD_COMPILERENDIF
 
-private comp_condition_case ::= ('CompilerCase' expression|'CompilerDefault') [sep statements] {pin=1}
-private comp_condition_select ::= 'CompilerSelect' expression (sep comp_condition_case)* sep comp_condition_endselect {pin=1}
-private comp_condition_endselect ::= 'CompilerEndSelect'
+private comp_condition_case ::= (KEYWORD_COMPILERCASE expression|KEYWORD_COMPILERDEFAULT) [sep statements] {pin=1}
+private comp_condition_select ::= KEYWORD_COMPILERSELECT expression (sep comp_condition_case)* sep comp_condition_endselect {pin=1}
+private comp_condition_endselect ::= KEYWORD_COMPILERENDSELECT
 
 comp_condition_block ::= comp_condition_if (sep comp_condition_elseif)* [sep comp_condition_else] sep comp_condition_endif |
                    comp_condition_select
@@ -312,44 +313,44 @@ comp_condition_block ::= comp_condition_if (sep comp_condition_elseif)* [sep com
 // Simple Statements
 ////////////////////////
 
-include_stmt ::= ('XIncludeFile'|'IncludeFile') STRING {
+include_stmt ::= (KEYWORD_XINCLUDEFILE|KEYWORD_INCLUDEFILE) STRING {
             mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
         }
-include_binary_stmt ::= 'IncludeBinary' STRING {
+include_binary_stmt ::= KEYWORD_INCLUDEBINARY STRING {
             mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
         }
-include_path_stmt ::= 'IncludePath' STRING {
+include_path_stmt ::= KEYWORD_INCLUDEPATH STRING {
             mixin="eu.bradan.purebasic.psi.impl.PureBasicIncludeElement"
         }
-use_module_stmt ::= 'UseModule' parse_identifier {pin=1}
-unuse_module_stmt ::= 'UnuseModule' parse_identifier {pin=1}
-undefine_macro_stmt ::= 'UndefineMacro' parse_identifier {pin=1}
-swap_stmt ::= 'Swap' identifier_or_call_chained ',' [sep] identifier_or_call_chained {pin=1}
-runtime_stmt ::= 'Runtime' (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure_block|enumeration_block) {pin=1}
-return_stmt ::= 'Return'
-restore_stmt ::= 'Restore' parse_identifier {pin=1}
-read_stmt ::= 'Read' [type_suffix] parse_identifier {pin=1}
-prototype_stmt ::= ('PrototypeC'|'Prototype') procedure_decl_pattern {pin=1}
-macro_expanded_count_stmt ::= 'MacroExpandedCount'
-goto_stmt ::= 'Goto' parse_identifier {pin=1}
-gosub_stmt ::= 'Gosub' parse_identifier {pin=1}
-fake_return_stmt ::= 'FakeReturn'
-end_stmt ::= 'End' expression {pin=1}
-enable_js_stmt ::= 'EnableJS'
-enable_explicit_stmt ::= 'EnableExplicit'
-enable_debugger_stmt ::= 'EnableDebugger'
-enable_asm_stmt ::= 'EnableASM'
-disable_js_stmt ::= 'DisableJS'
-disable_explicit_stmt ::= 'DisableExplicit'
-disable_debugger_stmt ::= 'DisableDebugger'
-disable_asm_stmt ::= 'DisableASM'
-debug_level_stmt ::= 'DebugLevel' (parse_constant_identifier|NUMBER) {pin=1}
-debug_stmt ::= 'Debug' expression [',' [sep] (parse_constant_identifier|NUMBER)] {pin=1}
-continue_stmt ::= 'Continue'
-break_stmt ::= 'Break'
-compiler_warning_stmt ::= 'CompilerWarning' (parse_constant_identifier|STRING) {pin=1}
-compiler_error_stmt ::= 'CompilerError' (parse_constant_identifier|STRING) {pin=1}
-call_debugger_stmt ::= 'CallDebugger'
+use_module_stmt ::= KEYWORD_USEMODULE parse_identifier {pin=1}
+unuse_module_stmt ::= KEYWORD_UNUSEMODULE parse_identifier {pin=1}
+undefine_macro_stmt ::= KEYWORD_UNDEFINEMACRO parse_identifier {pin=1}
+swap_stmt ::= KEYWORD_SWAP identifier_or_call_chained ',' [sep] identifier_or_call_chained {pin=1}
+runtime_stmt ::= KEYWORD_RUNTIME (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure_block|enumeration_block) {pin=1}
+return_stmt ::= KEYWORD_RETURN
+restore_stmt ::= KEYWORD_RESTORE parse_identifier {pin=1}
+read_stmt ::= KEYWORD_READ [type_suffix] parse_identifier {pin=1}
+prototype_stmt ::= (KEYWORD_PROTOTYPEC|KEYWORD_PROTOTYPE) procedure_decl_pattern {pin=1}
+macro_expanded_count_stmt ::= KEYWORD_MACROEXPANDEDCOUNT
+goto_stmt ::= KEYWORD_GOTO parse_identifier {pin=1}
+gosub_stmt ::= KEYWORD_GOSUB parse_identifier {pin=1}
+fake_return_stmt ::= KEYWORD_FAKERETURN
+end_stmt ::= KEYWORD_END expression {pin=1}
+enable_js_stmt ::= KEYWORD_ENABLEJS
+enable_explicit_stmt ::= KEYWORD_ENABLEEXPLICIT
+enable_debugger_stmt ::= KEYWORD_ENABLEDEBUGGER
+enable_asm_stmt ::= KEYWORD_ENABLEASM
+disable_js_stmt ::= KEYWORD_DISABLEJS
+disable_explicit_stmt ::= KEYWORD_DISABLEEXPLICIT
+disable_debugger_stmt ::= KEYWORD_DISABLEDEBUGGER
+disable_asm_stmt ::= KEYWORD_DISABLEASM
+debug_level_stmt ::= KEYWORD_DEBUGLEVEL (parse_constant_identifier|NUMBER) {pin=1}
+debug_stmt ::= KEYWORD_DEBUG expression [',' [sep] (parse_constant_identifier|NUMBER)] {pin=1}
+continue_stmt ::= KEYWORD_CONTINUE
+break_stmt ::= KEYWORD_BREAK
+compiler_warning_stmt ::= KEYWORD_COMPILERWARNING (parse_constant_identifier|STRING) {pin=1}
+compiler_error_stmt ::= KEYWORD_COMPILERERROR (parse_constant_identifier|STRING) {pin=1}
+call_debugger_stmt ::= KEYWORD_CALLDEBUGGER
 
 ////////////////////////
 // Misc
