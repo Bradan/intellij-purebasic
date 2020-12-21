@@ -103,31 +103,33 @@ private external always_true_statement ::= parseAlwaysTrueStatement;
 private statement_error_tolerant ::= always_true_statement [statement] {pin=1 recoverWhile=nosep}
 private statements_error_tolerant ::= statement_error_tolerant (sep statement_error_tolerant)*
 
-pseudo_types ::= 'p' '-' ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
-type_suffix ::= '.' (pseudo_types|[module_path] parse_identifier)
-static_array_access ::= '[' expression ']'
+pseudo_types ::= 'p' OP_MINUS ('unicode'|'ascii'|'utf8'|'bstr'|'variant')
+type_suffix ::= OP_DOT (pseudo_types|[module_path] parse_identifier)
+static_array_access ::= OP_BRACKOPEN expression OP_BRACKCLOSE
 
 label_stmt ::= parse_label_identifier ':'
 
 
 // Assignment
-unary_operators ::= '-'|'!'|'~'|KEYWORD_NOT|'@'|'?'
-binary_operators ::= '<='|'=<'|'>='|'=>'|'<>'|'<<'|'>>'|'='|'+'[sep]|'-'|'*'|'/'|'&'|'|'[sep]|'!'|'~'|'<'|'>'|'%'|'#'|
-                      KEYWORD_AND[sep]|KEYWORD_OR[sep]|KEYWORD_XOR[sep]|KEYWORD_AS
+unary_operators ::= OP_MINUS|OP_XOR|OP_NOT|KEYWORD_NOT|OP_VARADDR|OP_LABELADDR
+binary_operators ::= OP_LEQ|OP_EQL|OP_GEQ|OP_EQG|OP_NE|OP_LSHIFT|OP_RSHIFT|OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV|
+                     OP_AND|OP_OR[sep]|OP_XOR|OP_NOT|OP_LESS|OP_GREATER|OP_MODULO|OP_HASH|
+                     KEYWORD_AND[sep]|KEYWORD_OR[sep]|KEYWORD_XOR[sep]|KEYWORD_AS
+enclosing_operators ::= OP_DQUOTE|OP_QUOTE
 
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
-assignment_stmt ::= assign_target ('='|'+'|'-'|'*'|'/') expression {pin=2}
+assignment_stmt ::= assign_target (OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV) expression {pin=2}
 
-expression ::= '(' expression ')' |
+expression ::= OP_PARENOPEN expression OP_PARENCLOSE |
                 (identifier_or_call_chained|atom) binary_operators expression |
                  unary_operators expression |
                 (identifier_or_call_chained|atom) expression | // for macro usage
                 (identifier_or_call_chained|atom)
 
 module_path_element ::= parse_identifier
-module_path ::= ['::'] (module_path_element '::')*
+module_path ::= [OP_MODULE] (module_path_element OP_MODULE)*
 structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call_stmt
-structure_path ::= ['\'] (structure_path_element '\')*
+structure_path ::= [OP_BACKSLASH] (structure_path_element OP_BACKSLASH)*
 identifier_chained ::= [module_path] [structure_path] parse_identifier [static_array_access]
 call_chained ::= [module_path] [structure_path] call_stmt
 private identifier_or_call_chained ::= call_chained | identifier_chained
@@ -140,15 +142,15 @@ declaration_scope ::= KEYWORD_GLOBAL|KEYWORD_SHARED|KEYWORD_PROTECTED|KEYWORD_ST
 
 variable_decl_identifier ::= (parse_identifier|parse_pointer_identifier) [type_suffix]
 variable_decl_identifier_notype ::= (parse_identifier|parse_pointer_identifier)
-variable_decl_list ::= variable_decl_identifier ['=' expression] (',' [sep] variable_decl_identifier ['=' expression])*
-variable_decl_list_notype ::= variable_decl_identifier_notype (',' [sep] variable_decl_identifier_notype)*
+variable_decl_list ::= variable_decl_identifier [OP_EQ expression] (OP_COMMA [sep] variable_decl_identifier [OP_EQ expression])*
+variable_decl_list_notype ::= variable_decl_identifier_notype (OP_COMMA [sep] variable_decl_identifier_notype)*
 variable_declaration ::= declaration_scope type_suffix variable_decl_list_notype |
     declaration_scope variable_decl_list |
     variable_decl_identifier [static_array_access]
 
-array_declaration ::= [declaration_scope] (KEYWORD_DIM|KEYWORD_REDIM) parse_identifier [type_suffix] '(' parameters_call ')'
-list_declaration ::= [declaration_scope] KEYWORD_NEWLIST parse_identifier [type_suffix] '(' ')'
-map_declaration ::= [declaration_scope] KEYWORD_NEWMAP parse_identifier [type_suffix] '(' ')'
+array_declaration ::= [declaration_scope] (KEYWORD_DIM|KEYWORD_REDIM) parse_identifier [type_suffix] OP_PARENOPEN parameters_call OP_PARENCLOSE
+list_declaration ::= [declaration_scope] KEYWORD_NEWLIST parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE
+map_declaration ::= [declaration_scope] KEYWORD_NEWMAP parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE
 
 
 
@@ -157,17 +159,18 @@ map_declaration ::= [declaration_scope] KEYWORD_NEWMAP parse_identifier [type_su
 ////////////////////////
 
 // Procedure
-private procedure_decl_pattern ::= [type_suffix] parse_identifier '(' [parameters_decl] ')'
+private procedure_decl_pattern ::= [type_suffix] parse_identifier OP_PARENOPEN [parameters_decl] OP_PARENCLOSE
 procedure_declaration ::= (KEYWORD_DECLARECDLL|KEYWORD_DECLAREDLL|KEYWORD_DECLAREC|KEYWORD_DECLARE) procedure_decl_pattern {pin=1}
 
 procedure_block ::= procedure_start procedure_foot {pin=1 methods=[getPresentation]}
 
-private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] ['=' expression]
-private parameters_decl_array ::= KEYWORD_ARRAY parse_identifier [type_suffix] '(' NUMBER ')' {pin=1}
-private parameters_decl_list ::= KEYWORD_LIST parse_identifier [type_suffix] '(' ')' {pin=1}
-private parameters_decl_map ::= KEYWORD_MAP parse_identifier [type_suffix] '(' ')' {pin=1}
-parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map) [',' [sep] parameters_decl]
-parameters_call ::= expression (',' [sep] expression)*
+private parameters_decl_var ::= (parse_identifier|parse_pointer_identifier) [type_suffix] [OP_EQ expression]
+private parameters_decl_array ::= KEYWORD_ARRAY parse_identifier [type_suffix] OP_PARENOPEN NUMBER OP_PARENCLOSE {pin=1}
+private parameters_decl_list ::= KEYWORD_LIST parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE {pin=1}
+private parameters_decl_map ::= KEYWORD_MAP parse_identifier [type_suffix] OP_PARENOPEN OP_PARENCLOSE {pin=1}
+parameters_decl ::= (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map)
+                    (OP_COMMA [sep] (parameters_decl_var | parameters_decl_array | parameters_decl_list | parameters_decl_map))*
+parameters_call ::= expression (OP_COMMA [sep] expression)*
 
 private procedure_start ::= procedure_head [sep statements] sep {pin=1 recoverWhile=no_procedure_foot}
 procedure_head ::= (KEYWORD_PROCEDURECDLL | KEYWORD_PROCEDUREDLL | KEYWORD_PROCEDUREC | KEYWORD_PROCEDURE) procedure_decl_pattern {pin=1 recoverWhile=nosep}
@@ -176,9 +179,9 @@ procedure_foot ::= KEYWORD_ENDPROCEDURE
 private no_procedure_foot ::= !procedure_foot
 
 // Macro
-macro_parameter_decl ::= parse_identifier ['=' [expression]]
-macro_parameter_decl_list ::= macro_parameter_decl (',' [sep] macro_parameter_decl)*
-private macro_decl_pattern ::= [type_suffix] parse_identifier ['(' [macro_parameter_decl_list] ')']
+macro_parameter_decl ::= parse_identifier [OP_EQ [expression]]
+macro_parameter_decl_list ::= macro_parameter_decl (OP_COMMA [sep] macro_parameter_decl)*
+private macro_decl_pattern ::= [type_suffix] parse_identifier [OP_PARENOPEN [macro_parameter_decl_list] OP_PARENCLOSE]
 
 macro_block ::= macro_start {pin=1 methods=[getPresentation]}
 
@@ -195,7 +198,7 @@ with_foot ::= KEYWORD_ENDWITH
 private no_with_foot ::= !with_foot
 
 
-call_stmt ::= parse_identifier '(' [parameters_call] ')'
+call_stmt ::= parse_identifier OP_PARENOPEN [parameters_call] OP_PARENCLOSE
 
 // Structure
 structure_block ::= structure_start structure_foot {pin=1 methods=[getPresentation]}
@@ -232,7 +235,7 @@ private no_import_foot ::= !import_foot
 data_section_block ::= data_section_start data_section_foot {pin=1}
 
 data_entry ::= parse_constant_identifier|NUMBER|STRING
-data_list_stmt ::= KEYWORD_DATA [type_suffix] data_entry (',' [sep] data_entry)*
+data_list_stmt ::= KEYWORD_DATA [type_suffix] data_entry (OP_COMMA [sep] data_entry)*
 
 private data_section_start ::= data_section_head [sep statements] sep {pin=1 recoverWhile=no_data_section_foot}
 data_section_head ::= KEYWORD_DATASECTION {pin=1 recoverWhile=nosep}
@@ -272,7 +275,7 @@ private while_foot ::= KEYWORD_WEND
 private no_while_foot ::= !while_foot
 private for ::= for_start for_foot {pin=1}
 private for_start ::= for_head [sep statements] sep {pin=1 recoverWhile=no_for_foot}
-private for_head ::= KEYWORD_FOR variable_decl_identifier '=' expression KEYWORD_TO expression [KEYWORD_STEP NUMBER] {pin=1 recoverWhile=nosep}
+private for_head ::= KEYWORD_FOR variable_decl_identifier OP_EQ expression KEYWORD_TO expression [KEYWORD_STEP NUMBER] {pin=1 recoverWhile=nosep}
 private for_foot ::= KEYWORD_NEXT [parse_identifier]
 private no_for_foot ::= !for_foot
 private foreach ::= foreach_start foreach_foot {pin=1}
@@ -325,7 +328,7 @@ include_path_stmt ::= KEYWORD_INCLUDEPATH STRING {
 use_module_stmt ::= KEYWORD_USEMODULE parse_identifier {pin=1}
 unuse_module_stmt ::= KEYWORD_UNUSEMODULE parse_identifier {pin=1}
 undefine_macro_stmt ::= KEYWORD_UNDEFINEMACRO parse_identifier {pin=1}
-swap_stmt ::= KEYWORD_SWAP identifier_or_call_chained ',' [sep] identifier_or_call_chained {pin=1}
+swap_stmt ::= KEYWORD_SWAP identifier_or_call_chained OP_COMMA [sep] identifier_or_call_chained {pin=1}
 runtime_stmt ::= KEYWORD_RUNTIME (parse_constant_identifier|parse_identifier|parse_pointer_identifier|procedure_block|enumeration_block) {pin=1}
 return_stmt ::= KEYWORD_RETURN
 restore_stmt ::= KEYWORD_RESTORE parse_identifier {pin=1}
@@ -345,7 +348,7 @@ disable_explicit_stmt ::= KEYWORD_DISABLEEXPLICIT
 disable_debugger_stmt ::= KEYWORD_DISABLEDEBUGGER
 disable_asm_stmt ::= KEYWORD_DISABLEASM
 debug_level_stmt ::= KEYWORD_DEBUGLEVEL (parse_constant_identifier|NUMBER) {pin=1}
-debug_stmt ::= KEYWORD_DEBUG expression [',' [sep] (parse_constant_identifier|NUMBER)] {pin=1}
+debug_stmt ::= KEYWORD_DEBUG expression [OP_COMMA [sep] (parse_constant_identifier|NUMBER)] {pin=1}
 continue_stmt ::= KEYWORD_CONTINUE
 break_stmt ::= KEYWORD_BREAK
 compiler_warning_stmt ::= KEYWORD_COMPILERWARNING (parse_constant_identifier|STRING) {pin=1}

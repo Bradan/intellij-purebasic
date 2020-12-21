@@ -81,7 +81,7 @@ public class PureBasicHighlighter extends SyntaxHighlighterBase {
     public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
         if (PureBasicLexer.KEYWORD_TYPES.contains(tokenType)) {
             return KEYWORD_KEYS;
-        } else if (tokenType.equals(PureBasicTypes.OPERATOR) || tokenType.equals(PureBasicTypes.SEPARATOR)) {
+        } else if (PureBasicLexer.OPERATOR_TYPES.contains(PureBasicTypes.OPERATOR) || tokenType.equals(PureBasicTypes.SEPARATOR)) {
             return OPERATOR_KEYS;
         } else if (tokenType.equals(PureBasicTypes.STRING)) {
             return STRING_KEYS;

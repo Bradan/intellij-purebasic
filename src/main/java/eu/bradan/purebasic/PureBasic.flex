@@ -143,6 +143,41 @@ public static final List<IElementType> KEYWORD_TYPES = Arrays.asList(
             PureBasicTypes.KEYWORD_AND,
             PureBasicTypes.KEYWORD_ALIGN
     );
+
+public static final List<IElementType> OPERATOR_TYPES = Arrays.asList(
+            PureBasicTypes.OP_PARENOPEN,
+            PureBasicTypes.OP_PARENCLOSE,
+            PureBasicTypes.OP_BRACKOPEN,
+            PureBasicTypes.OP_BRACKCLOSE,
+            PureBasicTypes.OP_LEQ,
+            PureBasicTypes.OP_EQL,
+            PureBasicTypes.OP_GEQ,
+            PureBasicTypes.OP_EQG,
+            PureBasicTypes.OP_NE,
+            PureBasicTypes.OP_LSHIFT,
+            PureBasicTypes.OP_RSHIFT,
+            PureBasicTypes.OP_EQ,
+            PureBasicTypes.OP_PLUS,
+            PureBasicTypes.OP_MINUS,
+            PureBasicTypes.OP_MUL,
+            PureBasicTypes.OP_DIV,
+            PureBasicTypes.OP_AND,
+            PureBasicTypes.OP_OR,
+            PureBasicTypes.OP_XOR,
+            PureBasicTypes.OP_NOT,
+            PureBasicTypes.OP_LESS,
+            PureBasicTypes.OP_GREATER,
+            PureBasicTypes.OP_MODULO,
+            PureBasicTypes.OP_DOT,
+            PureBasicTypes.OP_COMMA,
+            PureBasicTypes.OP_BACKSLASH,
+            PureBasicTypes.OP_HASH,
+            PureBasicTypes.OP_MODULE,
+            PureBasicTypes.OP_VARADDR,
+            PureBasicTypes.OP_LABELADDR,
+            PureBasicTypes.OP_DQUOTE,
+            PureBasicTypes.OP_QUOTE
+        );
 %}
 
 NEWLINE=\R
@@ -263,7 +298,39 @@ KEYWORD_ARRAY = "Array"
 KEYWORD_AND = "And"
 KEYWORD_ALIGN = "Align"
 
-OPERATORS="("|")"|"["|"]"|"<="|"=<"|">="|"=>"|"<>"|"<<"|">>"|"="|"+"|"-"|"*"|"/"|"&"|"|"|"!"|"~"|"<"|">"|"%"|"."|","|"\\"|"#"|"::"|"@"|"?"|"\""|"'"
+OP_PARENOPEN     = "("
+OP_PARENCLOSE    = ")"
+OP_BRACKOPEN     = "["
+OP_BRACKCLOSE    = "]"
+OP_LEQ           = "<="
+OP_EQL           = "=<"
+OP_GEQ           = ">="
+OP_EQG           = "=>"
+OP_NE            = "<>"
+OP_LSHIFT        = "<<"
+OP_RSHIFT        = ">>"
+OP_EQ            = "="
+OP_PLUS          = "+"
+OP_MINUS         = "-"
+OP_MUL           = "*"
+OP_DIV           = "/"
+OP_AND           = "&"
+OP_OR            = "|"
+OP_XOR           = "!"
+OP_NOT           = "~"
+OP_LESS          = "<"
+OP_GREATER       = ">"
+OP_MODULO        = "%"
+OP_DOT           = "."
+OP_COMMA         = ","
+OP_BACKSLASH     = "\\"
+OP_HASH          = "#"
+OP_MODULE        = "::"
+OP_VARADDR       = "@"
+OP_LABELADDR     = "?"
+OP_DQUOTE        = "\""
+OP_QUOTE         = "'"
+
 STRING_DELIM="\""
 CHAR_DELIM="'"
 NUMBER="$"[0-9A-Fa-f]+ | "%"[01]+ | [0-9]+(\.[0-9]+|"")
@@ -399,9 +466,40 @@ CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 {KEYWORD_AND}                      { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.KEYWORD_AND); }
 {KEYWORD_ALIGN}                    { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.KEYWORD_ALIGN); }
 
+{NUMBER}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.NUMBER); }
 
-{NUMBER}                                          { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.NUMBER); }
-{OPERATORS}                                       { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OPERATOR); }
+{OP_PARENOPEN}     { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_PARENOPEN); }
+{OP_PARENCLOSE}    { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_PARENCLOSE); }
+{OP_BRACKOPEN}     { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_BRACKOPEN); }
+{OP_BRACKCLOSE}    { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_BRACKCLOSE); }
+{OP_LEQ}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_LEQ); }
+{OP_EQL}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_EQL); }
+{OP_GEQ}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_GEQ); }
+{OP_EQG}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_EQG); }
+{OP_NE}            { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_NE); }
+{OP_LSHIFT}        { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_LSHIFT); }
+{OP_RSHIFT}        { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_RSHIFT); }
+{OP_EQ}            { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_EQ); }
+{OP_PLUS}          { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_PLUS); }
+{OP_MINUS}         { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_MINUS); }
+{OP_MUL}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_MUL); }
+{OP_DIV}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_DIV); }
+{OP_AND}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_AND); }
+{OP_OR}            { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_OR); }
+{OP_XOR}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_XOR); }
+{OP_NOT}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_NOT); }
+{OP_LESS}          { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_LESS); }
+{OP_GREATER}       { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_GREATER); }
+{OP_MODULO}        { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_MODULO); }
+{OP_DOT}           { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_DOT); }
+{OP_COMMA}         { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_COMMA); }
+{OP_BACKSLASH}     { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_BACKSLASH); }
+{OP_HASH}          { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_HASH); }
+{OP_MODULE}        { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_MODULE); }
+{OP_VARADDR}       { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_VARADDR); }
+{OP_LABELADDR}     { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_LABELADDR); }
+{OP_DQUOTE}        { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_DQUOTE); }
+{OP_QUOTE}         { yybegin(FOLLOW_UP); return storeLast(PureBasicTypes.OP_QUOTE); }
 
 <YYINITIAL> "!"[^\r\n:]*                          { yybegin(YYINITIAL); return storeLast(PureBasicTypes.INLINE_ASM); }
 <YYINITIAL> {IDENTIFIER}":"[^:]                   {
@@ -414,10 +512,11 @@ CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
           yybegin(FOLLOW_UP);
           final ArrayList<IElementType> validLastTokens = new ArrayList<>(
                   Arrays.asList(new IElementType[] {
-                        PureBasicTypes.OPERATOR, PureBasicTypes.SEPARATOR
+                        PureBasicTypes.SEPARATOR
                         })
                   );
           validLastTokens.addAll(KEYWORD_TYPES);
+          validLastTokens.addAll(OPERATOR_TYPES);
           if(validLastTokens.contains(lastTokenType)) {
               return storeLast(PureBasicTypes.POINTER_IDENTIFIER);
           } else {
