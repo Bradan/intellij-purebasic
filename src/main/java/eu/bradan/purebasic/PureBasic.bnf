@@ -228,7 +228,7 @@ private no_interface_foot ::= !interface_foot
 import_block ::= import_start import_foot {pin=1}
 
 private import_start ::= import_head [sep statements] sep {pin=1 recoverWhile=no_import_foot}
-import_head ::= (KEYWORD_IMPORT|KEYWORD_IMPORTC) STRING {pin=1 recoverWhile=nosep}
+import_head ::= (KEYWORD_IMPORT|KEYWORD_IMPORTC) expression {pin=1 recoverWhile=nosep}
 import_foot ::= KEYWORD_ENDIMPORT
 private no_import_foot ::= !import_foot
 
