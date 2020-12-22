@@ -115,7 +115,7 @@ unary_operators ::= OP_MINUS|OP_XOR|OP_NOT|KEYWORD_NOT|OP_VARADDR|OP_LABELADDR
 binary_operators ::= OP_LEQ|OP_EQL|OP_GEQ|OP_EQG|OP_NE|OP_LSHIFT|OP_RSHIFT|OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV|
                      OP_AND|OP_OR[sep]|OP_XOR|OP_NOT|OP_LESS|OP_GREATER|OP_MODULO|OP_HASH|
                      KEYWORD_AND[sep]|KEYWORD_OR[sep]|KEYWORD_XOR[sep]|KEYWORD_AS
-enclosing_operators ::= OP_DQUOTE|OP_QUOTE
+enclosing_operators ::= OP_DQUOTE|OP_QUOTE|OP_PARENOPEN|OP_PARENCLOSE|OP_BRACKOPEN|OP_BRACKCLOSE
 
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
 assignment_stmt ::= assign_target (OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV) expression {pin=2}
@@ -128,10 +128,10 @@ expression ::= OP_PARENOPEN expression OP_PARENCLOSE |
 
 module_path_element ::= parse_identifier
 module_path ::= [OP_MODULE] (module_path_element OP_MODULE)*
-structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call_stmt
+structure_path_element ::= parse_identifier [static_array_access]|parse_pointer_identifier|call
 structure_path ::= [OP_BACKSLASH] (structure_path_element OP_BACKSLASH)*
 identifier_chained ::= [module_path] [structure_path] parse_identifier [static_array_access]
-call_chained ::= [module_path] [structure_path] call_stmt
+call_chained ::= [module_path] [structure_path] call
 private identifier_or_call_chained ::= call_chained | identifier_chained
 
 atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING
@@ -197,8 +197,9 @@ with_head ::= KEYWORD_WITH identifier_or_call_chained {pin=1 recoverWhile=nosep}
 with_foot ::= KEYWORD_ENDWITH
 private no_with_foot ::= !with_foot
 
-
-call_stmt ::= parse_identifier OP_PARENOPEN [parameters_call] OP_PARENCLOSE
+// A call (macro or procedure, something with parenthesis)
+call ::= parse_identifier OP_PARENOPEN [parameters_call] OP_PARENCLOSE
+call_stmt ::= call_chained
 
 // Structure
 structure_block ::= structure_start structure_foot {pin=1 methods=[getPresentation]}
