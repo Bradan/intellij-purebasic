@@ -190,7 +190,7 @@ private macro_start ::= macro_head sep accept_until_macro_foot {pin=1}
 macro_head ::= KEYWORD_MACRO macro_decl_pattern {pin=1 recoverWhile=nosep}
 
 // With
-with_block ::= with_start sep with_foot
+with_block ::= with_start with_foot
 
 private with_start ::= with_head [sep statements] sep {pin=1 recoverWhile=no_with_foot}
 with_head ::= KEYWORD_WITH identifier_or_call_chained {pin=1 recoverWhile=nosep}
