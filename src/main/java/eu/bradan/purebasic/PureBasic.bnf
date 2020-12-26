@@ -120,7 +120,7 @@ enclosing_operators ::= OP_DQUOTE|OP_QUOTE|OP_PARENOPEN|OP_PARENCLOSE|OP_BRACKOP
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
 assignment_stmt ::= assign_target (OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV|OP_AND|OP_OR|OP_XOR|OP_MODULO) expression {pin=2}
 
-expression ::= OP_PARENOPEN expression OP_PARENCLOSE |
+expression ::= OP_PARENOPEN expression OP_PARENCLOSE (binary_operators expression)? |
                 (identifier_or_call_chained|atom) binary_operators expression |
                  unary_operators expression |
                 (identifier_or_call_chained|atom) expression | // for macro usage
