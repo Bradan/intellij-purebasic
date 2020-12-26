@@ -118,7 +118,7 @@ binary_operators ::= OP_LEQ|OP_EQL|OP_GEQ|OP_EQG|OP_NE|OP_LSHIFT|OP_RSHIFT|OP_EQ
 enclosing_operators ::= OP_DQUOTE|OP_QUOTE|OP_PARENOPEN|OP_PARENCLOSE|OP_BRACKOPEN|OP_BRACKCLOSE
 
 private assign_target ::= (identifier_or_call_chained|parse_pointer_identifier) [type_suffix [static_array_access]] | parse_constant_identifier
-assignment_stmt ::= assign_target (OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV) expression {pin=2}
+assignment_stmt ::= assign_target (OP_EQ|OP_PLUS[sep]|OP_MINUS|OP_MUL|OP_DIV|OP_AND|OP_OR|OP_XOR|OP_MODULO) expression {pin=2}
 
 expression ::= OP_PARENOPEN expression OP_PARENCLOSE |
                 (identifier_or_call_chained|atom) binary_operators expression |
