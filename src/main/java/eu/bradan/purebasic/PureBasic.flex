@@ -521,7 +521,7 @@ CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
               return storeLast(PureBasicTypes.POINTER_IDENTIFIER);
           } else {
               yypushback(yylength() - 1);
-              return storeLast(PureBasicTypes.OPERATOR);
+              return storeLast(PureBasicTypes.OP_MUL);
           }
       }
 {CONSTANT_IDENTIFIER}                             {
@@ -531,7 +531,7 @@ CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
           });
           if(validLastTokens.contains(lastTokenType)) {
               yypushback(yylength() - 1);
-              return storeLast(PureBasicTypes.OPERATOR);
+              return storeLast(PureBasicTypes.OP_HASH);
           } else {
               return storeLast(PureBasicTypes.CONSTANT_IDENTIFIER);
           }
