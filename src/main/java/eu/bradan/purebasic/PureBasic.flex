@@ -511,9 +511,10 @@ CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 {POINTER_IDENTIFIER}                              {
           yybegin(FOLLOW_UP);
           final ArrayList<IElementType> validLastTokens = new ArrayList<>(
-                  Arrays.asList(new IElementType[] {
-                        PureBasicTypes.SEPARATOR
-                        })
+                  Arrays.asList(
+                          null,
+                          PureBasicTypes.SEPARATOR
+                      )
                   );
           validLastTokens.addAll(KEYWORD_TYPES);
           validLastTokens.addAll(OPERATOR_TYPES);
@@ -526,9 +527,13 @@ CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
       }
 {CONSTANT_IDENTIFIER}                             {
           yybegin(FOLLOW_UP);
-          final List<IElementType> validLastTokens = Arrays.asList(new IElementType[] {
-                  PureBasicTypes.IDENTIFIER, PureBasicTypes.CONSTANT_IDENTIFIER, PureBasicTypes.POINTER_IDENTIFIER
-          });
+          final ArrayList<IElementType> validLastTokens = new ArrayList<>(
+                  Arrays.asList(
+                          PureBasicTypes.IDENTIFIER,
+                          PureBasicTypes.CONSTANT_IDENTIFIER,
+                          PureBasicTypes.POINTER_IDENTIFIER
+                          )
+                );
           if(validLastTokens.contains(lastTokenType)) {
               yypushback(yylength() - 1);
               return storeLast(PureBasicTypes.OP_HASH);
