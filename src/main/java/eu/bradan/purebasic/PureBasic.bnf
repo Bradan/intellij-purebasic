@@ -294,7 +294,11 @@ private condition_elseif ::= KEYWORD_ELSEIF expression [sep statements] {pin=1}
 private condition_else ::= KEYWORD_ELSE [sep statements] {pin=1}
 private condition_endif ::= KEYWORD_ENDIF
 
-private condition_case ::= (KEYWORD_CASE expression|KEYWORD_DEFAULT) [sep statements]
+// Case 1
+// Case 1, 10
+// Case 2 , 3 , 4
+// Case 15 To 20, 30, 40 To 50
+private condition_case ::= (KEYWORD_CASE (expression(KEYWORD_TO expression)?((',' expression(KEYWORD_TO expression)?)+)?)|KEYWORD_DEFAULT) [sep statements]
 private condition_select ::= KEYWORD_SELECT expression (sep condition_case)* sep condition_endselect {pin=1}
 private condition_endselect ::= KEYWORD_ENDSELECT
 
