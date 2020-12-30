@@ -31,17 +31,17 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class PureBasicMacroBlockPresentation implements ItemPresentation {
-    private final PureBasicMacroBlock element;
+    private final PureBasicMacroHeadStmt element;
 
     public PureBasicMacroBlockPresentation(PsiElement element) {
-        this.element = (PureBasicMacroBlock) element;
+        this.element = (PureBasicMacroHeadStmt) element;
     }
 
     @Nullable
     @Override
     public String getPresentableText() {
-        final PureBasicParseIdentifier parseIdentifier = element.getMacroHead().getParseIdentifier();
-        return parseIdentifier != null ? parseIdentifier.getText() : null;
+        final PureBasicParseIdentifier parseIdentifier = element.getParseIdentifier();
+        return parseIdentifier.getText();
     }
 
     @Nullable

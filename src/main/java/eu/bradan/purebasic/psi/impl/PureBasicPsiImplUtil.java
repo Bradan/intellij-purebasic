@@ -27,27 +27,27 @@ import com.intellij.navigation.ItemPresentation;
 import eu.bradan.purebasic.psi.*;
 
 public class PureBasicPsiImplUtil {
-    public static ItemPresentation getPresentation(final PureBasicProcedureBlock element) {
+    public static ItemPresentation getPresentation(final PureBasicProcedureHeadStmt element) {
         return new PureBasicProcedureBlockPresentation(element);
     }
 
-    public static ItemPresentation getPresentation(final PureBasicMacroBlock element) {
+    public static ItemPresentation getPresentation(final PureBasicMacroHeadStmt element) {
         return new PureBasicMacroBlockPresentation(element);
     }
 
-    public static ItemPresentation getPresentation(final PureBasicStructureBlock element) {
+    public static ItemPresentation getPresentation(final PureBasicStructureHeadStmt element) {
         return new PureBasicStructureBlockPresentation(element);
     }
 
-    public static ItemPresentation getPresentation(final PureBasicInterfaceBlock element) {
+    public static ItemPresentation getPresentation(final PureBasicInterfaceHeadStmt element) {
         return new PureBasicInterfaceBlockPresentation(element);
     }
 
-    public static ItemPresentation getPresentation(final PureBasicDeclareModuleBlock element) {
+    public static ItemPresentation getPresentation(final PureBasicDeclareModuleHeadStmt element) {
         return new PureBasicDeclareModuleBlockPresentation(element);
     }
 
-    public static ItemPresentation getPresentation(final PureBasicDefineModuleBlock element) {
+    public static ItemPresentation getPresentation(final PureBasicDefineModuleHeadStmt element) {
         return new PureBasicDefineModuleBlockPresentation(element);
     }
 }

@@ -48,12 +48,12 @@ public class PureBasicStructureViewElement implements StructureViewTreeElement {
             PureBasicLabelStmt.class
     };
     private final Class[] blockElements = new Class[]{
-            PureBasicDeclareModuleBlock.class,
-            PureBasicDefineModuleBlock.class,
-            PureBasicStructureBlock.class,
-            PureBasicInterfaceBlock.class,
-            PureBasicProcedureBlock.class,
-            PureBasicMacroBlock.class,
+            PureBasicDeclareModuleHeadStmt.class,
+            PureBasicDefineModuleHeadStmt.class,
+            PureBasicStructureHeadStmt.class,
+            PureBasicInterfaceHeadStmt.class,
+            PureBasicProcedureHeadStmt.class,
+            PureBasicMacroHeadStmt.class,
             PureBasicFile.class
     };
 

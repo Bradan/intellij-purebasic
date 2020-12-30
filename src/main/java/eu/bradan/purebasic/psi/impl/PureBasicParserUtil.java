@@ -47,4 +47,27 @@ public class PureBasicParserUtil extends GeneratedParserUtilBase {
         report_error_(b, r);
         return r;
     }
+
+    public static boolean acceptUntil(PsiBuilder b, int l, Parser tokenOpen, Parser tokenClose) {
+        if (!recursion_guard_(b, l, "parseWhileNotStatement")) return false;
+        PsiBuilder.Marker m = enter_section_(b);
+        boolean r = false;
+        int level = 1;
+        while (!b.eof()) {
+            if (tokenOpen.parse(b, l + 1)) {
+                level++;
+            }
+            if (tokenClose.parse(b, l + 1)) {
+                level--;
+                if (level <= 0) {
+                    r = true;
+                    break;
+                }
+            }
+            b.advanceLexer();
+        }
+        exit_section_(b, m, null, r);
+        report_error_(b, r);
+        return r;
+    }
 }

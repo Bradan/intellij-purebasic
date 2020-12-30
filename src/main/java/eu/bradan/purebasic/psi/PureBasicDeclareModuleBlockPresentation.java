@@ -31,17 +31,17 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class PureBasicDeclareModuleBlockPresentation implements ItemPresentation {
-    private final PureBasicDeclareModuleBlock element;
+    private final PureBasicDeclareModuleHeadStmt element;
 
     public PureBasicDeclareModuleBlockPresentation(PsiElement element) {
-        this.element = (PureBasicDeclareModuleBlock) element;
+        this.element = (PureBasicDeclareModuleHeadStmt) element;
     }
 
     @Nullable
     @Override
     public String getPresentableText() {
-        final PureBasicParseIdentifier parseIdentifier = element.getDeclareModuleHead().getParseIdentifier();
-        return parseIdentifier != null ? parseIdentifier.getText() : null;
+        final PureBasicParseIdentifier parseIdentifier = element.getParseIdentifier();
+        return parseIdentifier.getText();
     }
 
     @Nullable

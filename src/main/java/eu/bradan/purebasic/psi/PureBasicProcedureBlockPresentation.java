@@ -31,17 +31,17 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class PureBasicProcedureBlockPresentation implements ItemPresentation {
-    private final PureBasicProcedureBlock element;
+    private final PureBasicProcedureHeadStmt element;
 
     public PureBasicProcedureBlockPresentation(PsiElement element) {
-        this.element = (PureBasicProcedureBlock) element;
+        this.element = (PureBasicProcedureHeadStmt) element;
     }
 
     @Nullable
     @Override
     public String getPresentableText() {
-        final PureBasicParseIdentifier parseIdentifier = element.getProcedureHead().getParseIdentifier();
-        return parseIdentifier != null ? parseIdentifier.getText() : null;
+        final PureBasicParseIdentifier parseIdentifier = element.getParseIdentifier();
+        return parseIdentifier.getText();
     }
 
     @Nullable

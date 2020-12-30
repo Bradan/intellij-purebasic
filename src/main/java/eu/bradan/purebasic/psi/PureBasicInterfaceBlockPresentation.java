@@ -32,16 +32,16 @@ import javax.swing.*;
 import java.util.List;
 
 public class PureBasicInterfaceBlockPresentation implements ItemPresentation {
-    private final PureBasicInterfaceBlock element;
+    private final PureBasicInterfaceHeadStmt element;
 
     public PureBasicInterfaceBlockPresentation(PsiElement element) {
-        this.element = (PureBasicInterfaceBlock) element;
+        this.element = (PureBasicInterfaceHeadStmt) element;
     }
 
     @Nullable
     @Override
     public String getPresentableText() {
-        final List<PureBasicParseIdentifier> parseIdentifierList = element.getInterfaceHead().getParseIdentifierList();
+        final List<PureBasicParseIdentifier> parseIdentifierList = element.getParseIdentifierList();
         final PureBasicParseIdentifier parseIdentifier = parseIdentifierList.isEmpty() ? null : parseIdentifierList.get(0);
         return parseIdentifier != null ? parseIdentifier.getText() : null;
     }
