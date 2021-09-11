@@ -45,9 +45,8 @@ intellij {
 }
 patchPluginXml {
     changeNotes '''
-      Still has some syntax problems.
       <ul>
-      <li>Macro inner is now always accepted by the parser.</li>
+      <li>Update for newer IntelliJ versions.</li>
       </ul>
       '''
 }
