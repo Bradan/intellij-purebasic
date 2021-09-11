@@ -24,6 +24,8 @@
 package eu.bradan.purebasic.builder;
 
 import com.intellij.concurrency.JobScheduler;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -45,8 +47,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.concurrency.AsyncPromise;
 import org.jetbrains.concurrency.Promise;
 
-import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -91,28 +91,26 @@ public class PureBasicBuildProjectTaskRunner extends ProjectTaskRunner {
     public boolean canRun(@NotNull ProjectTask projectTask) {
         if (projectTask instanceof ModuleBuildTask) {
             final ModuleBuildTask moduleBuildTask = (ModuleBuildTask) projectTask;
+            //noinspection UnstableApiUsage
             return PureBasicModuleType.ID.equals(moduleBuildTask.getModule().getModuleTypeName());
         }
         return false;
     }
 
     @Override
-    public Promise<Result> run(@NotNull Project project, @NotNull ProjectTaskContext context, @NotNull ProjectTask... tasks) {
-        try {
-            EventQueue.invokeAndWait(() -> {
-                final ToolWindow toolWindow = ToolWindowManager.getInstance(project)
-                        .getToolWindow("PureBasic Build");
-                if (toolWindow != null) {
-                    toolWindow.show();
-                }
+    public Promise<Result> run(@NotNull Project project, @NotNull ProjectTaskContext context, ProjectTask @NotNull ... tasks) {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
+            final ToolWindow toolWindow = ToolWindowManager.getInstance(project)
+                    .getToolWindow("PureBasic Build");
+            if (toolWindow != null) {
+                toolWindow.show();
+            }
 
-                Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-                if (editor != null) {
-                    FileDocumentManager.getInstance().saveDocumentAsIs(editor.getDocument());
-                }
-            });
-        } catch (InterruptedException | InvocationTargetException ignored) {
-        }
+            Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+            if (editor != null) {
+                FileDocumentManager.getInstance().saveDocumentAsIs(editor.getDocument());
+            }
+        }, ModalityState.NON_MODAL);
 
         CompileLog.getInstance().clear();
 
