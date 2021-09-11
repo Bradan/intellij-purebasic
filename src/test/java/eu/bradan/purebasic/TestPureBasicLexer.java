@@ -65,7 +65,7 @@ public class TestPureBasicLexer extends TestCase {
         PureBasicLexer lexer = new PureBasicLexer(new StringReader(code));
         lexer.reset(code, 0, code.length(), PureBasicLexer.YYINITIAL);
 
-        assertToken(lexer, code, "PureBasicTokenType.KEYWORD", "Global");
+        assertToken(lexer, code, "PureBasicTokenType.KEYWORD_GLOBAL", "Global");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "WHITE_SPACE", " ");
@@ -74,13 +74,13 @@ public class TestPureBasicLexer extends TestCase {
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "a");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", ".");
+        assertToken(lexer, code, "PureBasicTokenType.OP_DOT", ".");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "i");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", ",");
+        assertToken(lexer, code, "PureBasicTokenType.OP_COMMA", ",");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "WHITE_SPACE", " ");
@@ -89,7 +89,7 @@ public class TestPureBasicLexer extends TestCase {
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "b");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", ".");
+        assertToken(lexer, code, "PureBasicTokenType.OP_DOT", ".");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "i");
@@ -103,7 +103,7 @@ public class TestPureBasicLexer extends TestCase {
         PureBasicLexer lexer = new PureBasicLexer(new StringReader(code));
         lexer.reset(code, 0, code.length(), PureBasicLexer.YYINITIAL);
 
-        assertToken(lexer, code, "PureBasicTokenType.KEYWORD", "Procedure");
+        assertToken(lexer, code, "PureBasicTokenType.KEYWORD_PROCEDURE", "Procedure");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "WHITE_SPACE", " ");
@@ -112,19 +112,19 @@ public class TestPureBasicLexer extends TestCase {
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "test");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", "(");
+        assertToken(lexer, code, "PureBasicTokenType.OP_PARENOPEN", "(");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "a");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", ".");
+        assertToken(lexer, code, "PureBasicTokenType.OP_DOT", ".");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "i");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", ")");
+        assertToken(lexer, code, "PureBasicTokenType.OP_PARENCLOSE", ")");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
 
@@ -134,7 +134,7 @@ public class TestPureBasicLexer extends TestCase {
         assertToken(lexer, code, "WHITE_SPACE", "  ");
         assertEquals(lexer.yystate(), PureBasicLexer.YYINITIAL);
 
-        assertToken(lexer, code, "PureBasicTokenType.KEYWORD", "ProcedureReturn");
+        assertToken(lexer, code, "PureBasicTokenType.KEYWORD_PROCEDURERETURN", "ProcedureReturn");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "WHITE_SPACE", " ");
@@ -143,7 +143,7 @@ public class TestPureBasicLexer extends TestCase {
         assertToken(lexer, code, "PureBasicTokenType.IDENTIFIER", "a");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
-        assertToken(lexer, code, "PureBasicTokenType.OPERATOR", "+");
+        assertToken(lexer, code, "PureBasicTokenType.OP_PLUS", "+");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
 
         assertToken(lexer, code, "PureBasicTokenType.NUMBER", "1");
@@ -153,7 +153,7 @@ public class TestPureBasicLexer extends TestCase {
         assertToken(lexer, code, "PureBasicTokenType.SEPARATOR", "\n");
         assertEquals(lexer.yystate(), PureBasicLexer.YYINITIAL);
 
-        assertToken(lexer, code, "PureBasicTokenType.KEYWORD", "EndProcedure");
+        assertToken(lexer, code, "PureBasicTokenType.KEYWORD_ENDPROCEDURE", "EndProcedure");
         assertEquals(lexer.yystate(), PureBasicLexer.FOLLOW_UP);
     }
 }
