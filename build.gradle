@@ -6,8 +6,10 @@ plugins {
 
 apply plugin: 'org.jetbrains.grammarkit'
 
-import org.jetbrains.intellij.tasks.*
-import org.jetbrains.grammarkit.tasks.*
+
+import org.jetbrains.grammarkit.tasks.GenerateLexer
+import org.jetbrains.grammarkit.tasks.GenerateParser
+import org.jetbrains.intellij.tasks.RunIdeTask
 
 grammarKit {
     jflexRelease = '1.7.0-1'
@@ -20,7 +22,7 @@ allprojects {
 
     // See https://github.com/JetBrains/gradle-intellij-plugin/
     intellij {
-        version '2021.2'
+        version '2021.3'
         downloadSources true
         pluginName 'PureBasic'
     }
@@ -37,7 +39,7 @@ allprojects {
 apply plugin: "org.jetbrains.grammarkit"
 
 group "eu.bradan.purebasic"
-version "0.13-SNAPSHOT"
+version "0.14-SNAPSHOT"
 
 dependencies {
 }
@@ -49,6 +51,8 @@ patchPluginXml {
       <li>Update for newer IntelliJ versions.</li>
       </ul>
       '''
+    sinceBuild '212.5'
+    untilBuild null
 }
 runIde {
     jvmArgs += ['-Dcompiler.process.debug.port=5005', '--add-exports', 'java.base/jdk.internal.vm=ALL-UNNAMED']
@@ -59,9 +63,7 @@ publishPlugin {
     channels 'alpha'
 }
 sourceSets {
-    main {
-        java.srcDirs += "src/main/gen"
-    }
+    main.java.srcDirs += "src/main/gen"
 }
 
 task generatePureBasicLexer(type: GenerateLexer) {
