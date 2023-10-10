@@ -36,7 +36,7 @@ public class PureBasicModuleConfigurationEditorProvider implements ModuleConfigu
             return ModuleConfigurationEditor.EMPTY;
         }
 
-        Module module = state.getRootModel().getModule();
+        Module module = state.getCurrentRootModel().getModule();
         if (!(ModuleType.get(module) instanceof PureBasicModuleType)) {
             return ModuleConfigurationEditor.EMPTY;
         }

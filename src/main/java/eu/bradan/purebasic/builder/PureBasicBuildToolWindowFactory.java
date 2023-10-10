@@ -34,7 +34,7 @@ public class PureBasicBuildToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         PureBasicBuildToolWindow pbToolWindow = new PureBasicBuildToolWindow(toolWindow);
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = ContentFactory.getInstance();
         Content content = contentFactory.createContent(pbToolWindow, "PureBasic Build", false);
         toolWindow.getContentManager().addContent(content);
     }
