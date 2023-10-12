@@ -69,7 +69,15 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
                 return includePathStatement.getFilename();
             }
         }
-        return getContainingFile().getVirtualFile().getParent().getPath();
+
+        var virtualFile = getContainingFile().getVirtualFile();
+        if (virtualFile != null) {
+            var parent = virtualFile.getParent();
+            if (parent != null) {
+                return parent.getPath();
+            }
+        }
+        return "";
     }
 
     @NotNull
@@ -90,7 +98,7 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
     @Nullable
     public VirtualFile getVirtualFile() {
         String filename = getFilename();
-        if (!"".equals(filename)) {
+        if (!filename.isEmpty()) {
             return LocalFileSystem.getInstance().findFileByIoFile(new File(filename));
         }
 
@@ -109,7 +117,7 @@ public class PureBasicIncludeElement extends PureBasicSimpleStatementImpl {
 
     @NotNull
     @Override
-    public PsiReference[] getReferences() {
+    public PsiReference @NotNull [] getReferences() {
         final String basePath = getBasePath();
 
         final ASTNode string = getNode().findChildByType(PureBasicTypes.STRING);
