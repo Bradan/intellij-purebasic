@@ -73,12 +73,12 @@ public class PureBasicHighlighter extends SyntaxHighlighterBase {
     @NotNull
     @Override
     public Lexer getHighlightingLexer() {
-        return new PureBasicLexerAdapter();
+        return new PureBasicLexerAdapter(false);
     }
 
     @NotNull
     @Override
-    public TextAttributesKey[] getTokenHighlights(IElementType tokenType) {
+    public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
         if (PureBasicLexer.KEYWORD_TYPES.contains(tokenType)) {
             return KEYWORD_KEYS;
         } else if (PureBasicLexer.OPERATOR_TYPES.contains(PureBasicTypes.OPERATOR) || tokenType.equals(PureBasicTypes.SEPARATOR)) {

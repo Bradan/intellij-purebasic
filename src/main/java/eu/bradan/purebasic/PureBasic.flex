@@ -339,6 +339,7 @@ POINTER_IDENTIFIER="*"[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 CONSTANT_IDENTIFIER="#"\s*[a-zA-Z_][a-zA-Z_0-9]*("$"|"")
 
 %state FOLLOW_UP
+%state END_OF_STATES
 
 %%
 

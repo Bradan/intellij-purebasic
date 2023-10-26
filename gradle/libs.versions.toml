@@ -1,6 +1,7 @@
 [versions]
 # libraries
 annotations = "24.0.1"
+commonsText = "1.10.0"
 
 # plugins
 kotlin = "1.9.10"
@@ -12,6 +13,7 @@ kover = "0.7.3"
 
 [libraries]
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+commonsText = { group = "org.apache.commons", name = "commons-text", version.ref = "commonsText" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }

@@ -42,12 +42,12 @@ public class PureBasicParserDefinition implements ParserDefinition {
     public static final TokenSet WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE);
     public static final TokenSet COMMENTS = TokenSet.create(PureBasicTypes.COMMENT);
 
-    public static final IFileElementType FILE = new IFileElementType(PureBasicLanguage.INSTANCE);
+    public static final IFileElementType FILE = new PureBasicFileElementType();
 
     @NotNull
     @Override
     public Lexer createLexer(Project project) {
-        return new PureBasicLexerAdapter();
+        return new PureBasicLexerAdapter(true);
     }
 
     @NotNull
@@ -75,16 +75,19 @@ public class PureBasicParserDefinition implements ParserDefinition {
     }
 
     @Override
+    @NotNull
     public IFileElementType getFileNodeType() {
         return FILE;
     }
 
     @Override
-    public PsiFile createFile(FileViewProvider viewProvider) {
+    @NotNull
+    public PsiFile createFile(@NotNull FileViewProvider viewProvider) {
         return new PureBasicFile(viewProvider);
     }
 
     @Override
+    @NotNull
     public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode left, ASTNode right) {
         return SpaceRequirements.MAY;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Daniel Brall
+ * Copyright (c) 2023 Daniel Brall
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -23,15 +23,29 @@
 
 package eu.bradan.purebasic;
 
-import com.intellij.lexer.FlexAdapter;
+import com.intellij.lang.*;
+import com.intellij.lexer.Lexer;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IFileElementType;
+import org.jetbrains.annotations.NotNull;
 
-public class PureBasicLexerAdapter extends FlexAdapter {
-    public PureBasicLexerAdapter(boolean withPreprocessor) {
-        super(withPreprocessor ? new PureBasicLexerPreprocessor(null, null) : new PureBasicLexer(null));
+public class PureBasicFileElementType extends IFileElementType {
+
+    public PureBasicFileElementType() {
+        super(PureBasicLanguage.INSTANCE);
     }
 
-    public PureBasicLexerAdapter(boolean withPreprocessor, PsiElement element) {
-        super(withPreprocessor ? new PureBasicLexerPreprocessor(null, element) : new PureBasicLexer(null));
+    @Override
+    protected ASTNode doParseContents(@NotNull ASTNode chameleon, @NotNull PsiElement psi) {
+        Lexer lexer = new PureBasicLexerAdapter(true, psi);
+
+        Project project = psi.getProject();
+        Language languageForParser = getLanguageForParser(psi);
+        PsiBuilder builder = PsiBuilderFactory.getInstance().createBuilder(project, chameleon, lexer, languageForParser,
+                chameleon.getChars());
+        PsiParser parser = LanguageParserDefinitions.INSTANCE.forLanguage(languageForParser).createParser(project);
+        ASTNode node = parser.parse(this, builder);
+        return node.getFirstChildNode();
     }
 }
