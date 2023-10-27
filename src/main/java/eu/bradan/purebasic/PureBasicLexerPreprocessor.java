@@ -33,7 +33,6 @@ import eu.bradan.purebasic.psi.PureBasicTypes;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
@@ -47,6 +46,9 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     public static final int MACRO_HEAD_NAME = PREP_STATE_START;
     public static final int MACRO_HEAD_ARGS = MACRO_HEAD_NAME << 1;
     public static final int MACRO_BODY = MACRO_HEAD_ARGS << 1;
+
+    private static final int MAX_LEVEL = 20;
+
     private final PureBasicLexer lexer;
     private final Queue<LexerToken> lexerTokens = new LinkedList<>();
     private final PsiElement element;
@@ -55,10 +57,18 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     private LexerToken lastToken = null;
     private int preprocessorState = 0;
     private String macroName;
+    private final int level;
 
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element) {
         lexer = new PureBasicLexer(in);
         this.element = element;
+        this.level = 0;
+    }
+
+    public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element, int level) {
+        lexer = new PureBasicLexer(in);
+        this.element = element;
+        this.level = level;
     }
 
     @NotNull
@@ -144,12 +154,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
 
     @Override
     public IElementType advance() throws IOException {
-        if (!lexerTokens.isEmpty()) {
-            lastToken = lexerTokens.poll();
-            return lastToken.getTokenType();
-        }
-
-        LexerToken token = new LexerToken();
+        LexerToken token = lexerTokens.isEmpty() ? new LexerToken() : lexerTokens.poll();
         try {
             if (preprocessorState == MACRO_HEAD_ARGS) {
                 macroArgs.add(token);
@@ -157,28 +162,13 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
 
             if (token.getTokenType() == PureBasicTypes.IDENTIFIER) {
                 // check if this is a macro
-                var identifier = lexer.yytext().toString().replaceAll("\\s+", "");
+                var identifier = token.getTokenText().toString().replaceAll("\\s+", "");
                 if (preprocessorState == MACRO_HEAD_NAME) {
                     macroName = identifier;
                     preprocessorState = MACRO_HEAD_ARGS;
                 } else if (element != null) {
-                    final var macro = PureBasicPreprocessorStorage.getInstance(element.getProject()).getMacro(identifier);
-
-                    if (macro != null) {
-                        // expand the macro
-                        final var macroCode = macro.getObject().getCode();
-                        final var macroLexer = new PureBasicLexerPreprocessor(null, null);
-                        macroLexer.reset(macroCode, 0, macroCode.length(), 0);
-                        final var state = yystate();
-                        while (macroLexer.getTokenEnd() < macroCode.length()) {
-                            final var elementType = macroLexer.advance();
-                            final var text = macroLexer.lexer.yytext().toString();
-                            lexerTokens.add(new LexerToken(elementType,
-                                    token.getTokenEnd(),
-                                    token.getTokenEnd(),
-                                    text, state));
-                            macroLexer.advance();
-                        }
+                    if (expandMacro(identifier, token)) {
+                        lastToken = new LexerToken(token, TokenType.WHITE_SPACE);
                         return TokenType.WHITE_SPACE;
                     }
                 }
@@ -198,12 +188,39 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             }
 
             if (preprocessorState == MACRO_BODY && token.getTokenType() != PureBasicTypes.SEPARATOR) {
+                lastToken = new LexerToken(token, TokenType.WHITE_SPACE);
                 return TokenType.WHITE_SPACE;
             }
         } finally {
             lastToken = token;
         }
         return token.getTokenType();
+    }
+
+    private boolean expandMacro(String identifier, LexerToken token) throws IOException {
+        final var macro = PureBasicPreprocessorStorage.getInstance(element.getProject()).getMacro(identifier);
+
+        if (macro != null && this.level < MAX_LEVEL) {
+            // expand the macro
+            final var macroCode = macro.getObject().getCode();
+            final var macroLexer = new PureBasicLexerPreprocessor(null, null, this.level + 1);
+            macroLexer.reset(macroCode, 0, macroCode.length(), 0);
+            final var state = yystate();
+            while (macroLexer.getTokenEnd() < macroCode.length()) {
+                final var elementType = macroLexer.advance();
+                if (elementType == null) {
+                    break;
+                }
+                final var text = macroLexer.yytext().toString();
+                System.out.println("Macro token: " + elementType + " " + text);
+                lexerTokens.add(new LexerToken(elementType,
+                        token.getTokenEnd(),
+                        token.getTokenEnd(),
+                        text, state));
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -220,6 +237,13 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         preprocessorState = initialState & stateMaskPrep;
 
         lexer.reset(buf, start, end, initialState & stateMaskLexer);
+    }
+
+    private CharSequence yytext() {
+        if (lastToken != null) {
+            return lastToken.getTokenText();
+        }
+        return lexer.yytext();
     }
 
     /**
@@ -272,7 +296,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 if (t.getTokenType() == PureBasicTypes.IDENTIFIER && arguments.stream().anyMatch(a -> a.getName().equals(tokenText))) {
                     macroBodyCode.append("${").append(tokenText).append("}");
                 } else {
-                    macroBodyCode.append(tokenText.replaceAll("\\$\\{", "\\$\\${"));
+                    macroBodyCode.append(tokenText.replaceAll("\\$", "\\$\\$"));
                 }
             }
 
@@ -310,74 +334,6 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             }
         }
         macroBody.removeAll(toRemove);
-    }
-
-    // TODO: delete
-    private void handleMacroDefinition() throws IOException {
-        // Macro whitespace* identifier whitespace* parameters? (newline|sep)
-        // contents
-        // EndMacro
-
-        // gather the identifier
-        var tokens = new LinkedList<LexerToken>();
-        try {
-            String macroName = null;
-
-            gatherTokensWhile(tokens, t -> t.getTokenType() == TokenType.WHITE_SPACE, true);
-            if (tokens.isEmpty()) {
-                throw new IOException("End of stream.");
-            }
-            if (tokens.getLast().getTokenType() == PureBasicTypes.IDENTIFIER) {
-                macroName = tokens.getLast().getTokenText().toString();
-            }
-
-            // gather the parameters all at once
-            tokens.clear();
-            gatherTokensWhile(tokens, t -> t.getTokenType() != PureBasicTypes.SEPARATOR, true);
-            if (tokens.isEmpty()) {
-                throw new IOException("End of stream.");
-            }
-            tokens.removeLast(); // remove the separator
-
-            final var arguments = parseArguments(tokens);
-
-            // macro body
-            tokens.clear();
-            gatherTokensWhile(tokens, t -> t.getTokenType() != PureBasicTypes.KEYWORD_ENDMACRO, false);
-            var endMacro = tokens.removeLast(); // remove the ENDMACRO token
-            for (var t : tokens) {
-                lexerTokens.add(new LexerToken(t, TokenType.WHITE_SPACE));
-            }
-
-            var macroBody = new StringBuilder();
-            final var argNames = new HashSet<>(arguments.stream().map(PureBasicMacro.Argument::getName).toList());
-            removeOpHashAndWhitespaces(tokens);
-            for (var t : tokens) {
-                if (t.getTokenType() == PureBasicTypes.IDENTIFIER && argNames.contains(t.getTokenText().toString())) {
-                    macroBody.append(t.getTokenText());
-                } else {
-                    macroBody.append(t.getTokenText());
-                }
-            }
-
-            if (endMacro.getTokenType() == PureBasicTypes.KEYWORD_ENDMACRO) {
-                lexerTokens.add(endMacro);
-            } else {
-                lexerTokens.add(new LexerToken(endMacro, TokenType.WHITE_SPACE));
-            }
-
-            var macro = new PureBasicMacro(macroName, macroBody.toString(), arguments.toArray(new PureBasicMacro.Argument[0]));
-
-            // TODO: register the macro somewhere
-
-            if (tokens.isEmpty()) {
-                throw new IOException("End of stream.");
-            }
-        } catch (IOException e) {
-            if (lexerTokens.isEmpty()) {
-                throw e;
-            }
-        }
     }
 
     private class LexerToken {

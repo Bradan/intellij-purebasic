@@ -23,7 +23,7 @@
 
 package eu.bradan.purebasic.preprocessor;
 
-import org.apache.commons.text.StringSubstitutor;
+import eu.bradan.purebasic.PureBasicUtil;
 
 import java.util.HashMap;
 
@@ -53,8 +53,12 @@ public class PureBasicMacro {
             valueMap.put(arguments[i].getName(), value);
         }
 
-        final var subst = new StringSubstitutor(valueMap);
-        return subst.replace(code);
+        try {
+            return PureBasicUtil.substitute(code, valueMap);
+        } catch (PureBasicUtil.SubstitutionException e) {
+            e.printStackTrace();
+            return code;  // try your luck
+        }
     }
 
     public static class Argument {

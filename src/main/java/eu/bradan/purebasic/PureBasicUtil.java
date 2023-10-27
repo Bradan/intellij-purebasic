@@ -24,8 +24,56 @@
 package eu.bradan.purebasic;
 
 import java.io.File;
+import java.util.Map;
 
 public class PureBasicUtil {
+    public static String substitute(String text, Map<String, String> substitutions) throws SubstitutionException {
+        final var builder = new StringBuilder();
+
+        boolean awaitingBrace = false;
+
+        for (int i = 0; i < text.length(); i++) {
+            final var c = text.charAt(i);
+            if (awaitingBrace) {
+                awaitingBrace = false;
+                switch (c) {
+                    case '{':
+                        final var start = i;
+                        i++;
+                        while (i < text.length() && text.charAt(i) != '}') {
+                            i++;
+                        }
+                        final var end = i;
+                        final var key = text.substring(start + 1, end);
+                        final var value = substitutions.getOrDefault(key, null);
+                        if (value != null) {
+                            builder.append(value);
+                        } else {
+                            throw new SubstitutionException("Substitution key " + key + " not found");
+                        }
+                        continue;
+                    case '$':
+                        builder.append(c);
+                        continue;
+                    default:
+                        throw new SubstitutionException("Expected { or $ after $");
+                }
+            } else if (c == '$') {
+                awaitingBrace = true;
+                continue;
+            }
+            builder.append(c);
+        }
+
+        return builder.toString();
+    }
+
+    public static class SubstitutionException extends Exception {
+        public SubstitutionException(String message) {
+            super(message);
+        }
+    }
+
     public static String getStringContents(String string) {
         if (string == null) {
             return null;
