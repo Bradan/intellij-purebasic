@@ -196,18 +196,6 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         return token.getTokenType();
     }
 
-    private void gatherTokensWhile(LinkedList<LexerToken> tokens, Predicate<LexerToken> predicate, boolean enqueue) throws IOException {
-        LexerToken token;
-        do {
-            token = nextToken();
-            tokens.add(token);
-
-            if (enqueue) {
-                lexerTokens.add(token);
-            }
-        } while (predicate.test(token));
-    }
-
     /**
      * Gathers the tokens of a potential function call and returns the first token which does not belong to it.
      *
@@ -253,8 +241,9 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                     currentArgument = new LinkedList<>();
                     continue;
                 } else if (token.getTokenType() == PureBasicTypes.OP_PARENCLOSE) {
-                    if (level == 1 && currentArgument != null) {
-                        arguments.add(currentArgument);
+                    if (level == 1) {
+                        if (currentArgument != null)
+                            arguments.add(currentArgument);
                         return null;
                     }
                     level--;
@@ -524,6 +513,17 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
 
         public int getState() {
             return state;
+        }
+
+        @Override
+        public String toString() {
+            return "LexerToken{" +
+                    "tokenType=" + tokenType +
+                    ", tokenText=\"" + tokenText + "\"" +
+                    ", tokenStart=" + tokenStart +
+                    ", tokenEnd=" + tokenEnd +
+                    ", state=" + state +
+                    '}';
         }
     }
 }
