@@ -26,12 +26,14 @@ package eu.bradan.purebasic;
 import com.intellij.lexer.FlexAdapter;
 import com.intellij.psi.PsiElement;
 
+import java.io.Reader;
+
 public class PureBasicLexerAdapter extends FlexAdapter {
     public PureBasicLexerAdapter(boolean withPreprocessor) {
-        super(withPreprocessor ? new PureBasicLexerPreprocessor(null, null) : new PureBasicLexer(null));
+        super(withPreprocessor ? new PureBasicLexerPreprocessor(null, null) : new PureBasicLexer((Reader) null));
     }
 
     public PureBasicLexerAdapter(boolean withPreprocessor, PsiElement element) {
-        super(withPreprocessor ? new PureBasicLexerPreprocessor(null, element) : new PureBasicLexer(null));
+        super(withPreprocessor ? new PureBasicLexerPreprocessor(null, element) : new PureBasicLexer((Reader) null));
     }
 }

@@ -53,10 +53,10 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     private final PsiElement element;
     private final LinkedList<LexerToken> macroArgs = new LinkedList<>();
     private final LinkedList<LexerToken> macroBody = new LinkedList<>();
+    private final int level;
+    private String macroName;
     private LexerToken lastToken = null;
     private int preprocessorState = 0;
-    private String macroName;
-    private final int level;
 
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element) {
         lexer = new PureBasicLexer(in);
@@ -68,6 +68,23 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         lexer = new PureBasicLexer(in);
         this.element = element;
         this.level = level;
+    }
+
+    /**
+     * Copy constructor (the level is incremented)!
+     *
+     * @param copyFrom the object to copy
+     */
+    public PureBasicLexerPreprocessor(PureBasicLexerPreprocessor copyFrom) {
+        lexer = new PureBasicLexer(copyFrom.lexer);
+        this.lexerTokens.addAll(copyFrom.lexerTokens);
+        this.element = copyFrom.element;
+//        this.macroArgs.addAll(copyFrom.macroArgs);
+//        this.macroBody.addAll(copyFrom.macroBody);
+//        this.macroName = copyFrom.macroName;
+        this.lastToken = copyFrom.lastToken;
+        this.preprocessorState = copyFrom.preprocessorState;
+        this.level = copyFrom.level + 1;
     }
 
     @NotNull
@@ -152,8 +169,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             }
 
             if (token.getTokenType() != PureBasicTypes.IDENTIFIER
-                    && token.getTokenType() != PureBasicTypes.OP_MODULE
-                    && token.getTokenType() != TokenType.WHITE_SPACE) {
+                    && token.getTokenType() != PureBasicTypes.OP_MODULE) {
                 preprocessorState &= ~POTENTIAL_MACRO_CALL;
             }
 
@@ -202,27 +218,27 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
      * @param alreadyReadToken The already read token of this function.
      * @param function         The function identifier.
      * @param arguments        The function arguments.
-     * @return The last lexer token which does not belong to the call or null if the call could be parsed without extra token.
      * @throws IOException If the lexer could not read the next token.
      */
-    private LexerToken gatherCallTokens(LexerToken alreadyReadToken,
-                                        LinkedList<LexerToken> all_tokens,
-                                        LinkedList<LexerToken> function,
-                                        LinkedList<LinkedList<LexerToken>> arguments) throws IOException {
+    private void gatherCallTokens(LexerToken alreadyReadToken,
+                                  LinkedList<LexerToken> all_tokens,
+                                  LinkedList<LexerToken> function,
+                                  LinkedList<LinkedList<LexerToken>> arguments) throws IOException {
+        PureBasicLexerPreprocessor lex = new PureBasicLexerPreprocessor(this);
+
         LexerToken token = alreadyReadToken;
 
         final ArrayList<IElementType> validIdentifier = new ArrayList<>(
                 Arrays.asList(
                         PureBasicTypes.IDENTIFIER,
-                        PureBasicTypes.OP_MODULE,
-                        TokenType.WHITE_SPACE
+                        PureBasicTypes.OP_MODULE
                 )
         );
 
         while (token != null && validIdentifier.contains(token.getTokenType())) {
             function.add(token);
             all_tokens.add(token);
-            token = nextToken();
+            token = lex.nextToken();
         }
 
         if (token != null && token.getTokenType() == PureBasicTypes.OP_PARENOPEN) {
@@ -231,7 +247,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             LinkedList<LexerToken> currentArgument = null;
             int level = 1;
             while (level >= 1) {
-                token = nextToken();
+                token = lex.nextToken();
                 if (token == null)
                     break;
                 all_tokens.add(token);
@@ -244,7 +260,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                     if (level == 1) {
                         if (currentArgument != null)
                             arguments.add(currentArgument);
-                        return null;
+                        return;
                     }
                     level--;
                 }
@@ -258,8 +274,6 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 }
             }
         }
-
-        return token;
     }
 
     private String tokensToString(List<LexerToken> tokens, Predicate<LexerToken> filter) {
@@ -273,13 +287,9 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         var function = new LinkedList<LexerToken>();
         var arguments = new LinkedList<LinkedList<LexerToken>>();
 
-        LexerToken extraToken;
-
         try {
-            extraToken = gatherCallTokens(token, all_tokens, function, arguments);
+            gatherCallTokens(token, all_tokens, function, arguments);
         } catch (IOException ignored) {
-            all_tokens.removeFirst();  // remove the first token (already handled by the outer method)
-            lexerTokens.addAll(all_tokens);
             return null;
         }
 
@@ -300,35 +310,27 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             final var endToken = all_tokens.getLast();
             final var tokenText = tokensToString(all_tokens, t -> true);
 
+            final var start = token.getTokenStart();
+            final var end = endToken.getTokenEnd();
+
+            // consume all tokens until endToken ends.
+            while (token != null && token.getTokenEnd() < endToken.getTokenEnd()) {
+                token = nextToken();
+            }
+
             final var macroCode = macro.getObject().getCode(argumentStrings);
             final var macroLexer = new PureBasicLexerPreprocessor(null, null, this.level + 1);
             macroLexer.reset(macroCode, 0, macroCode.length(), 0);
             final var state = yystate();
-            while (macroLexer.getTokenEnd() < macroCode.length()) {
-                final var elementType = macroLexer.advance();
-                if (elementType == null) {
-                    break;
-                }
+            IElementType elementType;
+            while ((elementType = macroLexer.advance()) != null) {
                 final var text = macroLexer.yytext().toString();
-                lexerTokens.add(new LexerToken(elementType,
-                        endToken.getTokenEnd(),
-                        endToken.getTokenEnd(),
-                        text, state));
+                lexerTokens.add(new LexerToken(elementType, end, end, text, state));
             }
 
-            if (extraToken != null) {
-                lexerTokens.add(extraToken);
-            }
-
-            return new LexerToken(TokenType.WHITE_SPACE,
-                    token.getTokenStart(), endToken.getTokenEnd(), tokenText, yystate());
+            return new LexerToken(TokenType.WHITE_SPACE, start, end, tokenText, yystate());
         }
 
-        all_tokens.removeFirst();  // remove the first token (already handled by the outer method)
-        lexerTokens.addAll(all_tokens);
-        if (extraToken != null) {
-            lexerTokens.add(extraToken);
-        }
         return null;
     }
 

@@ -20,6 +20,22 @@ import java.util.ArrayList;
 %eof}
 
 %{
+/**
+* Copy constructor
+ * @param copyFrom
+*/
+public PureBasicLexer(PureBasicLexer copyFrom) {
+    lastToken = copyFrom.lastToken;
+    lastTokenType = copyFrom.lastTokenType;
+    zzBuffer = copyFrom.zzBuffer;
+    zzCurrentPos = copyFrom.zzCurrentPos;
+    zzMarkedPos = copyFrom.zzMarkedPos;
+    zzStartRead = copyFrom.zzStartRead;
+    zzAtEOF  = copyFrom.zzAtEOF;
+    zzAtBOL = copyFrom.zzAtBOL;
+    zzEndRead = copyFrom.zzEndRead;
+}
+
 private IElementType lastTokenType = null;
 private CharSequence lastToken = null;
 
