@@ -24,6 +24,7 @@
 package eu.bradan.purebasic;
 
 import com.intellij.lexer.FlexLexer;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
@@ -45,7 +46,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     public static final int MACRO_HEAD_ARGS = MACRO_HEAD_NAME << 1;
     public static final int MACRO_BODY = MACRO_HEAD_ARGS << 1;
     public static final int POTENTIAL_MACRO_CALL = MACRO_BODY << 1;
-
+    private static final Logger LOG = Logger.getInstance(PureBasicLexerPreprocessor.class);
     private static final int MAX_LEVEL = 20;
 
     private final PureBasicLexer lexer;
@@ -62,12 +63,18 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         lexer = new PureBasicLexer(in);
         this.element = element;
         this.level = 0;
+
+        LOG.debug("Creating PureBasicLexerPreprocessor for PsiElement of type "
+                + (element != null ? element.getClass() : "null"));
     }
 
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element, int level) {
         lexer = new PureBasicLexer(in);
         this.element = element;
         this.level = level;
+
+        LOG.debug("Creating PureBasicLexerPreprocessor for PsiElement of type "
+                + (element != null ? element.getClass() : "null"));
     }
 
     /**
@@ -79,9 +86,9 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         lexer = new PureBasicLexer(copyFrom.lexer);
         this.lexerTokens.addAll(copyFrom.lexerTokens);
         this.element = copyFrom.element;
-//        this.macroArgs.addAll(copyFrom.macroArgs);
-//        this.macroBody.addAll(copyFrom.macroBody);
-//        this.macroName = copyFrom.macroName;
+        this.macroArgs.addAll(copyFrom.macroArgs);
+        this.macroBody.addAll(copyFrom.macroBody);
+        this.macroName = copyFrom.macroName;
         this.lastToken = copyFrom.lastToken;
         this.preprocessorState = copyFrom.preprocessorState;
         this.level = copyFrom.level + 1;
@@ -328,6 +335,8 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 lexerTokens.add(new LexerToken(elementType, end, end, text, state));
             }
 
+            LOG.debug(String.format(Locale.getDefault(), "Expanding macro \"%s\" to \"%s\"", tokenText, macroCode));
+
             return new LexerToken(TokenType.WHITE_SPACE, start, end, tokenText, yystate());
         }
 
@@ -336,6 +345,8 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
 
     @Override
     public void reset(CharSequence buf, int start, int end, int initialState) {
+        LOG.debug("Resetting PureBasicLexerPreprocessor to " + start + " - " + end + " with state " + initialState);
+
         lexerTokens.clear();
 
         macroName = null;
@@ -414,6 +425,13 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             final var macro = new PureBasicMacro(macroName,
                     macroBodyCode.toString(),
                     arguments.toArray(new PureBasicMacro.Argument[0]));
+
+            LOG.debug(String.format(Locale.getDefault(), "Registering macro \"%s(%s)\" with code \"%s\"",
+                    macroName,
+                    String.join(", ", arguments.stream()
+                            .map(a -> a.getName() + " = " + a.getDefaultValue())
+                            .toArray(String[]::new)),
+                    macroBodyCode));
 
             PureBasicPreprocessorStorage.getInstance(element.getProject())
                     .addMacro(element.getContainingFile(), macro);
