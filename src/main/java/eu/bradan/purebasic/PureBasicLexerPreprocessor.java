@@ -26,6 +26,7 @@ package eu.bradan.purebasic;
 import com.intellij.lexer.FlexLexer;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import eu.bradan.purebasic.preprocessor.PureBasicMacro;
@@ -38,7 +39,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 /**
- * This class is a wrapper around the generated lexer class to expand preprocessor directives.
+ * This class is a wrapper around the generated lexer class to handle preprocessor directives.
  */
 public class PureBasicLexerPreprocessor implements FlexLexer {
     public static final int PREP_STATE_START = PureBasicLexer.END_OF_STATES;
@@ -65,7 +66,10 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         this.level = 0;
 
         LOG.debug("Creating PureBasicLexerPreprocessor for PsiElement of type "
-                + (element != null ? element.getClass() : "null"));
+                + (element != null ? element.getClass() + " @ " + System.identityHashCode(element) : "null"));
+
+        if (element != null)
+            PureBasicPreprocessorStorage.getInstance(element.getProject()).clearInvalid();
     }
 
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element, int level) {
@@ -74,7 +78,10 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         this.level = level;
 
         LOG.debug("Creating PureBasicLexerPreprocessor for PsiElement of type "
-                + (element != null ? element.getClass() : "null"));
+                + (element != null ? element.getClass() + " @ " + System.identityHashCode(element) : "null"));
+
+        if (element != null)
+            PureBasicPreprocessorStorage.getInstance(element.getProject()).clearInvalid();
     }
 
     /**
@@ -305,8 +312,19 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 .filter(t -> t.getTokenType() == PureBasicTypes.IDENTIFIER)
                 .reduce((a, b) -> b).orElseThrow();
 
-        final var macro = PureBasicPreprocessorStorage.getInstance(element.getProject())
-                .getMacro(lastIdentifier.getTokenText().toString());
+        final var macros = PureBasicPreprocessorStorage.getInstance(element.getProject())
+                .getMacros(lastIdentifier.getTokenText().toString());
+
+        PureBasicMacro macro = null;
+        PsiFile macroFile;
+
+        for (var m : macros) {
+            macroFile = m.getFile();
+            if (macroFile != null) {
+                macro = m.getObject();
+                break;
+            }
+        }
 
         if (macro != null && this.level < MAX_LEVEL) {
             // expand the macro
@@ -325,7 +343,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 token = nextToken();
             }
 
-            final var macroCode = macro.getObject().getCode(argumentStrings);
+            final var macroCode = macro.getCode(argumentStrings);
             final var macroLexer = new PureBasicLexerPreprocessor(null, null, this.level + 1);
             macroLexer.reset(macroCode, 0, macroCode.length(), 0);
             final var state = yystate();

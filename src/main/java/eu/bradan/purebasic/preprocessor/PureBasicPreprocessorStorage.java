@@ -25,13 +25,17 @@ package eu.bradan.purebasic.preprocessor;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 public class PureBasicPreprocessorStorage {
     private static final HashMap<Project, PureBasicPreprocessorStorage> instances = new HashMap<>();
-    private final HashMap<String, LocatableObject<PureBasicMacro>> macros = new HashMap<>();
+    private final HashMap<String, LinkedList<LocatableObject<PureBasicMacro>>> macros = new HashMap<>();
 
     private PureBasicPreprocessorStorage() {
     }
@@ -45,22 +49,44 @@ public class PureBasicPreprocessorStorage {
         return inst;
     }
 
-    public void addMacro(PsiFile file, PureBasicMacro macro) {
-        macros.put(macro.getName(), new LocatableObject<>(macro, file));
+    public synchronized void clearInvalid() {
+        for (var entry : macros.entrySet()) {
+            var list = entry.getValue();
+            list.removeIf(locatableObject -> locatableObject.getFile() == null);
+            if (list.isEmpty()) {
+                macros.remove(entry.getKey());
+            }
+        }
     }
 
-    @Nullable
-    public LocatableObject<PureBasicMacro> getMacro(String name) {
-        return macros.getOrDefault(name, null);
+    public synchronized void addMacro(PsiFile file, PureBasicMacro macro) {
+        var list = macros.getOrDefault(macro.getName(), null);
+        if (list == null) {
+            list = new LinkedList<>();
+            macros.put(macro.getName(), list);
+        }
+
+        list.add(new LocatableObject<>(macro, file));
+    }
+
+    @NotNull
+    public synchronized List<LocatableObject<PureBasicMacro>> getMacros(String name) {
+        var list = macros.getOrDefault(name, null);
+        if (list != null) {
+            return new ArrayList<>(list);
+        }
+        return new ArrayList<>();
     }
 
     public static class LocatableObject<T> {
         private final T object;
-        private final PsiFile file;
+
+        @NotNull
+        private final WeakReference<PsiFile> file;
 
         private LocatableObject(T object, PsiFile file) {
             this.object = object;
-            this.file = file;
+            this.file = new WeakReference<>(file);
         }
 
         public T getObject() {
@@ -68,7 +94,7 @@ public class PureBasicPreprocessorStorage {
         }
 
         public PsiFile getFile() {
-            return file;
+            return file.get();
         }
     }
 }
