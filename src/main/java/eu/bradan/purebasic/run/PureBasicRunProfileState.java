@@ -38,6 +38,8 @@ import com.intellij.ide.IdeBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+
 public class PureBasicRunProfileState extends CommandLineState {
     protected PureBasicRunProfileState(ExecutionEnvironment environment) {
         super(environment);
@@ -53,15 +55,17 @@ public class PureBasicRunProfileState extends CommandLineState {
         KillableColoredProcessHandler processHandler = new KillableColoredProcessHandler(commandLine) {
             @Override
             protected void notifyProcessTerminated(int exitCode) {
-                print(IdeBundle.message("run.anything.console.process.finished", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
+                final var msg = IdeBundle.message("run.anything.console.process.finished", exitCode);
+                SwingUtilities.invokeLater(() -> print(msg, ConsoleViewContentType.SYSTEM_OUTPUT));
                 super.notifyProcessTerminated(exitCode);
             }
 
             @Override
-            public final boolean shouldKillProcessSoftly() {
+            public boolean shouldKillProcessSoftly() {
                 return super.shouldKillProcessSoftly();
             }
 
+            @SuppressWarnings("SameParameterValue")
             private void print(@NotNull String message, @NotNull ConsoleViewContentType consoleViewContentType) {
                 ConsoleView console = getConsoleView();
                 if (console != null) console.print(message, consoleViewContentType);

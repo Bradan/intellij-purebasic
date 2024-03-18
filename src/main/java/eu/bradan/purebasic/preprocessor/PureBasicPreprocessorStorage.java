@@ -24,14 +24,13 @@
 package eu.bradan.purebasic.preprocessor;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class PureBasicPreprocessorStorage {
     private static final HashMap<Project, PureBasicPreprocessorStorage> instances = new HashMap<>();
@@ -66,7 +65,16 @@ public class PureBasicPreprocessorStorage {
             macros.put(macro.getName(), list);
         }
 
-        list.add(new LocatableObject<>(macro, file));
+        VirtualFile vfile = null;
+        for (var f = file; f != null && vfile == null; f = f.getOriginalFile()) {
+            vfile = f.getVirtualFile();
+        }
+
+        final var finalVFile = vfile;
+
+        list.removeIf(lo -> Objects.equals(lo.getFile(), finalVFile)
+                && lo.getObject().getName().equalsIgnoreCase(macro.getName()));
+        list.add(new LocatableObject<>(macro, vfile));
     }
 
     @NotNull
@@ -82,9 +90,9 @@ public class PureBasicPreprocessorStorage {
         private final T object;
 
         @NotNull
-        private final WeakReference<PsiFile> file;
+        private final WeakReference<VirtualFile> file;
 
-        private LocatableObject(T object, PsiFile file) {
+        private LocatableObject(T object, VirtualFile file) {
             this.object = object;
             this.file = new WeakReference<>(file);
         }
@@ -93,8 +101,16 @@ public class PureBasicPreprocessorStorage {
             return object;
         }
 
-        public PsiFile getFile() {
+        public VirtualFile getFile() {
             return file.get();
+        }
+
+        public PsiFile getPsiFile(Project project) {
+            var file = getFile();
+            if (file != null) {
+                return PsiManager.getInstance(project).findFile(file);
+            }
+            return null;
         }
     }
 }
