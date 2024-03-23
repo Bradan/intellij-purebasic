@@ -34,6 +34,8 @@ public class PureBasicPreprocessorScope {
 
     private final HashMap<String, PureBasicConstant> constants = new HashMap<>();
 
+    private final HashMap<String, PureBasicMacro> macros = new HashMap<>();
+
     private final HashSet<String> usedModules = new HashSet<>();
 
     private final LinkedList<String> currentModules = new LinkedList<>();
@@ -50,9 +52,11 @@ public class PureBasicPreprocessorScope {
      * @param copyFrom copy scope from there
      */
     public PureBasicPreprocessorScope(PureBasicPreprocessorScope copyFrom) {
-        constants.putAll(copyFrom.constants);
-        usedModules.addAll(copyFrom.usedModules);
-        currentModules.addAll(copyFrom.currentModules);
+        if (copyFrom != null) {
+            constants.putAll(copyFrom.constants);
+            usedModules.addAll(copyFrom.usedModules);
+            currentModules.addAll(copyFrom.currentModules);
+        }
     }
 
     /**
@@ -76,15 +80,17 @@ public class PureBasicPreprocessorScope {
      * @param copyFrom copy scope from there
      */
     public void overwriteBy(PureBasicPreprocessorScope copyFrom) {
-        constants.putAll(copyFrom.constants);
-        usedModules.addAll(copyFrom.usedModules);
-        currentModules.addAll(copyFrom.currentModules);
+        if (copyFrom != null) {
+            constants.putAll(copyFrom.constants);
+            usedModules.addAll(copyFrom.usedModules);
+            currentModules.addAll(copyFrom.currentModules);
+        }
     }
 
     /**
      * Sets a constant value
      *
-     * @param constant
+     * @param constant the constant
      */
     public synchronized void setConstant(PureBasicConstant constant) {
         constants.put(constant.getName(), constant);
@@ -98,6 +104,25 @@ public class PureBasicPreprocessorScope {
      */
     public synchronized PureBasicConstant getConstant(String name) {
         return constants.getOrDefault(name, null);
+    }
+
+    /**
+     * Sets a constant value
+     *
+     * @param macro the macro
+     */
+    public synchronized void addMacro(PureBasicMacro macro) {
+        macros.put(macro.getName(), macro);
+    }
+
+    /**
+     * Gets a macro
+     *
+     * @param name The name of the macro
+     * @return The macro or null if not found
+     */
+    public synchronized PureBasicMacro getMacro(String name) {
+        return macros.getOrDefault(name, null);
     }
 
     public synchronized void enterModule(String name) {

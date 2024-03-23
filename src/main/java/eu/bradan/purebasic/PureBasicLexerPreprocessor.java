@@ -26,7 +26,6 @@ package eu.bradan.purebasic;
 import com.intellij.lexer.FlexLexer;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import eu.bradan.purebasic.preprocessor.PureBasicConstant;
@@ -57,14 +56,13 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     private final LinkedList<LexerToken> macroArgs = new LinkedList<>();
     private final LinkedList<LexerToken> macroBody = new LinkedList<>();
     private final int level;
+    private final PureBasicPreprocessorScope scope;
     private String macroName;
     private LexerToken lastToken = null;
     private int preprocessorState = 0;
 
-    private final PureBasicPreprocessorScope scope;
-
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element) {
-        this.scope = new PureBasicPreprocessorScope();
+        this.scope = initialScope(element);
         lexer = new PureBasicLexer(in);
         this.element = element;
         this.level = 0;
@@ -77,7 +75,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     }
 
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element, int level) {
-        this.scope = new PureBasicPreprocessorScope();
+        this.scope = initialScope(element);
         lexer = new PureBasicLexer(in);
         this.element = element;
         this.level = level;
@@ -144,6 +142,17 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             }
         }
         return arguments;
+    }
+
+    private PureBasicPreprocessorScope initialScope(PsiElement element) {
+        PureBasicPreprocessorScope baseScope = null;
+        if (element != null) {
+            var storage = PureBasicPreprocessorStorage.getInstance(element.getProject());
+            storage.clearInvalid();
+            baseScope = storage.getScope(element.getContainingFile());
+        }
+
+        return new PureBasicPreprocessorScope(baseScope);
     }
 
     @Override
@@ -327,19 +336,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 .filter(t -> t.getTokenType() == PureBasicTypes.IDENTIFIER)
                 .reduce((a, b) -> b).orElseThrow();
 
-        final var macros = PureBasicPreprocessorStorage.getInstance(element.getProject())
-                .getMacros(lastIdentifier.getTokenText().toString());
-
-        PureBasicMacro macro = null;
-        PsiFile macroFile;
-
-        for (var m : macros) {
-            macroFile = m.getPsiFile(element.getProject());
-            if (macroFile != null) {
-                macro = m.getObject();
-                break;
-            }
-        }
+        PureBasicMacro macro = this.scope.getMacro(lastIdentifier.getTokenText().toString());
 
         if (macro != null && this.level < MAX_LEVEL) {
             // expand the macro
@@ -469,8 +466,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                             .toArray(String[]::new)),
                     macroBodyCode));
 
-            PureBasicPreprocessorStorage.getInstance(element.getProject())
-                    .addMacro(element.getContainingFile(), macro);
+            this.scope.addMacro(macro);
         }
 
         macroName = null;
@@ -556,25 +552,6 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         return new LexerIterator();
     }
 
-    private class LexerIterator implements Iterator<LexerToken> {
-        private LexerToken next = null;
-
-        @Override
-        public boolean hasNext() {
-            try {
-                next = nextToken();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return next != null;
-        }
-
-        @Override
-        public LexerToken next() {
-            return next;
-        }
-    }
-
     private static class LexerToken {
         private final int tokenStart;
         private final int tokenEnd;
@@ -642,6 +619,25 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                     ", tokenEnd=" + tokenEnd +
                     ", state=" + state +
                     '}';
+        }
+    }
+
+    private class LexerIterator implements Iterator<LexerToken> {
+        private LexerToken next = null;
+
+        @Override
+        public boolean hasNext() {
+            try {
+                next = nextToken();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return next != null;
+        }
+
+        @Override
+        public LexerToken next() {
+            return next;
         }
     }
 }

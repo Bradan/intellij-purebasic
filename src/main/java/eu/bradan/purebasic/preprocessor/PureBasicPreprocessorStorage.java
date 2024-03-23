@@ -25,16 +25,15 @@ package eu.bradan.purebasic.preprocessor;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.HashMap;
 
 public class PureBasicPreprocessorStorage {
     private static final HashMap<Project, PureBasicPreprocessorStorage> instances = new HashMap<>();
-    private final HashMap<String, LinkedList<LocatableObject<PureBasicMacro>>> macros = new HashMap<>();
+    private final HashMap<String, PureBasicPreprocessorScope> scopes = new HashMap<>();
 
     private PureBasicPreprocessorStorage() {
     }
@@ -48,69 +47,56 @@ public class PureBasicPreprocessorStorage {
         return inst;
     }
 
-    public synchronized void clearInvalid() {
-        for (var entry : macros.entrySet()) {
-            var list = entry.getValue();
-            list.removeIf(locatableObject -> locatableObject.getFile() == null);
-            if (list.isEmpty()) {
-                macros.remove(entry.getKey());
-            }
-        }
-    }
-
-    public synchronized void addMacro(PsiFile file, PureBasicMacro macro) {
-        var list = macros.getOrDefault(macro.getName(), null);
-        if (list == null) {
-            list = new LinkedList<>();
-            macros.put(macro.getName(), list);
-        }
-
+    @Nullable
+    private static VirtualFile getVirtualFile(PsiFile file) {
         VirtualFile vfile = null;
         for (var f = file; f != null && vfile == null; f = f.getOriginalFile()) {
             vfile = f.getVirtualFile();
         }
-
-        final var finalVFile = vfile;
-
-        list.removeIf(lo -> Objects.equals(lo.getFile(), finalVFile)
-                && lo.getObject().getName().equalsIgnoreCase(macro.getName()));
-        list.add(new LocatableObject<>(macro, vfile));
+        return vfile;
     }
 
-    @NotNull
-    public synchronized List<LocatableObject<PureBasicMacro>> getMacros(String name) {
-        var list = macros.getOrDefault(name, null);
-        if (list != null) {
-            return new ArrayList<>(list);
-        }
-        return new ArrayList<>();
-    }
-
-    public static class LocatableObject<T> {
-        private final T object;
-
-        @NotNull
-        private final WeakReference<VirtualFile> file;
-
-        private LocatableObject(T object, VirtualFile file) {
-            this.object = object;
-            this.file = new WeakReference<>(file);
-        }
-
-        public T getObject() {
-            return object;
-        }
-
-        public VirtualFile getFile() {
-            return file.get();
-        }
-
-        public PsiFile getPsiFile(Project project) {
-            var file = getFile();
-            if (file != null) {
-                return PsiManager.getInstance(project).findFile(file);
+    public synchronized void clearInvalid() {
+        for (var entry : scopes.entrySet()) {
+            var vfile = VirtualFileManager.getInstance().findFileByUrl(entry.getKey());
+            if (vfile == null || !vfile.isValid()) {
+                scopes.remove(entry.getKey());
             }
-            return null;
         }
+    }
+
+    public synchronized void addScope(VirtualFile file, PureBasicPreprocessorScope scope) {
+        scopes.put(file.getCanonicalPath(), scope);
+    }
+
+    public synchronized void addScope(PsiFile file, PureBasicPreprocessorScope scope) {
+        VirtualFile virtualFile = getVirtualFile(file);
+        if (virtualFile != null) {
+            addScope(virtualFile, scope);
+        }
+    }
+
+    public synchronized void addScope(String url, PureBasicPreprocessorScope scope) {
+        var virtualFile = VirtualFileManager.getInstance().findFileByUrl(url);
+        if (virtualFile != null) {
+            addScope(virtualFile, scope);
+        }
+    }
+
+    @Nullable
+    public synchronized PureBasicPreprocessorScope getScope(VirtualFile file) {
+        return scopes.getOrDefault(file.getCanonicalPath(), null);
+    }
+
+    @Nullable
+    public synchronized PureBasicPreprocessorScope getScope(PsiFile file) {
+        var virtualFile = getVirtualFile(file);
+        return virtualFile != null ? getScope(virtualFile) : null;
+    }
+
+    @Nullable
+    public synchronized PureBasicPreprocessorScope getScope(String url) {
+        var virtualFile = VirtualFileManager.getInstance().findFileByUrl(url);
+        return virtualFile != null ? getScope(virtualFile) : null;
     }
 }
