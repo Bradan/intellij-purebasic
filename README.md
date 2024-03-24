@@ -29,15 +29,15 @@ External links: [Source code](https://github.com/Bradan/intellij-purebasic)
 
 ## Compile Instructions
 
-Gradle tasks to execute (in separate gradle calls, because a subtask named compileJava must be executed multiple times):
+Either run `./build.sh` to run directly on your system or if you don't have the corresponding build requirements
+you can also build it inside a docker container with the `./build-docker.sh` script. The build process contains of the
+following steps:
 
-1. *generatePureBasicParser*:
-    generate lexer/parser files with JFlex and GrammarKit
-2. *assemble*:
-    compile everything, create separate jars
-3. *createFatJar*:
-    creates the final fat jar which also contains the jps plugin.
-    
+1. Generate lexer and parser
+2. Compile all classes
+3. Generate lexer and parser again (this time with a precompiled classpath for GrammarKit)
+4. Compile everything again and build a jar
+
 The first compile is necessary because GrammarKit attaches methods to
  the expression tree nodes, which cannot be found if there are no precompiled
  class files.

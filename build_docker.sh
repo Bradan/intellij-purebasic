@@ -25,11 +25,4 @@
 
 # These have to be separate calls, as classes cannot occur twice
 
-# optional argument: which gradle executable to use, defaults to ./gradlew
-GRADLE=${1:-./gradlew}
-
-$GRADLE generateLexer generateParser || true
-$GRADLE classes || true
-
-$GRADLE generateLexer generateParser2
-$GRADLE assemble jar
+docker run --rm -u gradle -v "$PWD":/src -w /src gradle:8.4.0-jdk17-jammy ./build.sh gradle
