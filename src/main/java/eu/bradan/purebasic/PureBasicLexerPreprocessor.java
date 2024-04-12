@@ -25,6 +25,7 @@ package eu.bradan.purebasic;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
@@ -35,6 +36,7 @@ import eu.bradan.purebasic.preprocessor.PureBasicPreprocessorStorage;
 import eu.bradan.purebasic.psi.PureBasicTypes;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
@@ -51,7 +53,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     private static final int MAX_LEVEL = 20;
 
     private final PureBasicLexer lexer;
-    private final Queue<LexerToken> lexerTokens = new LinkedList<>();
+    private final LinkedList<LexerToken> lexerTokens = new LinkedList<>();
     private final PsiElement element;
     private final LinkedList<LexerToken> macroArgs = new LinkedList<>();
     private final LinkedList<LexerToken> macroBody = new LinkedList<>();
@@ -60,6 +62,8 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
     private String macroName;
     private LexerToken lastToken = null;
     private int preprocessorState = 0;
+
+    private String includePath = "";
 
     public PureBasicLexerPreprocessor(java.io.Reader in, PsiElement element) {
         this.scope = initialScope(element);
@@ -103,6 +107,7 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
         this.lastToken = copyFrom.lastToken;
         this.preprocessorState = copyFrom.preprocessorState;
         this.level = copyFrom.level + 1;
+        this.includePath = copyFrom.includePath;
     }
 
     @NotNull
@@ -223,6 +228,12 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             } else if (token.getTokenType() == PureBasicTypes.CONSTANT_IDENTIFIER && previousState == PureBasicLexer.YYINITIAL) {
                 // this is likely an assignment to a constant
                 constantAssignment(token);
+            } else if (token.getTokenType() == PureBasicTypes.KEYWORD_XINCLUDEFILE || token.getTokenType() == PureBasicTypes.KEYWORD_INCLUDEFILE) {
+                // include file
+                include(token);
+            } else if (token.getTokenType() == PureBasicTypes.KEYWORD_INCLUDEPATH) {
+                // includepath
+                includePath();
             }
 
             if (preprocessorState == MACRO_BODY) {
@@ -355,7 +366,9 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 token = nextToken();
             }
 
-            lexerTokens.add(new LexerToken(TokenType.WHITE_SPACE, end, end, tokenText, yystate()));
+            var newTokens = new LinkedList<LexerToken>();
+
+            newTokens.add(new LexerToken(TokenType.WHITE_SPACE, end, end, tokenText, yystate()));
 
             final var macroCode = macro.getCode(argumentStrings);
             final var macroLexer = new PureBasicLexerPreprocessor(null, null, this.level + 1);
@@ -365,8 +378,10 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             IElementType elementType;
             while ((elementType = macroLexer.advance()) != null) {
                 final var text = macroLexer.yytext().toString();
-                lexerTokens.add(new LexerToken(elementType, end, end, text, state));
+                newTokens.add(new LexerToken(elementType, end, end, text, state));
             }
+
+            lexerTokens.addAll(0, newTokens);
 
             LOG.debug(String.format(Locale.getDefault(), "Expanding macro \"%s\" to \"%s\"", tokenText, macroCode));
 
@@ -504,6 +519,87 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                     value.append(t.getTokenText());
                     break;
                 }
+            }
+        }
+    }
+
+    private VirtualFile getCurrentFile() {
+        if (element == null) {
+            return null;
+        }
+
+        var psiFile = element.getContainingFile();
+        VirtualFile vfile = null;
+        while (psiFile != null && vfile == null) {
+            vfile = psiFile.getVirtualFile();
+            psiFile = psiFile.getOriginalFile();
+        }
+
+        return vfile;
+    }
+
+    private VirtualFile getCurrentDirectory() {
+        var vfile = getCurrentFile();
+        return vfile != null ? vfile.getParent() : null;
+    }
+
+    private void includePath() {
+        var forward = lookForward();
+
+        StringBuilder builder = new StringBuilder();
+
+        for (var t : forward) {
+            if (t.getTokenType() == PureBasicTypes.SEP) {
+                break;
+            } else {
+                builder.append(t.getTokenText());
+            }
+        }
+
+        // var parseTree = PureBasicElementFactory.parseString(element.getProject(), builder.toString());
+
+        includePath = PureBasicUtil.getStringContents(builder.toString().trim());
+    }
+
+    /**
+     * Handles includes.
+     *
+     * @param ignoredToken the already read token.
+     */
+    private void include(LexerToken ignoredToken) {
+        if (element == null) {
+            return;
+        }
+
+        var forward = lookForward();
+
+        StringBuilder builder = new StringBuilder();
+
+        for (var t : forward) {
+            if (t.getTokenType() == PureBasicTypes.SEP) {
+                break;
+            } else {
+                builder.append(t.getTokenText());
+            }
+        }
+
+        // var parseTree = PureBasicElementFactory.parseString(element.getProject(), builder.toString());
+
+        var includeFilename = PureBasicUtil.getStringContents(builder.toString().trim());
+        if (includeFilename != null) {
+            // relative filename to the current file's directory or to a previous include path statement
+            var vCurrentDir = getCurrentDirectory();
+            if (vCurrentDir != null) {
+                var currentDir = vCurrentDir.getCanonicalPath();
+                if (includePath != null && !includePath.isEmpty()) {
+                    currentDir = currentDir + File.pathSeparator + includePath;
+                }
+                String includeFile = new File(currentDir, includeFilename).toString();
+
+                LOG.debug("Adding scope to file " + includeFile);
+
+                var storage = PureBasicPreprocessorStorage.getInstance(element.getProject());
+                storage.addScope(includeFile, scope);
             }
         }
     }
