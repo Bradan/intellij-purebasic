@@ -39,20 +39,25 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PureBasicElementFactory {
     @NotNull
-    public static PureBasicFile createFile(Project project, String text) {
+    public static PureBasicFile parseString(Project project, String text) {
         return (PureBasicFile) PsiFileFactory.getInstance(project).
                 createFileFromText("PureBasic", PureBasicFileType.INSTANCE, text);
     }
 
+    public static PureBasicExpression parseExpression(Project project, String expression) {
+        return (PureBasicExpression) parseString(project, "Debug " + expression)
+                .getFirstChild() // Debug Statement
+                .getLastChild(); // Expression
+    }
+
     public static PsiElement createIdentifier(Project project, String identifier) {
-        return createFile(project, identifier + " = 1").getFirstChild();
+        return parseString(project, identifier + " = 1").getFirstChild();
     }
 
     public static ASTNode createString(Project project, @NotNull String string) {
-        return createFile(project, "Debug ~\"" + string.replaceAll("\"", "\\\"") + "\"")
+        return parseString(project, "Debug ~\"" + string.replaceAll("\"", "\\\"") + "\"")
                 .getFirstChild() // Debug Statement
                 .getLastChild() // Expression
-                .getLastChild() // Atom
                 .getNode()
                 .findChildByType(PureBasicTypes.STRING);
     }
@@ -60,6 +65,6 @@ public class PureBasicElementFactory {
     public static PsiElement replaceSubstring(Project project, @NotNull PsiElement originalElement, @NotNull TextRange range, String newText) {
         String text = originalElement.getText();
         text = text.substring(0, range.getStartOffset()) + newText + text.substring(range.getEndOffset());
-        return createFile(project, text).getFirstChild();
+        return parseString(project, text).getFirstChild();
     }
 }
