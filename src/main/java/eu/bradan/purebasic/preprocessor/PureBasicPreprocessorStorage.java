@@ -50,8 +50,10 @@ public class PureBasicPreprocessorStorage {
     @Nullable
     private static VirtualFile getVirtualFile(PsiFile file) {
         VirtualFile vfile = null;
-        for (var f = file; f != null && vfile == null; f = f.getOriginalFile()) {
+        PsiFile lastF = null;
+        for (var f = file; f != null && vfile == null && f != lastF; f = f.getOriginalFile()) {
             vfile = f.getVirtualFile();
+            lastF = f;
         }
         return vfile;
     }
