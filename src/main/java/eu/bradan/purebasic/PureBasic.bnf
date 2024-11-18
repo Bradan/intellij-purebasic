@@ -132,35 +132,35 @@ expression ::= boolneg concat_expression * {
        implements="eu.bradan.purebasic.psi.PureBasicExpressionElement"
    }
 left concat_expression ::= concat_op sep* boolneg *
-private concat_op ::= KEYWORD_AND|KEYWORD_OR|KEYWORD_XOR
+concat_op ::= KEYWORD_AND|KEYWORD_OR|KEYWORD_XOR
 
 private boolneg ::= boolneg_expression | comp
 boolneg_expression ::= boolneg_op sep* boolneg
-private boolneg_op ::= KEYWORD_NOT
+boolneg_op ::= KEYWORD_NOT
 
 private comp ::= sum comp_expression *
 left comp_expression ::= comp_op sep* sum *
-private comp_op ::= OP_GREATER|OP_GEQ|OP_EQG|OP_LESS|OP_LEQ|OP_EQL|OP_EQ|OP_NE
+comp_op ::= OP_GREATER|OP_GEQ|OP_EQG|OP_LESS|OP_LEQ|OP_EQL|OP_EQ|OP_NE
 
 private sum ::= factor sum_expression *
 left sum_expression ::= sum_op sep* factor
-private sum_op ::= OP_PLUS|OP_MINUS
+sum_op ::= OP_PLUS|OP_MINUS
 
 private factor ::= bitwise_andor factor_expression *
 left factor_expression  ::= factor_op bitwise_andor
-private factor_op ::= OP_MUL|OP_DIV
+factor_op ::= OP_MUL|OP_DIV
 
 private bitwise_andor ::= bitshift bitwise_andor_expression *
 left bitwise_andor_expression ::= bitwise_andor_op bitshift
-private bitwise_andor_op ::= OP_OR|OP_AND
+bitwise_andor_op ::= OP_OR|OP_AND
 
 private bitshift ::= negate bitshift_expression *
 left bitshift_expression ::= bitshift_op negate
-private bitshift_op ::= OP_LSHIFT|OP_RSHIFT|OP_MODULO|OP_XOR
+bitshift_op ::= OP_LSHIFT|OP_RSHIFT|OP_MODULO|OP_XOR
 
 private negate ::= negate_expression | atomic_expression
 negate_expression ::= negate_op negate
-private negate_op ::= OP_NOT|OP_MINUS
+negate_op ::= OP_NOT|OP_MINUS
 
 private atomic_expression ::= addressed_identifier|identifier_or_call_chained|atom|parenthesis_expression
 parenthesis_expression ::= OP_PARENOPEN expression OP_PARENCLOSE {pin=1}
@@ -175,7 +175,10 @@ identifier_chained ::= [module_path] [structure_path] parse_identifier [static_a
 call_chained ::= [module_path] [structure_path] call
 private identifier_or_call_chained ::= call_chained | identifier_chained
 
-atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING
+atom ::= NUMBER|parse_constant_identifier|parse_identifier|parse_pointer_identifier|CHARACTER|STRING {
+       mixin="eu.bradan.purebasic.psi.impl.PureBasicExpressionElementImpl"
+       implements="eu.bradan.purebasic.psi.PureBasicExpressionElement"
+   }
 
 // Declarations
 declaration_stmt ::= variable_declaration|array_declaration|list_declaration|map_declaration|procedure_declaration

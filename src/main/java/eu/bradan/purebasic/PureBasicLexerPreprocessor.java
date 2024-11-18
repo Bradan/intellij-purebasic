@@ -33,6 +33,7 @@ import eu.bradan.purebasic.preprocessor.PureBasicConstant;
 import eu.bradan.purebasic.preprocessor.PureBasicMacro;
 import eu.bradan.purebasic.preprocessor.PureBasicPreprocessorScope;
 import eu.bradan.purebasic.preprocessor.PureBasicPreprocessorStorage;
+import eu.bradan.purebasic.psi.PureBasicElementFactory;
 import eu.bradan.purebasic.psi.PureBasicTypes;
 import org.jetbrains.annotations.NotNull;
 
@@ -234,6 +235,10 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
             } else if (token.getTokenType() == PureBasicTypes.KEYWORD_INCLUDEPATH) {
                 // includepath
                 includePath();
+            } else if (token.getTokenType() == PureBasicTypes.KEYWORD_COMPILERIF) {
+                compilerIf();
+            } else if (token.getTokenType() == PureBasicTypes.KEYWORD_COMPILERSELECT) {
+                compilerSelect();
             }
 
             if (preprocessorState == MACRO_BODY) {
@@ -496,7 +501,6 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
      */
     private void constantAssignment(LexerToken token) {
         var forward = lookForward();
-        PureBasicConstant.Type type = PureBasicConstant.Type.STRING;
         StringBuilder value = new StringBuilder();
         boolean assignment = false;
         for (var t : forward) {
@@ -509,15 +513,29 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
                 }
             } else {
                 // we are sure it is an assignment
-                if (t.getTokenType() == PureBasicTypes.SEP) {
+                if (t.getTokenType() == PureBasicTypes.SEPARATOR) {
                     // this is a constant assignment
                     final var constantName = token.getTokenText().toString();
                     final var constantValue = value.toString().trim();
-                    scope.setConstant(new PureBasicConstant(constantName, type, constantValue));
+
+                    if (constantValue.isEmpty()) {
+                        scope.setConstant(new PureBasicConstant(constantName, PureBasicConstant.Type.STRING, ""));
+                    }
+
+                    // evaluate the value
+                    var condExp = PureBasicElementFactory.parseCondition(element.getProject(), constantValue);
+                    if (condExp != null) {
+                        var constant = condExp.evaluateConstant(scope);
+                        if (constant != null) {
+                            var namedConstant = new PureBasicConstant(constantName, constant.getType(), constant.getValue());
+                            LOG.info("Setting constant " + namedConstant);
+                            scope.setConstant(namedConstant);
+                        }
+                    }
+
                     break;
                 } else {
                     value.append(t.getTokenText());
-                    break;
                 }
             }
         }
@@ -600,6 +618,37 @@ public class PureBasicLexerPreprocessor implements FlexLexer {
 
                 var storage = PureBasicPreprocessorStorage.getInstance(element.getProject());
                 storage.addScope(includeFile, scope);
+            }
+        }
+    }
+
+    private void compilerSelect() {
+
+    }
+
+    private void compilerIf() {
+        var forward = lookForward();
+
+        StringBuilder builder = new StringBuilder();
+
+        for (var t : forward) {
+            if (t.getTokenType() == PureBasicTypes.SEPARATOR) {
+                break;
+            } else {
+                builder.append(t.getTokenText());
+            }
+        }
+
+        var condition = builder.toString();
+        LOG.debug("CompilerIf: " + condition);
+        builder.setLength(0);
+
+        var condExp = PureBasicElementFactory.parseCondition(element.getProject(), condition);
+        if (condExp != null) {
+            LOG.debug("Expression: " + condExp.getText());
+            var constant = condExp.evaluateConstant(scope);
+            if (constant != null) {
+                LOG.debug("Constant: " + constant.getName() + " = " + constant.getValue());
             }
         }
     }

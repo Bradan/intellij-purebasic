@@ -46,6 +46,15 @@ public class PureBasicConstant {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return "PureBasicConstant{" +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", value='" + value + '\'' +
+                '}';
+    }
+
     public enum Type {
         STRING, INTEGER, FLOAT
     }

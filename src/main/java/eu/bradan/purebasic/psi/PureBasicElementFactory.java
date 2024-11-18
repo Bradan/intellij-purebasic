@@ -35,13 +35,22 @@ import org.jetbrains.annotations.NotNull;
  * This is some kind of dirty hack. The documentation says there is no easy method to create PsiElements without
  * creating a pseudo file instance containing it:
  * <p>
- * https://www.jetbrains.org/intellij/sdk/docs/basics/architectural_overview/modifying_psi.html?search=psi#creating-the-new-psi
+ * <a href="https://www.jetbrains.org/intellij/sdk/docs/basics/architectural_overview/modifying_psi.html?search=psi#creating-the-new-psi">...</a>
  */
 public class PureBasicElementFactory {
     @NotNull
     public static PureBasicFile parseString(Project project, String text) {
         return (PureBasicFile) PsiFileFactory.getInstance(project).
                 createFileFromText("PureBasic", PureBasicFileType.INSTANCE, text);
+    }
+
+    public static PureBasicExpression parseCondition(Project project, String expression) {
+        var file = parseString(project, "#__cond__ = (" + expression + ")");
+        var assignment = file.getFirstChild();
+        if (assignment != null) {
+            return (PureBasicExpression) assignment.getLastChild();
+        }
+        return null;
     }
 
     public static PureBasicExpression parseExpression(Project project, String expression) {
